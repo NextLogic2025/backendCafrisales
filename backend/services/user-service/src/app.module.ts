@@ -33,6 +33,7 @@ import { Supervisor } from './modules/staff/entities/supervisor.entity';
 import { Vendedor } from './modules/staff/entities/vendedor.entity';
 import { Bodeguero } from './modules/staff/entities/bodeguero.entity';
 import { Transportista } from './modules/staff/entities/transportista.entity';
+import { ZoneExternalService } from './services/zone-external.service';
 
 @Module({
   imports: [
@@ -65,6 +66,7 @@ import { Transportista } from './modules/staff/entities/transportista.entity';
     ClientsService,
     OutboxService,
     StaffService,
+    ZoneExternalService,
     JwtStrategy,
     JwtAuthGuard,
     {
@@ -84,4 +86,4 @@ import { Transportista } from './modules/staff/entities/transportista.entity';
     },
   ],
 })
-export class AppModule {}
+export class AppModule { }

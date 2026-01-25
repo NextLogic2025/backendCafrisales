@@ -4,13 +4,15 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Perfil } from './entities/perfil.entity';
 import { Repository } from 'typeorm';
 import { GetUser } from '../../common/decorators';
+import { ZoneExternalService } from '../../services/zone-external.service';
 
 @Controller('usuarios')
 export class ProfilesController {
   constructor(
     @InjectRepository(Perfil)
     private readonly perfilRepo: Repository<Perfil>,
-  ) {}
+    private readonly zoneExternalService: ZoneExternalService,
+  ) { }
 
   @UseGuards(JwtAuthGuard)
   @Get('me/perfil')
@@ -20,7 +22,17 @@ export class ProfilesController {
 
     const p = await this.perfilRepo.findOneBy({ usuario_id: userId } as any);
     if (!p) throw new NotFoundException();
-    return p;
+
+    // Fetch zone information if zona_id exists
+    let zona = null;
+    if ((p as any).zona_id) {
+      zona = await this.zoneExternalService.getZoneById((p as any).zona_id);
+    }
+
+    return {
+      ...p,
+      zona,
+    };
   }
 
   @UseGuards(JwtAuthGuard)

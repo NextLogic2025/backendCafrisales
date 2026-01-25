@@ -7,6 +7,7 @@ import { SchedulesModule } from './modules/schedules/schedules.module';
 import { CoverageModule } from './modules/coverage/coverage.module';
 import { HealthModule } from './modules/health/health.module';
 import { OutboxModule } from './modules/outbox/outbox.module';
+import { InternalModule } from './modules/internal/internal.module';
 
 @Module({
     imports: [
@@ -24,6 +25,7 @@ import { OutboxModule } from './modules/outbox/outbox.module';
         SchedulesModule,
         CoverageModule,
         OutboxModule,
+        InternalModule,
     ],
 })
 export class AppModule { }

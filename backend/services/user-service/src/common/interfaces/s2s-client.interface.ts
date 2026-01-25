@@ -1,4 +1,5 @@
 export interface IS2SClient {
+  get<T>(serviceUrl: string, endpoint: string, token: string): Promise<T>;
   post<T>(serviceUrl: string, endpoint: string, data: any, token: string): Promise<T>;
 }
 
