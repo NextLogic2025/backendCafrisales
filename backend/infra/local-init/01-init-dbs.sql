@@ -15,6 +15,7 @@
 CREATE DATABASE cafrilosa_auth;
 CREATE DATABASE cafrilosa_usuarios;
 CREATE DATABASE cafrilosa_catalogo;
+CREATE DATABASE cafrilosa_zonas;
 \c cafrilosa_auth
 
 -- Extensiones

@@ -6,9 +6,11 @@ x-common-env: &common-env
   PORT: 3000
   JWT_SECRET: ${JWT_SECRET}
   SERVICE_TOKEN: ${SERVICE_TOKEN}
+  # URLs internas entre contenedores
   AUTH_SERVICE_URL: ${AUTH_URL}
   USUARIOS_SERVICE_URL: ${USUARIOS_URL}
   CATALOG_SERVICE_URL: ${CATALOG_URL}
+  ZONE_SERVICE_URL: ${ZONAS_URL}
   ORDERS_SERVICE_URL: ${ORDERS_URL}
   WAREHOUSE_SERVICE_URL: ${WAREHOUSE_URL}
   FINANCE_SERVICE_URL: ${FINANCE_URL}
@@ -59,9 +61,6 @@ services:
   # --- AUTH SERVICE ---
   auth-service:
     build:
-      # ⚠️ CORRECCIÓN AQUÍ:
-      # 1. Quitamos '/backend' porque ya estás dentro de esa carpeta.
-      # 2. Cambiamos 'auth' por 'auth-service' para coincidir con tu carpeta real.
       context: ./services/auth-service
       dockerfile: Dockerfile
     container_name: auth-service
@@ -86,8 +85,6 @@ services:
   # --- USER SERVICE ---
   user-service:
     build:
-      # ⚠️ CORRECCIÓN AQUÍ:
-      # Coincide con tu carpeta real: services/user-service
       context: ./services/user-service
       dockerfile: Dockerfile
     container_name: user-service
@@ -108,6 +105,7 @@ services:
       timeout: 5s
       retries: 10
       start_period: 60s
+
   # --- CATALOG SERVICE ---
   catalog-service:
     build:
@@ -126,7 +124,33 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: [ "CMD-SHELL", "wget -q -T 2 -O /dev/null http://127.0.0.1:3000/v1/health || exit 1" ]
+      test: [ "CMD-SHELL", "wget -q -T 2 -O /dev/null http://127.0.0.1:3000/api/health || exit 1" ]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  # --- ZONE SERVICE ---
+  zone-service:
+    build:
+      context: ./services/zone-service
+      dockerfile: Dockerfile
+    container_name: zone-service
+    restart: on-failure
+    environment:
+      <<: *common-env
+      # Nota: Requiere que la DB 'cafrilosa_zonas' tenga la extensión PostGIS activada
+      DATABASE_URL: postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/cafrilosa_zonas
+    ports:
+      - "3004:3000"
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - app-network
+    healthcheck:
+      # Asumiendo que usarás Global Prefix 'api' como en los otros (salvo catalogo que usó v1)
+      test: [ "CMD-SHELL", "wget -q -T 2 -O /dev/null http://127.0.0.1:3000/api/health || exit 1" ]
       interval: 15s
       timeout: 5s
       retries: 10
