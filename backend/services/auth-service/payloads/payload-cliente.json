@@ -1,0 +1,21 @@
+{
+  "email": "cliente.ejemplo@example.com",
+  "password": "P4ssw0rd!",
+  "rol": "cliente",
+  "perfil": { "nombres": "Juan", "apellidos": "Pérez", "telefono": "+59170000000" },
+  "cliente": {
+    "canal_id": "00000000-0000-0000-0000-000000000001",
+    "nombre_comercial": "Distribuciones XYZ",
+    "ruc": "123456789",
+    "zona_id": "00000000-0000-0000-0000-000000000002",
+    "direccion": "Av. Principal 123",
+    "latitud": -17.7833,
+    "longitud": -63.1821,
+    "condiciones": {
+      "permite_negociacion": true,
+      "porcentaje_descuento_max": 5.5,
+      "requiere_aprobacion_supervisor": false,
+      "observaciones": "Cliente demo"
+    }
+  }
+}

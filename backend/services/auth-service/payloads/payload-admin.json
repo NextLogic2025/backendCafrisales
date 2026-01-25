@@ -1,0 +1,6 @@
+{
+  "email": "admin.ejemplo@example.com",
+  "password": "P4ssw0rd!",
+  "rol": "admin",
+  "perfil": { "nombres": "Admin", "apellidos": "Sistema", "telefono": "+59170000005" }
+}

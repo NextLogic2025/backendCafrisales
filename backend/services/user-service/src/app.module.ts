@@ -7,9 +7,14 @@ import { JwtStrategy } from './common/strategies/jwt.strategy';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { ClientProxyFactory, Transport } from '@nestjs/microservices';
 import { UsersService } from './modules/users/users.service';
+import { RoleProvisionService } from './modules/users/services/role-provision.service';
+import { ProfilesService } from './modules/users/services/profiles.service';
+import { S2S_CLIENT } from './common/interfaces/s2s-client.interface';
+import { HttpS2SAdapter } from './common/adapters/http-s2s.adapter';
 import { Usuario } from './modules/users/entities/usuario.entity';
 import { HealthModule } from './modules/health/health.module';
 import { UsersController } from './modules/users/users.controller';
+import { UsersInternalController } from './modules/users/users.internal.controller';
 import { ProfilesController } from './modules/profiles/profiles.controller';
 import { Cliente } from './modules/clients/entities/cliente.entity';
 import { ClientsController } from './modules/clients/clients.controller';
@@ -28,11 +33,17 @@ import { Outbox } from './modules/outbox/entities/outbox.entity';
     }),
     HealthModule,
   ],
-  controllers: [UsersController, ProfilesController, ClientsController],
+  controllers: [UsersController, UsersInternalController, ProfilesController, ClientsController],
   providers: [
     UsersService,
+    RoleProvisionService,
+    ProfilesService,
     JwtStrategy,
     JwtAuthGuard,
+    {
+      provide: S2S_CLIENT,
+      useClass: HttpS2SAdapter,
+    },
     {
       provide: 'AUTH_CLIENT',
       useFactory: () =>

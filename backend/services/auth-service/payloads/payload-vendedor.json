@@ -1,0 +1,7 @@
+{
+  "email": "vendedor.ejemplo@example.com",
+  "password": "P4ssw0rd!",
+  "rol": "vendedor",
+  "perfil": { "nombres": "Carlos", "apellidos": "Gómez", "telefono": "+59170000001" },
+  "vendedor": { "codigo_empleado": "VEND-001", "supervisor_id": null }
+}

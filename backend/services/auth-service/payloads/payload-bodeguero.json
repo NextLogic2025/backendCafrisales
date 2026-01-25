@@ -1,0 +1,7 @@
+{
+  "email": "bodeguero.ejemplo@example.com",
+  "password": "P4ssw0rd!",
+  "rol": "bodeguero",
+  "perfil": { "nombres": "Miguel", "apellidos": "Torres", "telefono": "+59170000003" },
+  "bodeguero": { "codigo_empleado": "BOD-001" }
+}

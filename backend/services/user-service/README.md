@@ -1,41 +1,37 @@
 # User-Service: Crear usuarios (Postman / curl)
 
-Este documento explica cómo crear los distintos tipos de usuario (`cliente`, `vendedor`, `supervisor`, `bodeguero`) usando Postman o curl contra el servicio `user-service` en desarrollo.
+Este documento explica cómo probar `user-service` en desarrollo. IMPORTANTE: la creación pública directa de usuarios (`POST /v1/usuarios`) ha sido deshabilitada y la creación centralizada se hace desde `auth-service` via outbox -> `/v1/internal/usuarios/sync`.
 
 Base URL (desarrollo):
 
 - http://localhost:3002/v1
 
-Endpoint principal:
+Endpoints relevantes para pruebas:
 
-- POST /usuarios  — crea `app.usuarios`, `app.perfiles_usuario`, y filas específicas por `rol`.
+- `POST /v1/internal/usuarios/sync` — endpoint interno idempotente que crea el `usuario` completo a partir del payload enviado por `auth-service`. Requiere header `x-service-token: <SERVICE_TOKEN>`.
+- `GET /v1/usuarios/:id` — consultar usuario creado (protegido por JWT/Roles).
+- `PATCH /v1/usuarios/:id` — actualizar (protegido).
 
-Headers (requeridos):
+Probar la sync interna con Postman (caso debugging)
 
-- `Content-Type: application/json`
+- Crear una Request `POST {{baseUrlUser}}/v1/internal/usuarios/sync` (donde `{{baseUrlUser}}` = `http://localhost:3002`).
+- En `Headers` añadir `Content-Type: application/json` y `x-service-token: {{SERVICE_TOKEN}}`.
+- En `Body` -> `raw` -> `JSON` usar un payload idéntico al que `auth-service` publica en su outbox. Ejemplo:
 
-Nota importante:
-
-- Para crear un `cliente` necesitas que exista un `canal` en `app.canales_comerciales` (campo `canal_id`). Puedes crear un canal en la DB local con psql (ejemplo abajo).
-
-Ejemplo: crear un `cliente` (Postman body JSON)
-
+```json
 {
-  "email": "cliente.example@example.com",
+  "id": "11111111-1111-1111-1111-111111111111",
+  "email": "cliente.ejemplo@example.com",
   "rol": "cliente",
-  "perfil": {
-    "nombres": "Juan",
-    "apellidos": "Pérez",
-    "telefono": "+51 912345678"
-  },
+  "perfil": { "nombres": "Juan", "apellidos": "Pérez", "telefono": "+59170000000" },
   "cliente": {
     "canal_id": "00000000-0000-0000-0000-000000000001",
-    "nombre_comercial": "Tienda Demo S.A.",
-    "ruc": "20123456789",
+    "nombre_comercial": "Distribuciones XYZ",
+    "ruc": "123456789",
     "zona_id": "00000000-0000-0000-0000-000000000002",
-    "direccion": "Av. Test 123",
-    "latitud": -12.0464,
-    "longitud": -77.0428,
+    "direccion": "Av. Principal 123",
+    "latitud": -17.7833,
+    "longitud": -63.1821,
     "condiciones": {
       "permite_negociacion": true,
       "porcentaje_descuento_max": 5.5,
@@ -44,43 +40,20 @@ Ejemplo: crear un `cliente` (Postman body JSON)
     }
   }
 }
-
-Ejemplo: crear un `vendedor`
-
-{
-  "email": "vendedor.example@example.com",
-  "rol": "vendedor",
-  "perfil": { "nombres": "Carlos", "apellidos": "Gomez" },
-  "vendedor": { "codigo_empleado": "VEND-001", "supervisor_id": null }
-}
-
-Ejemplo: crear un `supervisor`
-
-{
-  "email": "supervisor.example@example.com",
-  "rol": "supervisor",
-  "perfil": { "nombres": "Lucia", "apellidos": "Martinez" },
-  "supervisor": { "codigo_empleado": "SUP-001" }
-}
-
-Ejemplo: crear un `bodeguero`
-
-{
-  "email": "bodeguero.example@example.com",
-  "rol": "bodeguero",
-  "perfil": { "nombres": "Miguel", "apellidos": "Torres" },
-  "bodeguero": { "codigo_empleado": "BOD-001" }
-}
-
-Uso con curl (cliente ejemplo):
-
-```bash
-curl -v -X POST http://localhost:3002/v1/usuarios \
-  -H "Content-Type: application/json" \
-  -d '{"email":"cliente.example@example.com","rol":"cliente","perfil":{"nombres":"Juan","apellidos":"Pérez"},"cliente":{"canal_id":"00000000-0000-0000-0000-000000000001","nombre_comercial":"Tienda","zona_id":"00000000-0000-0000-0000-000000000002","direccion":"Av. Test 123"}}'
 ```
 
-Crear canal requerido (si no existe) via psql (desde host):
+Curl directo (debugging):
+
+```bash
+curl -v -X POST http://localhost:3002/v1/internal/usuarios/sync \
+  -H "Content-Type: application/json" \
+  -H "x-service-token: <SERVICE_TOKEN>" \
+  -d '@payload.json'
+```
+
+Notas y comprobaciones rápidas (psql):
+
+- Crear canal necesario (si no existe):
 
 ```bash
 docker exec -i gcp-sql-local psql -U admin -d cafrilosa_usuarios -c \
@@ -89,20 +62,15 @@ docker exec -i gcp-sql-local psql -U admin -d cafrilosa_usuarios -c \
    ON CONFLICT (id) DO NOTHING;"
 ```
 
-Comprobaciones rápidas (psql):
-
-- Usuarios: SELECT id,email,rol FROM app.usuarios WHERE email='...';
-- Perfiles: SELECT * FROM app.perfiles_usuario WHERE usuario_id='<id>';
-- Clientes: SELECT * FROM app.clientes WHERE usuario_id='<id>';
-- Condiciones: SELECT * FROM app.condiciones_comerciales_cliente WHERE cliente_id='<id>';
-- Vendedores: SELECT * FROM app.vendedores WHERE usuario_id='<id>';
-- Supervisores: SELECT * FROM app.supervisores WHERE usuario_id='<id>';
-- Bodegueros: SELECT * FROM app.bodegueros WHERE usuario_id='<id>';
-- Outbox (evento UsuarioCreado): SELECT * FROM app.outbox_eventos WHERE clave_agregado='<id>';
+- Comprobaciones (psql):
+  - Usuarios: SELECT id,email,rol FROM app.usuarios WHERE email='...';
+  - Perfiles: SELECT * FROM app.perfiles_usuario WHERE usuario_id='<id>';
+  - Clientes: SELECT * FROM app.clientes WHERE usuario_id='<id>';
+  - Condiciones: SELECT * FROM app.condiciones_comerciales_cliente WHERE cliente_id='<id>';
 
 Notas finales:
 
-- Si quieres que `auth-service` cree credenciales automáticamente cuando se crea un usuario, implementamos un consumidor que procese `app.outbox_eventos` y llame a `auth-service` o inserte en `app.credenciales`.
-- Para Postman: crea una colección y añade una request `POST /v1/usuarios` por cada rol con los bodies de ejemplo.
+- No uses `POST /v1/usuarios` públicamente en desarrollo — la creación centralizada se hace desde `auth-service`.
+- Para pruebas end-to-end: usa `auth-service` `POST /v1/auth/register` con el payload completo; el `OutboxProcessor` empujará el evento a este endpoint interno.
 
 Archivo de servicio: [services/user-service](services/user-service)

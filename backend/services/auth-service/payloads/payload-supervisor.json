@@ -1,0 +1,7 @@
+{
+  "email": "supervisor.ejemplo@example.com",
+  "password": "P4ssw0rd!",
+  "rol": "supervisor",
+  "perfil": { "nombres": "Lucia", "apellidos": "Martinez", "telefono": "+59170000002" },
+  "supervisor": { "codigo_empleado": "SUP-001" }
+}

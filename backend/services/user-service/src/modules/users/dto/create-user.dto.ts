@@ -71,6 +71,12 @@ export class CreateUserDto extends CreateUserBaseDto {
   rol: RolUsuario;
 
   @IsOptional()
+  avatarUrl?: string;
+
+  @IsOptional()
+  preferencias?: Record<string, any>;
+
+  @IsOptional()
   @ValidateNested()
   @Type(() => PerfilDto)
   perfil?: PerfilDto;
@@ -94,4 +100,11 @@ export class CreateUserDto extends CreateUserBaseDto {
   @ValidateNested()
   @Type(() => BodegueroDto)
   bodeguero?: BodegueroDto;
+
+  // convenience fields
+  @IsOptional()
+  codigoEmpleado?: string;
+
+  @IsOptional()
+  supervisorId?: string;
 }

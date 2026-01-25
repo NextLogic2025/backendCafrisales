@@ -1,14 +1,16 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException, ConflictException, Inject } from '@nestjs/common';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { RefreshDto } from './dto/refresh.dto';
 import { LogoutDto } from './dto/logout.dto';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { Credential } from './entities/credential.entity';
 import { Session } from './entities/session.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as argon2 from 'argon2';
 import { JwtService } from '@nestjs/jwt';
+import { IS2SClient, S2S_CLIENT } from '../../common/interfaces/s2s-client.interface';
+import { ConfigService } from '@nestjs/config';
 import { randomBytes } from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -22,6 +24,9 @@ export class AuthService {
     @InjectRepository(Session)
     private readonly sessionRepo: Repository<Session>,
     private readonly jwtService: JwtService,
+    private readonly dataSource: DataSource,
+    private readonly configService: ConfigService,
+    @Inject(S2S_CLIENT) private readonly s2sClient: IS2SClient,
   ) {}
 
   async login(dto: LoginDto) {
@@ -50,7 +55,18 @@ export class AuthService {
     } as any);
     await this.sessionRepo.save(session);
 
-    const payload = { sub: credential.id, email: credential.email };
+    // attempt to resolve real role from user-service (service-to-service)
+    let role = 'cliente';
+    try {
+      const userServiceUrl = this.configService.get('USUARIOS_SERVICE_URL') || process.env.USUARIOS_SERVICE_URL || 'http://user-service:3000';
+      const serviceToken = this.configService.get('SERVICE_TOKEN') || process.env.SERVICE_TOKEN || '';
+      const user = await this.s2sClient.get<any>(userServiceUrl, `/v1/usuarios/${credential.id}`, serviceToken);
+      if (user && user.rol) role = user.rol;
+    } catch (e) {
+      this.logger.log('Could not resolve role from user-service, using fallback');
+    }
+
+    const payload = { sub: credential.id, email: credential.email, role } as any;
     const accessToken = this.jwtService.sign(payload, { expiresIn: '15m' });
 
     return {
@@ -58,7 +74,7 @@ export class AuthService {
       refresh_token: refreshToken,
       expires_in: 900,
       usuario_id: credential.id,
-      rol: 'cliente',
+      rol: role,
     };
   }
 
@@ -101,9 +117,37 @@ export class AuthService {
     this.logger.log(`Registering ${dto.email}`);
     const passwordHash = await argon2.hash(dto.password);
     const id = uuidv4();
-    const credential = this.credentialRepo.create({ id, email: dto.email, password: passwordHash } as any);
-    const saved = (await this.credentialRepo.save(credential)) as unknown as Credential;
-    return { id: saved.id, email: saved.email };
+
+    return this.dataSource.transaction(async manager => {
+      // save credential in auth DB
+      try {
+        await manager.getRepository(Credential).save({ id, email: dto.email, password: passwordHash } as any);
+      } catch (e: any) {
+        // unique violation -> email already registered
+        if (e && e.code === '23505') {
+          throw new ConflictException('Email already registered');
+        }
+        throw e;
+      }
+
+      // write outbox event for user-service to consume
+      // include full user-related fields from dto but never include password
+      const payloadObj: any = { id, email: dto.email } as any;
+      if ((dto as any).rol) payloadObj.rol = (dto as any).rol;
+      if ((dto as any).perfil) payloadObj.perfil = (dto as any).perfil;
+      if ((dto as any).cliente) payloadObj.cliente = (dto as any).cliente;
+      if ((dto as any).vendedor) payloadObj.vendedor = (dto as any).vendedor;
+      if ((dto as any).supervisor) payloadObj.supervisor = (dto as any).supervisor;
+      if ((dto as any).bodeguero) payloadObj.bodeguero = (dto as any).bodeguero;
+
+      await manager.query(
+        `INSERT INTO app.outbox_eventos (agregado, tipo_evento, clave_agregado, payload, creado_en)
+         VALUES ($1,$2,$3,$4,transaction_timestamp())`,
+        ['auth', 'UsuarioRegistrado', id, JSON.stringify(payloadObj)],
+      );
+
+      return { id, email: dto.email };
+    });
   }
 
   async refresh(dto: RefreshDto) {

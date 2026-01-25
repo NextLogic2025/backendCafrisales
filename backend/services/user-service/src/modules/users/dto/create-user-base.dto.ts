@@ -5,8 +5,8 @@ export class CreateUserBaseDto {
   @IsNotEmpty()
   email: string;
 
-  @IsNotEmpty()
-  password: string;
+  @IsOptional()
+  password?: string;
 
   @IsOptional()
   name?: string;
@@ -14,4 +14,8 @@ export class CreateUserBaseDto {
   @IsOptional()
   @IsUUID()
   creado_por?: string;
+
+  @IsOptional()
+  @IsUUID()
+  id?: string;
 }

@@ -77,6 +77,10 @@ CREATE TABLE app.credenciales (
   )
 );
 
+ALTER TABLE app.outbox_eventos ADD COLUMN IF NOT EXISTS intentos integer DEFAULT 0;
+ALTER TABLE app.outbox_eventos ADD COLUMN IF NOT EXISTS ultimo_error text;
+
+
 CREATE TRIGGER trg_credenciales_actualizado
 BEFORE UPDATE ON app.credenciales
 FOR EACH ROW EXECUTE FUNCTION audit.set_actualizado();
@@ -141,6 +145,7 @@ CREATE TABLE app.outbox_eventos (
 CREATE INDEX idx_outbox_pendientes
   ON app.outbox_eventos(creado_en)
   WHERE procesado_en IS NULL;
+
 
 -- Control DB vs Software (Auth)
 

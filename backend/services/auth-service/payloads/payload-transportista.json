@@ -1,0 +1,11 @@
+{
+  "email": "transportista.ejemplo@example.com",
+  "password": "P4ssw0rd!",
+  "rol": "transportista",
+  "perfil": { "nombres": "Ana", "apellidos": "Lopez", "telefono": "+59170000004" },
+  "transportista": {
+    "codigo_empleado": "TRANS-001",
+    "numero_licencia": "ABC12345",
+    "licencia_vence_en": "2027-12-31"
+  }
+}

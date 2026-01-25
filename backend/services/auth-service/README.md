@@ -26,6 +26,61 @@ curl -v -X POST http://localhost:3001/v1/auth/register \
   -d '{"email":"user.example@example.com","password":"P4ssw0rd!"}'
 ```
 
+Probar en Postman (registro completo -> crea usuario en `user-service` via outbox)
+
+- Crear una nueva Request `POST {{baseUrl}}/v1/auth/register` (donde `{{baseUrl}}` = `http://localhost:3001`)
+- En `Headers` añadir `Content-Type: application/json`.
+- En `Body` seleccionar `raw` -> `JSON` y usar un payload como este (ejemplo para crear un `cliente`):
+
+```json
+{
+  "email": "cliente.ejemplo@example.com",
+  "password": "P4ssw0rd!",
+  "perfil": { "nombres": "Juan", "apellidos": "Pérez", "telefono": "+59170000000" },
+  "rol": "cliente",
+  "cliente": {
+    "canal_id": "00000000-0000-0000-0000-000000000001",
+    "nombre_comercial": "Distribuciones XYZ",
+    "ruc": "123456789",
+    "zona_id": "00000000-0000-0000-0000-000000000002",
+    "direccion": "Av. Principal 123",
+    "latitud": -17.7833,
+    "longitud": -63.1821,
+    "condiciones": {
+      "permite_negociacion": true,
+      "porcentaje_descuento_max": 5.5,
+      "requiere_aprobacion_supervisor": false,
+      "observaciones": "Cliente demo"
+    }
+  }
+}
+```
+
+Notas rápidas:
+- Al enviar este `register`, `auth-service` crea las credenciales en `cafrilosa_auth.app.credenciales` y escribe un evento en su `app.outbox_eventos` con el payload JSON anterior.
+- El `OutboxProcessor` del `auth-service` intentará POSTear ese payload a `user-service` en `/v1/internal/usuarios/sync` (secuestro S2S protegido por `x-service-token`).
+- Para debugging manual, puedes copiar el mismo JSON y llamar directamente a `user-service` (solo para pruebas) con:
+
+```bash
+curl -v -X POST http://localhost:3002/v1/internal/usuarios/sync \
+  -H "Content-Type: application/json" \
+  -H "x-service-token: <SERVICE_TOKEN>" \
+  -d '@payload.json'
+```
+
+Postman tip: añade una variable de entorno `SERVICE_TOKEN` y otra `baseUrlAuth` (`http://localhost:3001`) para reusar en la colección.
+
+Payloads de ejemplo incluidos en el repositorio:
+
+- `payloads/payload-cliente.json`
+- `payloads/payload-vendedor.json`
+- `payloads/payload-supervisor.json`
+- `payloads/payload-bodeguero.json`
+- `payloads/payload-transportista.json`
+- `payloads/payload-admin.json`
+
+Puedes cargar cualquiera de estos archivos en Postman (Body -> raw -> seleccionar archivo) o usar `-d @path` con `curl`.
+
 Ejemplo: Login (curl)
 
 ```bash
