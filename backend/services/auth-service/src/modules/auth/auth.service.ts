@@ -16,6 +16,7 @@ import { SessionService } from './services/session.service';
 import { ConfigService } from '@nestjs/config';
 import { randomBytes } from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
+import { UserExternalService } from '../../services/user-external.service';
 
 @Injectable()
 export class AuthService {
@@ -31,30 +32,19 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly dataSource: DataSource,
     private readonly configService: ConfigService,
-    @Inject(S2S_CLIENT) private readonly s2sClient: IS2SClient,
+    private readonly userExternalService: UserExternalService,
     private readonly outboxService: OutboxService,
     private readonly sessionService: SessionService,
-  ) {}
+  ) { }
 
   private async resolveUserRole(userId: string): Promise<string> {
-    const fallback = 'cliente';
     try {
-      const userServiceUrl =
-        this.configService.get('USUARIOS_SERVICE_URL') ||
-        process.env.USUARIOS_SERVICE_URL ||
-        process.env.USUARIOS_URL ||
-        'http://user-service:3000';
-      const serviceToken = this.configService.get('SERVICE_TOKEN') || process.env.SERVICE_TOKEN || '';
-
-      const user = await this.s2sClient.get<any>(userServiceUrl, `/api/internal/usuarios/${userId}`, serviceToken);
-      if (user?.rol) return user.rol;
-
-      this.logger.warn(`Rol no encontrado en user-service para usuario ${userId}, usando fallback`);
+      const role = await this.userExternalService.getUserRole(userId);
+      return role;
     } catch (e) {
       this.logger.warn(`No se pudo resolver rol desde user-service para ${userId}, usando fallback`);
+      return 'cliente';
     }
-
-    return fallback;
   }
 
   private sanitizeIp(ip?: string): string {
@@ -191,8 +181,8 @@ export class AuthService {
 
           const role = await this.resolveUserRole(s.usuario_id);
           const payload = { sub: s.usuario_id, role };
-          const accessToken = this.jwtService.sign(payload, { expiresIn: '15m' });
-          return { access_token: accessToken, refresh_token: newRefresh, expires_in: 900 };
+          const accessToken = this.jwtService.sign(payload, { expiresIn: '60m' });
+          return { access_token: accessToken, refresh_token: newRefresh, expires_in: 60 * 60 };
         }
       } catch (e) {
         // ignore verify errors
@@ -217,7 +207,7 @@ export class AuthService {
           await this.sessionRepo.save(s);
           return;
         }
-      } catch (e) {}
+      } catch (e) { }
     }
 
     return;

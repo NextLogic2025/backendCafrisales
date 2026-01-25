@@ -12,6 +12,7 @@ import { S2S_CLIENT } from '../../common/interfaces/s2s-client.interface';
 import { HttpS2SAdapter } from '../../common/adapters/http-s2s.adapter';
 import { OutboxModule } from '../outbox/outbox.module';
 import { SessionService } from './services/session.service';
+import { UserExternalService } from '../../services/user-external.service';
 
 @Module({
   imports: [
@@ -26,10 +27,11 @@ import { SessionService } from './services/session.service';
   providers: [
     AuthService,
     SessionService,
+    UserExternalService,
     JwtStrategy,
     LocalStrategy,
     { provide: S2S_CLIENT, useClass: HttpS2SAdapter },
   ],
   exports: [AuthService],
 })
-export class AuthModule {}
+export class AuthModule { }
