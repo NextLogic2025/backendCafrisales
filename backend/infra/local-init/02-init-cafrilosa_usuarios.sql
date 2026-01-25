@@ -11,7 +11,7 @@
 -- =====================================================
 
 
-\c cafrilosa_usuarios;
+\c cafrilosa_usuarios
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 CREATE EXTENSION IF NOT EXISTS citext;
@@ -180,7 +180,8 @@ CREATE TABLE app.outbox_eventos (
   clave_agregado  text NOT NULL,
   payload         jsonb NOT NULL,
   creado_en       timestamptz NOT NULL DEFAULT transaction_timestamp(),
-  procesado_en    timestamptz
+  procesado_en    timestamptz,
+  intentos        integer NOT NULL DEFAULT 0
 );
 
  
