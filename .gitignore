@@ -37,7 +37,6 @@ pnpm-lock.yaml
 yarn-error.log
 
 # Test & coverage
-coverage/
 .nyc_output/
 .jest/
 __tests__/
