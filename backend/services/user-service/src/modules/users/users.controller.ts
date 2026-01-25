@@ -12,13 +12,14 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  @Roles(RolUsuario.ADMIN, RolUsuario.STAFF)
+  @Roles(RolUsuario.ADMIN, RolUsuario.STAFF, RolUsuario.SUPERVISOR)
   async create(@Body() body: CreateUserDto) {
     const created = await this.usersService.create(body);
     return created;
   }
 
   @Get(':id')
+  @Roles(RolUsuario.ADMIN, RolUsuario.STAFF, RolUsuario.SUPERVISOR, RolUsuario.VENDEDOR, RolUsuario.BODEGUERO, RolUsuario.CLIENTE)
   async get(@Param('id') id: string) {
     return this.usersService.findById(id);
   }

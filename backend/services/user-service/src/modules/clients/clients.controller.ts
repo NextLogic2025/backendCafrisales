@@ -26,6 +26,7 @@ export class ClientsController {
     return this.clienteRepo.save(entity);
   }
 
+  @Roles(RolUsuario.SUPERVISOR, RolUsuario.VENDEDOR, RolUsuario.BODEGUERO, RolUsuario.ADMIN, RolUsuario.STAFF)
   @Get(':usuarioId')
   async get(@Param('usuarioId') usuarioId: string) {
     const c = await this.clienteRepo.findOneBy({ usuario_id: usuarioId } as any);
