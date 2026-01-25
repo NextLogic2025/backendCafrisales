@@ -1,11 +1,16 @@
-import { Body, Controller, Get, Param, Patch, Post, Put, NotFoundException } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Put, NotFoundException, UseGuards } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Cliente } from './entities/cliente.entity';
 import { Repository } from 'typeorm';
 import { CreateClientDto } from './dto/create-client.dto';
 import { CondicionesComercialesCliente } from './entities/condiciones.entity';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { RolUsuario } from '../../common/enums/rol-usuario.enum';
 
 @Controller('clientes')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class ClientsController {
   constructor(
     @InjectRepository(Cliente)
@@ -15,6 +20,7 @@ export class ClientsController {
   ) {}
 
   @Post()
+  @Roles(RolUsuario.ADMIN, RolUsuario.STAFF)
   async create(@Body() dto: CreateClientDto) {
     const entity = this.clienteRepo.create(dto as any);
     return this.clienteRepo.save(entity);

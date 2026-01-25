@@ -8,10 +8,10 @@ Base URL (desarrollo):
 
 Endpoints principales:
 
-- `POST /auth/register` — registra credenciales (email + password).
-- `POST /auth/login` — login con `email` y `password` (passport-local), devuelve `accessToken` y `refreshToken`.
-- `POST /auth/refresh` — rota refresh token y devuelve nuevo `accessToken` (+ nuevo refresh token si aplica).
-- `POST /auth/logout` — revoca sesión / refresh token.
+- `POST /v1/auth/register` — registra credenciales (email + password). Acepta opcionalmente `creado_por` (UUID).
+- `POST /v1/auth/login` — login con `email` y `password` (passport-local), devuelve `access_token` y `refresh_token`.
+- `POST /v1/auth/refresh` — rota refresh token y devuelve nuevo `access_token` (+ nuevo refresh token si aplica).
+- `POST /v1/auth/logout` — revoca sesión / refresh token.
 
 Headers:
 
@@ -36,10 +36,15 @@ curl -v -X POST http://localhost:3001/v1/auth/login \
 
 Respuesta esperada (login):
 
+```json
 {
-  "accessToken": "eyJ...",
-  "refreshToken": "<texto-del-refresh-no-guardado-en-claro-en-DB>"
+  "access_token": "eyJ...",
+  "refresh_token": "<refresh-token-en-claro-que-usa-el-cliente>",
+  "expires_in": 900,
+  "usuario_id": "<uuid>",
+  "rol": "cliente"
 }
+```
 
 Notas sobre persistencia en la DB:
 

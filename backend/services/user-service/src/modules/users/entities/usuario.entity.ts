@@ -16,6 +16,8 @@ export class Usuario {
 
   @Column({ type: 'timestamptz', default: () => 'transaction_timestamp()' })
   creado_en: Date;
+  @Column({ type: 'uuid', nullable: true })
+  creado_por?: string;
 
   @Column({ type: 'timestamptz', default: () => 'transaction_timestamp()' })
   actualizado_en: Date;

@@ -56,6 +56,9 @@ class VendedorDto {
 
   @IsOptional()
   supervisor_id?: string;
+  
+  @IsOptional()
+  supervisor_email?: string;
 }
 
 class BodegueroDto {

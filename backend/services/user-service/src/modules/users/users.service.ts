@@ -21,8 +21,8 @@ export class UsersService {
       const clienteRepo = manager.getRepository(Cliente);
       const outboxRepo = manager.getRepository(Outbox);
 
-      const usuario = usuarioRepo.create({ email: dto.email, rol: dto.rol });
-      const savedUser = await usuarioRepo.save(usuario);
+      const usuario = usuarioRepo.create({ email: dto.email, rol: dto.rol, creado_por: (dto as any).creado_por || null } as any);
+      const savedUser = (await usuarioRepo.save(usuario)) as any;
 
       if (dto.perfil) {
         const perfil = perfilRepo.create({ usuario_id: savedUser.id, ...dto.perfil } as any);
@@ -69,9 +69,29 @@ export class UsersService {
       }
 
       if (dto.rol === RolUsuario.VENDEDOR && dto.vendedor) {
+        // resolve supervisor by id or email; if not exists, create supervisor user
+        let supervisorId = dto.vendedor.supervisor_id || null;
+        if (!supervisorId && (dto.vendedor as any).supervisor_email) {
+          const supervisorEmail = (dto.vendedor as any).supervisor_email;
+          // try raw query to avoid repository caching/typing issues
+          const rows: any[] = await manager.query(`SELECT id FROM app.usuarios WHERE email = $1`, [supervisorEmail]);
+          if (rows && rows.length > 0) {
+            supervisorId = rows[0].id;
+          } else {
+            const supUser = usuarioRepo.create({ email: supervisorEmail, rol: RolUsuario.SUPERVISOR } as any);
+            const savedSup = await usuarioRepo.save(supUser);
+            // create supervisors row
+            await manager.query(
+              `INSERT INTO app.supervisores(usuario_id, codigo_empleado, creado_en) VALUES ($1,$2,transaction_timestamp())`,
+              [(savedSup as any).id, `SUP-${Date.now()}`],
+            );
+            supervisorId = (savedSup as any).id;
+          }
+        }
+
         await manager.query(
           `INSERT INTO app.vendedores(usuario_id, codigo_empleado, supervisor_id, activo, creado_en) VALUES ($1,$2,$3,true,transaction_timestamp())`,
-          [savedUser.id, dto.vendedor.codigo_empleado, dto.vendedor.supervisor_id || null],
+          [savedUser.id, dto.vendedor.codigo_empleado, supervisorId || null],
         );
       }
 

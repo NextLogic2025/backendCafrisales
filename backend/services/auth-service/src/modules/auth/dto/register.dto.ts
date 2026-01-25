@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsOptional, IsUUID } from 'class-validator';
 
 export class RegisterDto {
   @IsEmail()
@@ -10,4 +10,8 @@ export class RegisterDto {
 
   @IsOptional()
   readonly name?: string;
+
+  @IsOptional()
+  @IsUUID()
+  readonly creado_por?: string;
 }
