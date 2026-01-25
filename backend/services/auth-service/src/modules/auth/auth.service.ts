@@ -10,6 +10,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import * as argon2 from 'argon2';
 import { JwtService } from '@nestjs/jwt';
 import { IS2SClient, S2S_CLIENT } from '../../common/interfaces/s2s-client.interface';
+import { OutboxService } from '../outbox/outbox.service';
+import { SessionService } from './services/session.service';
 import { ConfigService } from '@nestjs/config';
 import { randomBytes } from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
@@ -27,6 +29,8 @@ export class AuthService {
     private readonly dataSource: DataSource,
     private readonly configService: ConfigService,
     @Inject(S2S_CLIENT) private readonly s2sClient: IS2SClient,
+    private readonly outboxService: OutboxService,
+    private readonly sessionService: SessionService,
   ) {}
 
   async login(dto: LoginDto) {
@@ -130,8 +134,7 @@ export class AuthService {
         throw e;
       }
 
-      // write outbox event for user-service to consume
-      // include full user-related fields from dto but never include password
+      // write outbox event for user-service to consume using OutboxService
       const payloadObj: any = { id, email: dto.email } as any;
       if ((dto as any).rol) payloadObj.rol = (dto as any).rol;
       if ((dto as any).perfil) payloadObj.perfil = (dto as any).perfil;
@@ -140,11 +143,12 @@ export class AuthService {
       if ((dto as any).supervisor) payloadObj.supervisor = (dto as any).supervisor;
       if ((dto as any).bodeguero) payloadObj.bodeguero = (dto as any).bodeguero;
 
-      await manager.query(
-        `INSERT INTO app.outbox_eventos (agregado, tipo_evento, clave_agregado, payload, creado_en)
-         VALUES ($1,$2,$3,$4,transaction_timestamp())`,
-        ['auth', 'UsuarioRegistrado', id, JSON.stringify(payloadObj)],
-      );
+      await this.outboxService.createEvent(manager, {
+        tipo: 'UsuarioRegistrado',
+        claveAgregado: id,
+        payload: payloadObj,
+        agregado: 'auth',
+      });
 
       return { id, email: dto.email };
     });

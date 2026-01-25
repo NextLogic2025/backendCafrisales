@@ -50,18 +50,16 @@ export class UsersService {
               observaciones: condicionesPayload.observaciones ?? null,
             } as any);
           } catch (err) {
-            // fallback: raw insert with ON CONFLICT DO NOTHING
-            await manager.query(
-              `INSERT INTO app.condiciones_comerciales_cliente(cliente_id, permite_negociacion, porcentaje_descuento_max, requiere_aprobacion_supervisor, observaciones, actualizado_en)
-               VALUES ($1,$2,$3,$4,$5,transaction_timestamp()) ON CONFLICT (cliente_id) DO NOTHING`,
-              [
-                savedUser.id,
-                condicionesPayload.permite_negociacion,
-                condicionesPayload.porcentaje_descuento_max,
-                condicionesPayload.requiere_aprobacion_supervisor,
-                condicionesPayload.observaciones || null,
-              ],
-            );
+            // fallback: idempotent insert with ON CONFLICT DO NOTHING via helper
+            const { insertOrIgnore } = await import('../../common/utils/db.utils');
+            await insertOrIgnore(manager, 'app.condiciones_comerciales_cliente', {
+              cliente_id: savedUser.id,
+              permite_negociacion: condicionesPayload.permite_negociacion ?? null,
+              porcentaje_descuento_max: condicionesPayload.porcentaje_descuento_max ?? null,
+              requiere_aprobacion_supervisor: condicionesPayload.requiere_aprobacion_supervisor ?? null,
+              observaciones: condicionesPayload.observaciones || null,
+              actualizado_en: () => 'transaction_timestamp()',
+            }, '(cliente_id)');
           }
       }
 

@@ -9,10 +9,13 @@ import { Session } from './entities/session.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { S2S_CLIENT } from '../../common/interfaces/s2s-client.interface';
 import { HttpS2SAdapter } from '../../common/adapters/http-s2s.adapter';
+import { OutboxModule } from '../outbox/outbox.module';
+import { SessionService } from './services/session.service';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Credential, Session]),
+    OutboxModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'changeme',
       signOptions: { expiresIn: '15m' },
@@ -21,6 +24,7 @@ import { HttpS2SAdapter } from '../../common/adapters/http-s2s.adapter';
   controllers: [AuthController],
   providers: [
     AuthService,
+    SessionService,
     JwtStrategy,
     LocalStrategy,
     { provide: S2S_CLIENT, useClass: HttpS2SAdapter },

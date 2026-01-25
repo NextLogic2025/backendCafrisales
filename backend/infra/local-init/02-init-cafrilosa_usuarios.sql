@@ -183,6 +183,18 @@ CREATE TABLE app.outbox_eventos (
   procesado_en    timestamptz
 );
 
+ 
+-- Insertar canales comerciales base (seed)
+INSERT INTO app.canales_comerciales (id, codigo, nombre, descripcion, activo)
+VALUES
+  (gen_random_uuid(), 'mayorista', 'Mayorista', 'Canal para compras al por mayor', true),
+  (gen_random_uuid(), 'minorista', 'Minorista', 'Canal para ventas al detalle', true),
+  (gen_random_uuid(), 'horeca', 'HORECA', 'Hostelería, Restauración y Cafeterías', true),
+  (gen_random_uuid(), 'institucional', 'Institucional', 'Compras para instituciones y grandes organizaciones', true),
+  (gen_random_uuid(), 'exportacion', 'Exportación', 'Canal para ventas internacionales', true)
+ON CONFLICT (codigo) DO NOTHING;
 CREATE INDEX idx_outbox_pendientes
   ON app.outbox_eventos(creado_en)
   WHERE procesado_en IS NULL;
+
+CREATE INDEX IF NOT EXISTS idx_outbox_pendientes_retry ON app.outbox_eventos(creado_en) WHERE procesado_en IS NULL AND intentos < 5;

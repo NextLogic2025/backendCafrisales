@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { typeOrmConfig } from './config/typeorm.config';
+import { envValidationSchema } from './config/env.validation';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './common/strategies/jwt.strategy';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
@@ -21,23 +22,36 @@ import { ClientsController } from './modules/clients/clients.controller';
 import { CondicionesComercialesCliente } from './modules/clients/entities/condiciones.entity';
 import { Perfil } from './modules/profiles/entities/perfil.entity';
 import { Outbox } from './modules/outbox/entities/outbox.entity';
+import { CanalComercial } from './modules/channels/entities/canal-comercial.entity';
+import { ChannelsController } from './modules/channels/channels.controller';
+import { ChannelsService } from './modules/channels/channels.service';
+import { ClientsService } from './modules/clients/clients.service';
+import { OutboxService } from './modules/outbox/outbox.service';
+import { StaffController } from './modules/staff/staff.controller';
+import { StaffService } from './modules/staff/staff.service';
+import { Supervisor } from './modules/staff/entities/supervisor.entity';
+import { Vendedor } from './modules/staff/entities/vendedor.entity';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({ isGlobal: true, validationSchema: envValidationSchema }),
     TypeOrmModule.forRoot(typeOrmConfig()),
-    TypeOrmModule.forFeature([Usuario, Perfil, Cliente, CondicionesComercialesCliente, Outbox]),
+    TypeOrmModule.forFeature([Usuario, Perfil, Cliente, CondicionesComercialesCliente, Outbox, CanalComercial, Supervisor, Vendedor]),
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'changeme',
       signOptions: { expiresIn: '15m' },
     }),
     HealthModule,
   ],
-  controllers: [UsersController, UsersInternalController, ProfilesController, ClientsController],
+  controllers: [UsersController, UsersInternalController, ProfilesController, ClientsController, ChannelsController, StaffController],
   providers: [
     UsersService,
     RoleProvisionService,
     ProfilesService,
+    ChannelsService,
+    ClientsService,
+    OutboxService,
+    StaffService,
     JwtStrategy,
     JwtAuthGuard,
     {
