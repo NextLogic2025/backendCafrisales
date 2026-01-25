@@ -8,9 +8,10 @@ export class CreateProductDto {
   @MaxLength(255)
   nombre: string;
 
+  @IsOptional()
   @IsString()
   @MaxLength(255)
-  slug: string;
+  slug?: string;
 
   @IsOptional()
   descripcion?: string;

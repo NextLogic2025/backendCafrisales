@@ -5,7 +5,7 @@ import { Sku } from './entities/sku.entity';
 
 @Injectable()
 export class SkusService {
-  constructor(@InjectRepository(Sku) private repo: Repository<Sku>) {}
+  constructor(@InjectRepository(Sku) private repo: Repository<Sku>) { }
 
   create(dto: Partial<Sku>) {
     const s = this.repo.create(dto as any);
@@ -13,11 +13,22 @@ export class SkusService {
   }
 
   findAll() {
-    return this.repo.find({ relations: ['producto'] });
+    return this.repo.find({
+      relations: ['producto'],
+    });
+  }
+
+  findAllComplete() {
+    return this.repo.find({
+      relations: ['producto', 'producto.categoria', 'precios'],
+    });
   }
 
   findOne(id: string) {
-    return this.repo.findOne({ where: { id }, relations: ['producto'] });
+    return this.repo.findOne({
+      where: { id },
+      relations: ['producto'],
+    });
   }
 
   async update(id: string, dto: Partial<Sku>) {

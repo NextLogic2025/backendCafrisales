@@ -2,13 +2,21 @@ import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Category } from './entities/category.entity';
+import { slugify, ensureUniqueSlug } from '../../common/utils/slug.utils';
 
 @Injectable()
 export class CategoriesService {
-  constructor(@InjectRepository(Category) private repo: Repository<Category>) {}
+  constructor(@InjectRepository(Category) private repo: Repository<Category>) { }
 
-  create(dto: Partial<Category>) {
-    const c = this.repo.create(dto as any);
+  async create(dto: Partial<Category>) {
+    // Auto-generate slug if not provided
+    const baseSlug = dto.slug || slugify(dto.nombre || '');
+    const uniqueSlug = await ensureUniqueSlug(baseSlug, async (slug) => {
+      const existing = await this.repo.findOne({ where: { slug } });
+      return existing !== null;
+    });
+
+    const c = this.repo.create({ ...dto, slug: uniqueSlug } as any);
     return this.repo.save(c);
   }
 

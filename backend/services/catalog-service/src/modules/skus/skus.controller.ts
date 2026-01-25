@@ -8,7 +8,7 @@ import { CreateSkuDto } from './dto/create-sku.dto';
 
 @Controller('skus')
 export class SkusController {
-  constructor(private readonly svc: SkusService) {}
+  constructor(private readonly svc: SkusService) { }
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -20,6 +20,11 @@ export class SkusController {
   @Get()
   list() {
     return this.svc.findAll();
+  }
+
+  @Get('complete')
+  listComplete() {
+    return this.svc.findAllComplete();
   }
 
   @Get(':id')

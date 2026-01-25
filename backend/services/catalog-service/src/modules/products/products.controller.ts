@@ -5,10 +5,23 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { RolUsuario } from '../../common/enums/rol-usuario.enum';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
+import { CreateCompleteProductDto } from './dto/create-complete-product.dto';
 
 @Controller('products')
 export class ProductsController {
-  constructor(private readonly svc: ProductsService) {}
+  constructor(private readonly svc: ProductsService) { }
+
+  /**
+   * POST /products/complete
+   * Creates a complete sellable product (Category → Product → SKU → Price)
+   * in a single atomic transaction.
+   */
+  @Post('complete')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RolUsuario.ADMIN, RolUsuario.STAFF, RolUsuario.SUPERVISOR)
+  createComplete(@Body() dto: CreateCompleteProductDto) {
+    return this.svc.createComplete(dto);
+  }
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)

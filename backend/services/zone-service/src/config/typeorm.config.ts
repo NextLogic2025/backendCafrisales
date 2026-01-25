@@ -9,7 +9,8 @@ export const typeormConfig = registerAs('typeorm', () => ({
     url: process.env.DATABASE_URL,
     autoLoadEntities: true,
     synchronize: false, // En producción debe ser false
-    logging: process.env.NODE_ENV === 'development',
+    //logging: process.env.NODE_ENV === 'development',
+    logging: false,
     migrations: ['dist/migrations/*{.ts,.js}'],
     migrationsRun: false,
 }));
@@ -20,4 +21,5 @@ export const connectionSource = new DataSource({
     entities: ['dist/**/*.entity{.ts,.js}'],
     migrations: ['dist/migrations/*{.ts,.js}'],
     synchronize: false,
+    logging: false,
 } as DataSourceOptions);

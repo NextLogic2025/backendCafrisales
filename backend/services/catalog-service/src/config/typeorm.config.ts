@@ -7,4 +7,6 @@ export const typeOrmConfig = (): TypeOrmModuleOptions => ({
   entities: [path.join(__dirname, '..', '..', 'modules', '**', 'entities', '*.entity.{ts,js}')],
   synchronize: false,
   schema: 'app',
+  //logging: process.env.NODE_ENV === 'development',
+  logging: false,
 });
