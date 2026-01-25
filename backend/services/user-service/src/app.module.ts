@@ -15,12 +15,13 @@ import { Cliente } from './modules/clients/entities/cliente.entity';
 import { ClientsController } from './modules/clients/clients.controller';
 import { CondicionesComercialesCliente } from './modules/clients/entities/condiciones.entity';
 import { Perfil } from './modules/profiles/entities/perfil.entity';
+import { Outbox } from './modules/outbox/entities/outbox.entity';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot(typeOrmConfig()),
-    TypeOrmModule.forFeature([Usuario, Perfil, Cliente, CondicionesComercialesCliente]),
+    TypeOrmModule.forFeature([Usuario, Perfil, Cliente, CondicionesComercialesCliente, Outbox]),
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'changeme',
       signOptions: { expiresIn: '15m' },

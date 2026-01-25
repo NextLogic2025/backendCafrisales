@@ -1,27 +1,105 @@
-import { Injectable } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { Injectable, Logger } from '@nestjs/common';
+import { DataSource } from 'typeorm';
 import { Usuario } from './entities/usuario.entity';
-import { InjectRepository } from '@nestjs/typeorm';
+import { RolUsuario } from '../../common/enums/rol-usuario.enum';
+import { Perfil } from '../profiles/entities/perfil.entity';
+import { Cliente } from '../clients/entities/cliente.entity';
+import { CondicionesComercialesCliente } from '../clients/entities/condiciones.entity';
+import { Outbox } from '../outbox/entities/outbox.entity';
+import { CreateUserDto } from './dto/create-user.dto';
 
 @Injectable()
 export class UsersService {
-  constructor(
-    @InjectRepository(Usuario)
-    private readonly repo: Repository<Usuario>,
-  ) {}
+  private readonly logger = new Logger(UsersService.name);
 
-  async create(user: Partial<Usuario>) {
-    const entity = this.repo.create(user as any);
-    const saved = (await this.repo.save(entity)) as unknown as Usuario;
-    return saved;
+  constructor(private readonly dataSource: DataSource) {}
+
+  async create(dto: CreateUserDto) {
+    return this.dataSource.transaction(async manager => {
+      const usuarioRepo = manager.getRepository(Usuario);
+      const perfilRepo = manager.getRepository(Perfil);
+      const clienteRepo = manager.getRepository(Cliente);
+      const outboxRepo = manager.getRepository(Outbox);
+
+      const usuario = usuarioRepo.create({ email: dto.email, rol: dto.rol });
+      const savedUser = await usuarioRepo.save(usuario);
+
+      if (dto.perfil) {
+        const perfil = perfilRepo.create({ usuario_id: savedUser.id, ...dto.perfil } as any);
+        await perfilRepo.save(perfil);
+      }
+
+      if (dto.rol === 'cliente' && dto.cliente) {
+          const cliente = clienteRepo.create({ usuario_id: savedUser.id, ...dto.cliente } as any);
+          await clienteRepo.save(cliente);
+
+          // ensure condiciones_comerciales_cliente exists (create empty or with provided values)
+          const condicionesPayload = (dto.cliente as any).condiciones || {};
+          try {
+            const condicionesRepo = manager.getRepository(CondicionesComercialesCliente);
+            await condicionesRepo.save({
+              cliente_id: savedUser.id,
+              permite_negociacion: condicionesPayload.permite_negociacion ?? null,
+              porcentaje_descuento_max: condicionesPayload.porcentaje_descuento_max ?? null,
+              requiere_aprobacion_supervisor: condicionesPayload.requiere_aprobacion_supervisor ?? null,
+              observaciones: condicionesPayload.observaciones ?? null,
+            } as any);
+          } catch (err) {
+            // fallback: raw insert with ON CONFLICT DO NOTHING
+            await manager.query(
+              `INSERT INTO app.condiciones_comerciales_cliente(cliente_id, permite_negociacion, porcentaje_descuento_max, requiere_aprobacion_supervisor, observaciones, actualizado_en)
+               VALUES ($1,$2,$3,$4,$5,transaction_timestamp()) ON CONFLICT (cliente_id) DO NOTHING`,
+              [
+                savedUser.id,
+                condicionesPayload.permite_negociacion,
+                condicionesPayload.porcentaje_descuento_max,
+                condicionesPayload.requiere_aprobacion_supervisor,
+                condicionesPayload.observaciones || null,
+              ],
+            );
+          }
+      }
+
+      // supervisor / vendedor: insert via raw query matching DDL to avoid entity mismatch
+      if (dto.rol === RolUsuario.SUPERVISOR && dto.supervisor) {
+        await manager.query(
+          `INSERT INTO app.supervisores(usuario_id, codigo_empleado, creado_en) VALUES ($1,$2,transaction_timestamp())`,
+          [savedUser.id, dto.supervisor.codigo_empleado],
+        );
+      }
+
+      if (dto.rol === RolUsuario.VENDEDOR && dto.vendedor) {
+        await manager.query(
+          `INSERT INTO app.vendedores(usuario_id, codigo_empleado, supervisor_id, activo, creado_en) VALUES ($1,$2,$3,true,transaction_timestamp())`,
+          [savedUser.id, dto.vendedor.codigo_empleado, dto.vendedor.supervisor_id || null],
+        );
+      }
+
+      if (dto.rol === RolUsuario.BODEGUERO && dto.bodeguero) {
+        await manager.query(
+          `INSERT INTO app.bodegueros(usuario_id, codigo_empleado, creado_en) VALUES ($1,$2,transaction_timestamp())`,
+          [savedUser.id, dto.bodeguero.codigo_empleado],
+        );
+      }
+
+      const outbox = outboxRepo.create({
+        agregado: 'user',
+        tipo_evento: 'UsuarioCreado',
+        clave_agregado: savedUser.id,
+        payload: { id: savedUser.id, email: savedUser.email, rol: savedUser.rol },
+      } as any);
+      await outboxRepo.save(outbox);
+
+      return savedUser;
+    });
   }
 
   async findById(id: string) {
-    return this.repo.findOneBy({ id } as any);
+    return this.dataSource.getRepository(Usuario).findOneBy({ id } as any);
   }
 
   async update(id: string, patch: Partial<Usuario>) {
-    await this.repo.update(id, patch as any);
+    await this.dataSource.getRepository(Usuario).update(id, patch as any);
     return this.findById(id);
   }
 }
