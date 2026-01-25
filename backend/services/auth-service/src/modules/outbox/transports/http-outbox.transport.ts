@@ -14,7 +14,11 @@ export class HttpOutboxTransport implements IOutboxTransport {
   ) {}
 
   async dispatch(evento: any): Promise<void> {
-    const userServiceUrl = this.configService.get('USUARIOS_SERVICE_URL') || process.env.USUARIOS_SERVICE_URL || 'http://user-service:3000';
+    const userServiceUrl =
+      this.configService.get('USUARIOS_SERVICE_URL') ||
+      process.env.USUARIOS_SERVICE_URL ||
+      process.env.USUARIOS_URL ||
+      'http://user-service:3000';
     const serviceToken = this.configService.get('SERVICE_TOKEN') || process.env.SERVICE_TOKEN || '';
 
     if (evento.tipo_evento === 'UsuarioRegistrado' || evento.agregado === 'auth') {
@@ -23,7 +27,7 @@ export class HttpOutboxTransport implements IOutboxTransport {
 
       // Use the S2S client abstraction instead of axios directly (DIP)
       try {
-        await this.s2sClient.post(userServiceUrl, '/v1/internal/usuarios/sync', payload, serviceToken);
+        await this.s2sClient.post(userServiceUrl, '/api/internal/usuarios/sync', payload, serviceToken);
       } catch (err) {
         this.logger.error(`Failed dispatching outbox ${evento.id}: ${err?.message || err}`);
         throw err;

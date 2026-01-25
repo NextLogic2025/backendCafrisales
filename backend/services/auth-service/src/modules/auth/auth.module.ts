@@ -6,6 +6,7 @@ import { LocalStrategy } from './strategies/local.strategy';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Credential } from './entities/credential.entity';
 import { Session } from './entities/session.entity';
+import { LoginAttempt } from './entities/login-attempt.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { S2S_CLIENT } from '../../common/interfaces/s2s-client.interface';
 import { HttpS2SAdapter } from '../../common/adapters/http-s2s.adapter';
@@ -14,7 +15,7 @@ import { SessionService } from './services/session.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Credential, Session]),
+    TypeOrmModule.forFeature([Credential, Session, LoginAttempt]),
     OutboxModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'changeme',

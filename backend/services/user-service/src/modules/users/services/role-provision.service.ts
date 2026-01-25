@@ -31,6 +31,18 @@ export class RoleProvisionService {
           userId,
           dto.bodeguero?.codigo_empleado || (dto as any).codigo_empleado,
         );
+      case 'transportista':
+        return this.createStaff(
+          manager,
+          'app.transportistas',
+          userId,
+          dto.transportista?.codigo_empleado || (dto as any).codigo_empleado,
+          {
+            numero_licencia: dto.transportista?.numero_licencia,
+            licencia_vence_en: dto.transportista?.licencia_vence_en || null,
+            activo: dto.transportista?.activo ?? true,
+          },
+        );
       default:
         return; // no-op for unsupported roles
     }
@@ -44,6 +56,22 @@ export class RoleProvisionService {
     extraFields: object = {},
   ) {
     if (!codigo) return;
+    if (tableName === 'app.transportistas') {
+      if (!(extraFields as any).numero_licencia) return;
+      await insertOrIgnore(
+        manager,
+        'app.transportistas',
+        {
+          usuario_id: userId,
+          codigo_empleado: codigo,
+          numero_licencia: (extraFields as any).numero_licencia,
+          licencia_vence_en: (extraFields as any).licencia_vence_en || null,
+          activo: (extraFields as any).activo ?? true,
+        },
+        '(usuario_id)',
+      );
+      return;
+    }
     // Use parameterized raw SQL with ON CONFLICT DO NOTHING to avoid QueryBuilder mapping issues
     if (tableName === 'app.supervisores') {
       await insertOrIgnore(manager, 'app.supervisores', { usuario_id: userId, codigo_empleado: codigo }, '(usuario_id)');
@@ -90,6 +118,9 @@ export class RoleProvisionService {
         zona_id: c.zona_id,
         canal_id: c.canal_id,
         direccion: c.direccion,
+        latitud: c.latitud || null,
+        longitud: c.longitud || null,
+        vendedor_asignado_id: c.vendedor_asignado_id || null,
       } as any)
       .orIgnore()
       .execute();

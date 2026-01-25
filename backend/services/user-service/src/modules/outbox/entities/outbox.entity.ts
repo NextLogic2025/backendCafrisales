@@ -22,4 +22,7 @@ export class Outbox {
 
   @Column({ type: 'timestamptz', nullable: true })
   procesado_en?: Date;
+
+  @Column({ type: 'integer', default: 0 })
+  intentos?: number;
 }

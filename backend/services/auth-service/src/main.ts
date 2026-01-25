@@ -9,8 +9,8 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const logger = new Logger('Bootstrap');
 
-  // Keep API prefix
-  app.setGlobalPrefix('v1');
+  // API prefix unified across services
+  app.setGlobalPrefix('api');
 
   app.enableCors({
     origin: process.env.CORS_ORIGIN?.split(',').map((o) => o.trim()).filter(Boolean) || 'http://localhost:5173',

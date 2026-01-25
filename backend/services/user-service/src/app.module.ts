@@ -31,12 +31,25 @@ import { StaffController } from './modules/staff/staff.controller';
 import { StaffService } from './modules/staff/staff.service';
 import { Supervisor } from './modules/staff/entities/supervisor.entity';
 import { Vendedor } from './modules/staff/entities/vendedor.entity';
+import { Bodeguero } from './modules/staff/entities/bodeguero.entity';
+import { Transportista } from './modules/staff/entities/transportista.entity';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, validationSchema: envValidationSchema }),
     TypeOrmModule.forRoot(typeOrmConfig()),
-    TypeOrmModule.forFeature([Usuario, Perfil, Cliente, CondicionesComercialesCliente, Outbox, CanalComercial, Supervisor, Vendedor]),
+    TypeOrmModule.forFeature([
+      Usuario,
+      Perfil,
+      Cliente,
+      CondicionesComercialesCliente,
+      Outbox,
+      CanalComercial,
+      Supervisor,
+      Vendedor,
+      Bodeguero,
+      Transportista,
+    ]),
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'changeme',
       signOptions: { expiresIn: '15m' },

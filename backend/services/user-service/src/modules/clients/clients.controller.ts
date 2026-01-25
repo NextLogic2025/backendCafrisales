@@ -34,12 +34,14 @@ export class ClientsController {
     return c;
   }
 
+  @Roles(RolUsuario.ADMIN, RolUsuario.STAFF, RolUsuario.SUPERVISOR)
   @Patch(':usuarioId')
   async patch(@Param('usuarioId') usuarioId: string, @Body() body: Partial<Cliente>) {
     await this.clienteRepo.update({ usuario_id: usuarioId } as any, body as any);
     return this.clienteRepo.findOneBy({ usuario_id: usuarioId } as any);
   }
 
+  @Roles(RolUsuario.ADMIN, RolUsuario.STAFF, RolUsuario.SUPERVISOR)
   @Put(':usuarioId/condiciones-comerciales')
   async upsertCondiciones(@Param('usuarioId') usuarioId: string, @Body() body: Partial<CondicionesComercialesCliente>) {
     const exists = await this.condicionesRepo.findOneBy({ cliente_id: usuarioId } as any);

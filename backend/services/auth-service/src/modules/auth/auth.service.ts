@@ -1,11 +1,12 @@
-import { Injectable, Logger, UnauthorizedException, ConflictException, Inject } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException, ConflictException, Inject, ForbiddenException } from '@nestjs/common';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { RefreshDto } from './dto/refresh.dto';
 import { LogoutDto } from './dto/logout.dto';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, MoreThan, IsNull } from 'typeorm';
 import { Credential } from './entities/credential.entity';
 import { Session } from './entities/session.entity';
+import { LoginAttempt } from './entities/login-attempt.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as argon2 from 'argon2';
 import { JwtService } from '@nestjs/jwt';
@@ -25,6 +26,8 @@ export class AuthService {
     private readonly credentialRepo: Repository<Credential>,
     @InjectRepository(Session)
     private readonly sessionRepo: Repository<Session>,
+    @InjectRepository(LoginAttempt)
+    private readonly loginAttemptRepo: Repository<LoginAttempt>,
     private readonly jwtService: JwtService,
     private readonly dataSource: DataSource,
     private readonly configService: ConfigService,
@@ -33,88 +36,103 @@ export class AuthService {
     private readonly sessionService: SessionService,
   ) {}
 
-  async login(dto: LoginDto) {
-    this.logger.log(`Login attempt for ${dto.email}`);
-
-    const credential = (await this.credentialRepo.findOneBy({ email: dto.email })) as unknown as Credential | null;
-    if (!credential) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-
-    const passwordMatches = await argon2.verify(credential.password, dto.password).catch(() => false);
-    if (!passwordMatches) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-
-    const refreshToken = randomBytes(32).toString('hex');
-    const refreshHash = await argon2.hash(refreshToken);
-
-    const session = this.sessionRepo.create({
-      usuario_id: credential.id,
-      refresh_hash: refreshHash,
-      direccion_ip: null,
-      user_agent: null,
-      dispositivo_meta: {},
-      expira_en: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-    } as any);
-    await this.sessionRepo.save(session);
-
-    // attempt to resolve real role from user-service (service-to-service)
-    let role = 'cliente';
+  private async resolveUserRole(userId: string): Promise<string> {
+    const fallback = 'cliente';
     try {
-      const userServiceUrl = this.configService.get('USUARIOS_SERVICE_URL') || process.env.USUARIOS_SERVICE_URL || 'http://user-service:3000';
+      const userServiceUrl =
+        this.configService.get('USUARIOS_SERVICE_URL') ||
+        process.env.USUARIOS_SERVICE_URL ||
+        process.env.USUARIOS_URL ||
+        'http://user-service:3000';
       const serviceToken = this.configService.get('SERVICE_TOKEN') || process.env.SERVICE_TOKEN || '';
-      const user = await this.s2sClient.get<any>(userServiceUrl, `/v1/usuarios/${credential.id}`, serviceToken);
-      if (user && user.rol) role = user.rol;
+
+      const user = await this.s2sClient.get<any>(userServiceUrl, `/api/internal/usuarios/${userId}`, serviceToken);
+      if (user?.rol) return user.rol;
+
+      this.logger.warn(`Rol no encontrado en user-service para usuario ${userId}, usando fallback`);
     } catch (e) {
-      this.logger.log('Could not resolve role from user-service, using fallback');
+      this.logger.warn(`No se pudo resolver rol desde user-service para ${userId}, usando fallback`);
     }
 
-    const payload = { sub: credential.id, email: credential.email, role } as any;
-    const accessToken = this.jwtService.sign(payload, { expiresIn: '15m' });
+    return fallback;
+  }
 
+  private sanitizeIp(ip?: string): string {
+    return ip && ip.trim() ? ip.trim() : '0.0.0.0';
+  }
+
+  private async recordLoginAttempt(email: string, ip: string, success: boolean, motivo?: string) {
+    const attempt = this.loginAttemptRepo.create({
+      email,
+      direccion_ip: this.sanitizeIp(ip),
+      exitoso: success,
+      motivo_fallo: success ? null : motivo,
+    } as any);
+    try {
+      await this.loginAttemptRepo.save(attempt);
+    } catch (err) {
+      this.logger.warn(`No se pudo guardar intento de login: ${err?.message || err}`);
+    }
+  }
+
+  private async buildTokens(userId: string, email: string, role: string, meta?: { ip?: string; userAgent?: string; device?: any }) {
+    const session = await this.sessionService.createSession(userId, { ip: meta?.ip, ua: meta?.userAgent, device: meta?.device });
+    const payload = { sub: userId, email, role };
+    const accessToken = this.jwtService.sign(payload, { expiresIn: '15m' });
     return {
       access_token: accessToken,
-      refresh_token: refreshToken,
+      refresh_token: session.refreshToken,
       expires_in: 900,
-      usuario_id: credential.id,
+      usuario_id: userId,
       rol: role,
     };
   }
 
+  async login(dto: LoginDto) {
+    this.logger.log(`Login attempt for ${dto.email}`);
+
+    const user = await this.validateUser(dto.email, dto.password);
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const role = await this.resolveUserRole(user.id);
+    return this.buildTokens(user.id, user.email, role);
+  }
+
   // Validate credentials used by LocalStrategy
-  async validateUser(email: string, password: string) {
+  async validateUser(email: string, password: string, meta?: { ip?: string; userAgent?: string }) {
+    const ip = this.sanitizeIp(meta?.ip);
     const credential = (await this.credentialRepo.findOneBy({ email })) as unknown as Credential | null;
-    if (!credential) return null;
+    if (!credential) {
+      await this.recordLoginAttempt(email, ip, false, 'email_not_found');
+      return null;
+    }
+
+    if (credential.estado !== 'activo') {
+      await this.recordLoginAttempt(email, ip, false, `estado:${credential.estado}`);
+      throw new ForbiddenException('Credencial no activa');
+    }
+
     const passwordMatches = await argon2.verify(credential.password, password).catch(() => false);
-    if (!passwordMatches) return null;
+    if (!passwordMatches) {
+      await this.recordLoginAttempt(email, ip, false, 'password_mismatch');
+      return null;
+    }
+
+    await this.recordLoginAttempt(email, ip, true);
+    await this.credentialRepo.update(
+      { id: credential.id } as any,
+      { ultimo_login_en: new Date(), ultimo_login_ip: ip } as any,
+    );
+
     return { id: credential.id, email: credential.email };
   }
 
   // Create session + tokens for an already-validated user
-  async loginWithUser(user: { id: string; email: string }) {
-    const refreshToken = randomBytes(32).toString('hex');
-    const refreshHash = await argon2.hash(refreshToken);
-
-    const session = this.sessionRepo.create({
-      usuario_id: user.id,
-      refresh_hash: refreshHash,
-      direccion_ip: null,
-      user_agent: null,
-      dispositivo_meta: {},
-      expira_en: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-    } as any);
-    await this.sessionRepo.save(session);
-
-    const payload = { sub: user.id, email: user.email };
-    const accessToken = this.jwtService.sign(payload, { expiresIn: '15m' });
-    return {
-      access_token: accessToken,
-      refresh_token: refreshToken,
-      expires_in: 900,
-      usuario_id: user.id,
-      rol: 'cliente',
-    };
+  async loginWithUser(user: { id: string; email: string }, meta?: { ip?: string; userAgent?: string; device?: any }) {
+    const role = await this.resolveUserRole(user.id);
+    return this.buildTokens(user.id, user.email, role, meta);
   }
 
   async register(dto: RegisterDto) {
@@ -156,7 +174,12 @@ export class AuthService {
 
   async refresh(dto: RefreshDto) {
     this.logger.log(`Refreshing token`);
-    const sessions = await this.sessionRepo.find();
+    const sessions = await this.sessionRepo.find({
+      where: {
+        revocado_en: IsNull(),
+        expira_en: MoreThan(new Date()),
+      },
+    });
 
     for (const s of sessions) {
       try {
@@ -166,7 +189,8 @@ export class AuthService {
           s.refresh_hash = await argon2.hash(newRefresh);
           await this.sessionRepo.save(s);
 
-          const payload = { sub: s.usuario_id };
+          const role = await this.resolveUserRole(s.usuario_id);
+          const payload = { sub: s.usuario_id, role };
           const accessToken = this.jwtService.sign(payload, { expiresIn: '15m' });
           return { access_token: accessToken, refresh_token: newRefresh, expires_in: 900 };
         }
@@ -180,7 +204,11 @@ export class AuthService {
 
   async logout(dto: LogoutDto) {
     this.logger.log(`Logout requested`);
-    const sessions = await this.sessionRepo.find();
+    const sessions = await this.sessionRepo.find({
+      where: {
+        revocado_en: IsNull(),
+      },
+    });
     for (const s of sessions) {
       try {
         const ok = await argon2.verify(s.refresh_hash, dto.refresh_token);

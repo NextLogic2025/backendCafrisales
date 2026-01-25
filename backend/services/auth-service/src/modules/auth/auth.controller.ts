@@ -23,7 +23,15 @@ export class AuthController {
   @Post('login')
   async login(@Request() req: any) {
     // LocalStrategy validated and attached `req.user`
-    return this.authService.loginWithUser(req.user);
+    const meta = {
+      ip:
+        (req?.headers?.['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
+        req?.ip ||
+        req?.connection?.remoteAddress ||
+        undefined,
+      userAgent: req?.headers?.['user-agent'],
+    };
+    return this.authService.loginWithUser(req.user, meta);
   }
 
   @Post('register')

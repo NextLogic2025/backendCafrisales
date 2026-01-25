@@ -12,11 +12,15 @@ export class SessionService {
     private readonly sessionRepo: Repository<Session>,
   ) {}
 
-  async createSession(userId: string, metadata: { ip?: string; ua?: string; device?: any }) {
+  async createSession(
+    userId: string,
+    metadata: { ip?: string; ua?: string; device?: any },
+    ttlMs: number = 30 * 24 * 60 * 60 * 1000, // 30 días por defecto
+  ) {
     const refreshToken = crypto.randomBytes(32).toString('hex');
     const refreshHash = await argon2.hash(refreshToken);
 
-    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+    const expiresAt = new Date(Date.now() + ttlMs);
 
     const sesion = this.sessionRepo.create({
       usuario_id: userId,

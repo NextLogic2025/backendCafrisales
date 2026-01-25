@@ -35,6 +35,9 @@ class ClienteDto {
 
   @IsOptional()
   longitud?: number;
+
+  @IsOptional()
+  vendedor_asignado_id?: string;
   
   @IsOptional()
   condiciones?: {
@@ -64,6 +67,20 @@ class VendedorDto {
 class BodegueroDto {
   @IsNotEmpty()
   codigo_empleado: string;
+}
+
+class TransportistaDto {
+  @IsNotEmpty()
+  codigo_empleado: string;
+
+  @IsNotEmpty()
+  numero_licencia: string;
+
+  @IsOptional()
+  licencia_vence_en?: string;
+
+  @IsOptional()
+  activo?: boolean;
 }
 
 export class CreateUserDto extends CreateUserBaseDto {
@@ -100,6 +117,11 @@ export class CreateUserDto extends CreateUserBaseDto {
   @ValidateNested()
   @Type(() => BodegueroDto)
   bodeguero?: BodegueroDto;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => TransportistaDto)
+  transportista?: TransportistaDto;
 
   // convenience fields
   @IsOptional()

@@ -19,7 +19,7 @@ export class Session {
   @JoinColumn({ name: 'usuario_id' })
   usuario?: Credential;
 
-  @Column({ name: 'refresh_hash', type: 'text' })
+  @Column({ name: 'refresh_hash', type: 'text', unique: true })
   refresh_hash: string;
 
   @Column({ name: 'direccion_ip', type: 'inet', nullable: true })
@@ -36,6 +36,12 @@ export class Session {
 
   @Column({ name: 'revocado_en', type: 'timestamptz', nullable: true })
   revocado_en?: Date;
+
+  @Column({ name: 'revocado_por', type: 'uuid', nullable: true })
+  revocado_por?: string;
+
+  @Column({ name: 'revocado_motivo', type: 'text', nullable: true })
+  revocado_motivo?: string;
 
   @Column({ name: 'creado_en', type: 'timestamptz', default: () => 'transaction_timestamp()' })
   creado_en: Date;

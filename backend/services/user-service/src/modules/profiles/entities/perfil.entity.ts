@@ -25,4 +25,10 @@ export class Perfil {
 
   @Column({ type: 'timestamptz', default: () => 'transaction_timestamp()' })
   actualizado_en: Date;
+
+  @Column({ type: 'uuid', nullable: true })
+  actualizado_por?: string;
+
+  @Column({ type: 'int', default: 1 })
+  version: number;
 }
