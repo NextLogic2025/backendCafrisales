@@ -1,0 +1,46 @@
+import { Body, Controller, Get, Param, Patch, Post, Put, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Cliente } from './entities/cliente.entity';
+import { Repository } from 'typeorm';
+import { CreateClientDto } from './dto/create-client.dto';
+import { CondicionesComercialesCliente } from './entities/condiciones.entity';
+
+@Controller('clientes')
+export class ClientsController {
+  constructor(
+    @InjectRepository(Cliente)
+    private readonly clienteRepo: Repository<Cliente>,
+    @InjectRepository(CondicionesComercialesCliente)
+    private readonly condicionesRepo: Repository<CondicionesComercialesCliente>,
+  ) {}
+
+  @Post()
+  async create(@Body() dto: CreateClientDto) {
+    const entity = this.clienteRepo.create(dto as any);
+    return this.clienteRepo.save(entity);
+  }
+
+  @Get(':usuarioId')
+  async get(@Param('usuarioId') usuarioId: string) {
+    const c = await this.clienteRepo.findOneBy({ usuario_id: usuarioId } as any);
+    if (!c) throw new NotFoundException();
+    return c;
+  }
+
+  @Patch(':usuarioId')
+  async patch(@Param('usuarioId') usuarioId: string, @Body() body: Partial<Cliente>) {
+    await this.clienteRepo.update({ usuario_id: usuarioId } as any, body as any);
+    return this.clienteRepo.findOneBy({ usuario_id: usuarioId } as any);
+  }
+
+  @Put(':usuarioId/condiciones-comerciales')
+  async upsertCondiciones(@Param('usuarioId') usuarioId: string, @Body() body: Partial<CondicionesComercialesCliente>) {
+    const exists = await this.condicionesRepo.findOneBy({ cliente_id: usuarioId } as any);
+    if (exists) {
+      await this.condicionesRepo.update({ cliente_id: usuarioId } as any, body as any);
+      return this.condicionesRepo.findOneBy({ cliente_id: usuarioId } as any);
+    }
+    const entity = this.condicionesRepo.create({ cliente_id: usuarioId, ...body } as any);
+    return this.condicionesRepo.save(entity);
+  }
+}

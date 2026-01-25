@@ -1,0 +1,117 @@
+# =========================================
+# 1. VARIABLES COMUNES
+# =========================================
+x-common-env: &common-env
+  NODE_ENV: development
+  PORT: 3000
+  JWT_SECRET: ${JWT_SECRET}
+  SERVICE_TOKEN: ${SERVICE_TOKEN}
+  AUTH_SERVICE_URL: ${AUTH_URL}
+  USUARIOS_SERVICE_URL: ${USUARIOS_URL}
+  CATALOG_SERVICE_URL: ${CATALOG_URL}
+  ORDERS_SERVICE_URL: ${ORDERS_URL}
+  WAREHOUSE_SERVICE_URL: ${WAREHOUSE_URL}
+  FINANCE_SERVICE_URL: ${FINANCE_URL}
+  LOGISTICS_SERVICE_URL: ${LOGISTICS_URL}
+
+services:
+  # =========================================
+  # 2. INFRAESTRUCTURA
+  # =========================================
+  database:
+    image: postgis/postgis:17-3.4-alpine
+    container_name: gcp-sql-local
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./infra/local-init:/docker-entrypoint-initdb.d
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin-local
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "8080:80"
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  # =========================================
+  # 3. MICROSERVICIOS
+  # =========================================
+  
+  # --- AUTH SERVICE ---
+  auth-service:
+    build: 
+      # ⚠️ CORRECCIÓN AQUÍ:
+      # 1. Quitamos '/backend' porque ya estás dentro de esa carpeta.
+      # 2. Cambiamos 'auth' por 'auth-service' para coincidir con tu carpeta real.
+      context: ./services/auth-service
+      dockerfile: Dockerfile
+    container_name: auth-service
+    restart: on-failure
+    environment:
+      <<: *common-env
+      DATABASE_URL: postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/cafrilosa_auth
+    ports:
+      - "3001:3000"
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/v1/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  # --- USER SERVICE ---
+  user-service:
+    build: 
+      # ⚠️ CORRECCIÓN AQUÍ:
+      # Coincide con tu carpeta real: services/user-service
+      context: ./services/user-service
+      dockerfile: Dockerfile
+    container_name: user-service
+    restart: on-failure
+    environment:
+      <<: *common-env
+      DATABASE_URL: postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/cafrilosa_usuarios
+    ports:
+      - "3002:3000"
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/v1/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
