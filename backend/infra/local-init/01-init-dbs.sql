@@ -77,9 +77,6 @@ CREATE TABLE app.credenciales (
   )
 );
 
-ALTER TABLE app.outbox_eventos ADD COLUMN IF NOT EXISTS intentos integer DEFAULT 0;
-ALTER TABLE app.outbox_eventos ADD COLUMN IF NOT EXISTS ultimo_error text;
-
 
 CREATE TRIGGER trg_credenciales_actualizado
 BEFORE UPDATE ON app.credenciales
@@ -138,6 +135,8 @@ CREATE TABLE app.outbox_eventos (
   tipo_evento     text NOT NULL,          -- ej: "CredencialBloqueada"
   clave_agregado  text NOT NULL,          -- ej: usuario_id como string
   payload         jsonb NOT NULL,         -- aquí sí JSONB (evento)
+  intentos        integer NOT NULL DEFAULT 0,
+  ultimo_error    text,
   creado_en       timestamptz NOT NULL DEFAULT transaction_timestamp(),
   procesado_en    timestamptz
 );
