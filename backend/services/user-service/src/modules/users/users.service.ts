@@ -91,11 +91,13 @@ export class UsersService {
   async update(id: string, patch: Partial<Usuario>) {
     return this.dataSource.transaction(async manager => {
       const usuarioRepo = manager.getRepository(Usuario);
+      const perfilRepo = manager.getRepository(Perfil);
       const current = await usuarioRepo.findOneBy({ id } as any);
       if (!current) throw new NotFoundException('Usuario no encontrado');
 
       const nextRole = (patch as any).rol as string | undefined;
       const updates: Partial<Usuario> = {};
+      const perfilPayload = (patch as any).perfil as Partial<Perfil> | undefined;
 
       if ((patch as any).email) updates.email = (patch as any).email;
       if ((patch as any).estado) updates.estado = (patch as any).estado;
@@ -162,6 +164,15 @@ export class UsersService {
 
       if (Object.keys(updates).length > 0) {
         await usuarioRepo.update({ id } as any, updates as any);
+      }
+
+      if (perfilPayload) {
+        const exists = await perfilRepo.findOneBy({ usuario_id: id } as any);
+        if (exists) {
+          await perfilRepo.update({ usuario_id: id } as any, perfilPayload as any);
+        } else {
+          await perfilRepo.save({ usuario_id: id, ...perfilPayload } as any);
+        }
       }
 
       return this.findById(id);
