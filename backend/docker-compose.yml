@@ -15,6 +15,7 @@ x-common-env: &common-env
   WAREHOUSE_SERVICE_URL: ${WAREHOUSE_URL}
   FINANCE_SERVICE_URL: ${FINANCE_URL}
   LOGISTICS_SERVICE_URL: ${LOGISTICS_URL}
+  CREDIT_SERVICE_URL: ${CREDIT_URL}
 
 services:
   # =========================================
