@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Logger, Req, ConflictException, Get, Param, ForbiddenException } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Logger, Req, ConflictException, Get, Param, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -17,8 +17,9 @@ export class UsersInternalController {
   }
 
   @Post('sync')
-  async syncUser(@Body() dto: CreateUserDto, @Req() req: any) {
+  async syncUser(@Body() body: any, @Req() req: any) {
     this.assertServiceToken(req);
+    const dto = this.normalizePayload(body);
     // idempotency: if exists, return quickly
     const exists = await this.usersService.findById((dto as any).id);
     if (exists) return { status: 'already_exists', id: (dto as any).id };
@@ -39,5 +40,25 @@ export class UsersInternalController {
     if (!svcToken || svcToken !== process.env.SERVICE_TOKEN) {
       throw new ForbiddenException('Servicio no autorizado');
     }
+  }
+
+  private normalizePayload(body: any): CreateUserDto {
+    if (!body?.email) {
+      throw new BadRequestException('Email requerido para sincronizar usuario');
+    }
+
+    const id = body.id || body.usuario_id;
+    if (!id) {
+      throw new BadRequestException('usuario_id requerido para sincronizar usuario');
+    }
+
+    const rol = (body.rol || 'cliente').toLowerCase();
+    const dto: any = {
+      ...body,
+      id,
+      rol,
+    };
+
+    return dto as CreateUserDto;
   }
 }

@@ -9,6 +9,7 @@ import { Session } from './entities/session.entity';
 import { LoginAttempt } from './entities/login-attempt.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as argon2 from 'argon2';
+import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 import { IS2SClient, S2S_CLIENT } from '../../common/interfaces/s2s-client.interface';
 import { OutboxService } from '../outbox/outbox.service';
@@ -145,7 +146,12 @@ export class AuthService {
       throw new ForbiddenException('Credencial no activa');
     }
 
-    const passwordMatches = await argon2.verify(credential.password, password).catch(() => false);
+    let passwordMatches = false;
+    if ((credential as any).password_alg === 'bcrypt') {
+      passwordMatches = await bcrypt.compare(password, credential.password).catch(() => false);
+    } else {
+      passwordMatches = await argon2.verify(credential.password, password).catch(() => false);
+    }
     if (!passwordMatches) {
       await this.recordLoginAttempt(email, ip, false, 'password_mismatch');
       if (await this.shouldBlockCredential(email)) {
@@ -169,10 +175,10 @@ export class AuthService {
     return this.buildTokens(user.id, user.email, role, meta);
   }
 
-  async register(dto: RegisterDto) {
+  async register(dto: RegisterDto, options?: { allowCustomId?: boolean }) {
     this.logger.log(`Registering ${dto.email}`);
     const passwordHash = await argon2.hash(dto.password);
-    const id = uuidv4();
+    const id = options?.allowCustomId && dto.usuario_id ? dto.usuario_id : uuidv4();
 
     return this.dataSource.transaction(async manager => {
       // save credential in auth DB
@@ -192,7 +198,7 @@ export class AuthService {
       }
 
       // write outbox event for user-service to consume using OutboxService
-      const payloadObj: any = { id, email: dto.email } as any;
+      const payloadObj: any = { id, usuario_id: id, email: dto.email } as any;
       if ((dto as any).rol) payloadObj.rol = (dto as any).rol;
       if ((dto as any).perfil) payloadObj.perfil = (dto as any).perfil;
       if ((dto as any).cliente) payloadObj.cliente = (dto as any).cliente;
@@ -202,7 +208,7 @@ export class AuthService {
       if ((dto as any).creado_por) payloadObj.creado_por = (dto as any).creado_por;
 
       await this.outboxService.createEvent(manager, {
-        tipo: 'UsuarioRegistrado',
+        tipo: 'CredencialCreada',
         claveAgregado: id,
         payload: payloadObj,
         agregado: 'auth',

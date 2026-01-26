@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Put, NotFoundException, UseGuards, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Put, NotFoundException, UseGuards, Query, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Cliente } from './entities/cliente.entity';
 import { Repository } from 'typeorm';
@@ -11,6 +11,10 @@ import { RolUsuario } from '../../common/enums/rol-usuario.enum';
 import { Usuario } from '../users/entities/usuario.entity';
 import { Perfil } from '../profiles/entities/perfil.entity';
 import { CanalComercial } from '../channels/entities/canal-comercial.entity';
+import { GetUser } from '../../common/decorators';
+import { Vendedor } from '../staff/entities/vendedor.entity';
+import { AssignVendedorDto } from './dto/assign-vendedor.dto';
+import { OutboxService } from '../outbox/outbox.service';
 
 @Controller('clientes')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -26,6 +30,9 @@ export class ClientsController {
     private readonly perfilRepo: Repository<Perfil>,
     @InjectRepository(CanalComercial)
     private readonly canalRepo: Repository<CanalComercial>,
+    @InjectRepository(Vendedor)
+    private readonly vendedorRepo: Repository<Vendedor>,
+    private readonly outboxService: OutboxService,
   ) {}
 
   @Get()
@@ -106,13 +113,107 @@ export class ClientsController {
 
   @Roles(RolUsuario.ADMIN, RolUsuario.STAFF, RolUsuario.SUPERVISOR)
   @Put(':usuarioId/condiciones-comerciales')
-  async upsertCondiciones(@Param('usuarioId') usuarioId: string, @Body() body: Partial<CondicionesComercialesCliente>) {
+  async upsertCondiciones(
+    @Param('usuarioId') usuarioId: string,
+    @Body() body: Partial<CondicionesComercialesCliente>,
+    @GetUser() user: any,
+  ) {
+    const actorId = user?.userId || user?.id || null;
     const exists = await this.condicionesRepo.findOneBy({ cliente_id: usuarioId } as any);
     if (exists) {
-      await this.condicionesRepo.update({ cliente_id: usuarioId } as any, body as any);
-      return this.condicionesRepo.findOneBy({ cliente_id: usuarioId } as any);
+      await this.condicionesRepo.update(
+        { cliente_id: usuarioId } as any,
+        {
+          ...body,
+          actualizado_por: actorId,
+          actualizado_en: new Date(),
+        } as any,
+      );
+      const updated = await this.condicionesRepo.findOneBy({ cliente_id: usuarioId } as any);
+      await this.outboxService.createEvent({
+        tipo: 'CondicionesActualizadas',
+        claveAgregado: usuarioId,
+        payload: { cliente_id: usuarioId },
+      });
+      return updated;
     }
-    const entity = this.condicionesRepo.create({ cliente_id: usuarioId, ...body } as any);
-    return this.condicionesRepo.save(entity);
+    const entity = this.condicionesRepo.create({
+      cliente_id: usuarioId,
+      ...body,
+      actualizado_por: actorId,
+      actualizado_en: new Date(),
+    } as any);
+    const created = await this.condicionesRepo.save(entity);
+    await this.outboxService.createEvent({
+      tipo: 'CondicionesActualizadas',
+      claveAgregado: usuarioId,
+      payload: { cliente_id: usuarioId },
+    });
+    return created;
+  }
+
+  @Roles(RolUsuario.ADMIN, RolUsuario.STAFF, RolUsuario.SUPERVISOR)
+  @Put(':usuarioId/condiciones')
+  async upsertCondicionesAlias(
+    @Param('usuarioId') usuarioId: string,
+    @Body() body: Partial<CondicionesComercialesCliente>,
+    @GetUser() user: any,
+  ) {
+    return this.upsertCondiciones(usuarioId, body, user);
+  }
+
+  @Roles(RolUsuario.ADMIN, RolUsuario.STAFF, RolUsuario.SUPERVISOR)
+  @Put(':usuarioId/asignar-vendedor')
+  async assignVendedor(
+    @Param('usuarioId') usuarioId: string,
+    @Body() body: AssignVendedorDto,
+    @GetUser() user: any,
+  ) {
+    const vendedorId = body.vendedor_id;
+    const vendedorUser = await this.usuarioRepo.findOneBy({ id: vendedorId } as any);
+    if (!vendedorUser || vendedorUser.rol !== 'vendedor' || vendedorUser.estado !== 'activo') {
+      throw new BadRequestException('Vendedor invalido o inactivo');
+    }
+
+    const vendedor = await this.vendedorRepo.findOneBy({ usuario_id: vendedorId } as any);
+    if (!vendedor || vendedor.activo === false) {
+      throw new BadRequestException('Vendedor no activo');
+    }
+
+    const cliente = await this.clienteRepo.findOneBy({ usuario_id: usuarioId } as any);
+    if (!cliente) throw new NotFoundException();
+
+    await this.clienteRepo.update(
+      { usuario_id: usuarioId } as any,
+      { vendedor_asignado_id: vendedorId } as any,
+    );
+
+    await this.outboxService.createEvent({
+      tipo: 'VendedorAsignado',
+      claveAgregado: usuarioId,
+      payload: { cliente_id: usuarioId, vendedor_id: vendedorId, asignado_por: user?.userId || user?.id || null },
+    });
+
+    return { status: 'ok' };
+  }
+
+  @Roles(RolUsuario.ADMIN, RolUsuario.STAFF, RolUsuario.SUPERVISOR, RolUsuario.VENDEDOR)
+  @Get(':usuarioId/condiciones')
+  async getCondiciones(@Param('usuarioId') usuarioId: string) {
+    const cliente = await this.clienteRepo.findOneBy({ usuario_id: usuarioId } as any);
+    if (!cliente) throw new NotFoundException();
+
+    const condiciones = await this.condicionesRepo.findOneBy({ cliente_id: usuarioId } as any);
+    if (condiciones) {
+      return condiciones;
+    }
+
+    return {
+      cliente_id: usuarioId,
+      permite_negociacion: false,
+      porcentaje_descuento_max: 0,
+      requiere_aprobacion_supervisor: false,
+      observaciones: null,
+    };
   }
 }

@@ -13,6 +13,7 @@ import { HttpS2SAdapter } from '../../common/adapters/http-s2s.adapter';
 import { OutboxModule } from '../outbox/outbox.module';
 import { SessionService } from './services/session.service';
 import { UserExternalService } from '../../services/user-external.service';
+import { JwtOrServiceGuard } from '../../common/guards/jwt-or-service.guard';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { UserExternalService } from '../../services/user-external.service';
     UserExternalService,
     JwtStrategy,
     LocalStrategy,
+    JwtOrServiceGuard,
     { provide: S2S_CLIENT, useClass: HttpS2SAdapter },
   ],
   exports: [AuthService],

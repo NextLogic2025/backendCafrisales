@@ -19,6 +19,7 @@ import { UsersInternalController } from './modules/users/users.internal.controll
 import { ProfilesController } from './modules/profiles/profiles.controller';
 import { Cliente } from './modules/clients/entities/cliente.entity';
 import { ClientsController } from './modules/clients/clients.controller';
+import { ClientsQueryController } from './modules/clients/clients-query.controller';
 import { CondicionesComercialesCliente } from './modules/clients/entities/condiciones.entity';
 import { Perfil } from './modules/profiles/entities/perfil.entity';
 import { Outbox } from './modules/outbox/entities/outbox.entity';
@@ -34,6 +35,7 @@ import { Vendedor } from './modules/staff/entities/vendedor.entity';
 import { Bodeguero } from './modules/staff/entities/bodeguero.entity';
 import { Transportista } from './modules/staff/entities/transportista.entity';
 import { ZoneExternalService } from './services/zone-external.service';
+import { AuthExternalService } from './services/auth-external.service';
 
 @Module({
   imports: [
@@ -57,7 +59,15 @@ import { ZoneExternalService } from './services/zone-external.service';
     }),
     HealthModule,
   ],
-  controllers: [UsersController, UsersInternalController, ProfilesController, ClientsController, ChannelsController, StaffController],
+  controllers: [
+    UsersController,
+    UsersInternalController,
+    ProfilesController,
+    ClientsController,
+    ClientsQueryController,
+    ChannelsController,
+    StaffController,
+  ],
   providers: [
     UsersService,
     RoleProvisionService,
@@ -67,6 +77,7 @@ import { ZoneExternalService } from './services/zone-external.service';
     OutboxService,
     StaffService,
     ZoneExternalService,
+    AuthExternalService,
     JwtStrategy,
     JwtAuthGuard,
     {

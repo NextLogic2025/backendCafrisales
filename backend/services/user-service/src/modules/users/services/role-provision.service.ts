@@ -128,6 +128,7 @@ export class RoleProvisionService {
         latitud: c.latitud || null,
         longitud: c.longitud || null,
         vendedor_asignado_id: c.vendedor_asignado_id || null,
+        creado_por: (dto as any).creado_por || null,
       } as any)
       .orIgnore()
       .execute();

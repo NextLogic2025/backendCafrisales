@@ -150,6 +150,32 @@ CREATE INDEX idx_outbox_pendientes
   ON app.outbox_eventos(creado_en)
   WHERE procesado_en IS NULL;
 
+-- Seed supervisor credential (denis@cafrilosa.com / Mipass123*)
+DO $$
+DECLARE
+  v_user_id uuid := '0df6a2ea-248c-4138-bb37-2aeef0432df5';
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM app.credenciales WHERE email = 'denis@cafrilosa.com') THEN
+    INSERT INTO app.credenciales (
+      usuario_id,
+      email,
+      password_hash,
+      password_alg,
+      estado,
+      creado_por
+    )
+    VALUES (
+      v_user_id,
+      'denis@cafrilosa.com',
+      crypt('Mipass123*', gen_salt('bf', 10)),
+      'bcrypt',
+      'activo',
+      NULL
+    );
+  END IF;
+END
+$$;
+
 
 -- Control DB vs Software (Auth)
 

@@ -94,7 +94,7 @@ describe('AuthService', () => {
       expect(outboxService.createEvent).toHaveBeenCalledWith(
         mockEntityManager,
         expect.objectContaining({
-          tipo: 'UsuarioRegistrado',
+          tipo: 'CredencialCreada',
           claveAgregado: expect.any(String),
           payload: expect.objectContaining({
             email: registerDto.email,

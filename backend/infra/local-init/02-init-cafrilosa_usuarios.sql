@@ -199,3 +199,25 @@ CREATE INDEX idx_outbox_pendientes
   WHERE procesado_en IS NULL;
 
 CREATE INDEX IF NOT EXISTS idx_outbox_pendientes_retry ON app.outbox_eventos(creado_en) WHERE procesado_en IS NULL AND intentos < 5;
+
+-- Seed supervisor user (denis@cafrilosa.com)
+DO $$
+DECLARE
+  v_user_id uuid := '0df6a2ea-248c-4138-bb37-2aeef0432df5';
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM app.usuarios WHERE email = 'denis@cafrilosa.com') THEN
+    INSERT INTO app.usuarios (id, email, rol, estado, creado_por)
+    VALUES (v_user_id, 'denis@cafrilosa.com', 'supervisor', 'activo', NULL);
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM app.perfiles_usuario WHERE usuario_id = v_user_id) THEN
+    INSERT INTO app.perfiles_usuario (usuario_id, nombres, apellidos, telefono, preferencias, actualizado_por)
+    VALUES (v_user_id, 'Denis', 'Supervisor', '0999999999', '{}'::jsonb, v_user_id);
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM app.supervisores WHERE usuario_id = v_user_id) THEN
+    INSERT INTO app.supervisores (usuario_id, codigo_empleado)
+    VALUES (v_user_id, 'SUP-001');
+  END IF;
+END
+$$;

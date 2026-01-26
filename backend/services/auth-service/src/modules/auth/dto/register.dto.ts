@@ -15,6 +15,10 @@ export class RegisterDto {
   @IsUUID()
   readonly creado_por?: string;
 
+  @IsOptional()
+  @IsUUID()
+  readonly usuario_id?: string;
+
   // Optional user fields to pass to user-service via outbox
   @IsOptional()
   readonly rol?: string;

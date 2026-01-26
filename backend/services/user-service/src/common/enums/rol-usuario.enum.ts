@@ -5,4 +5,5 @@ export enum RolUsuario {
   VENDEDOR = 'vendedor',
   SUPERVISOR = 'supervisor',
   BODEGUERO = 'bodeguero',
+  TRANSPORTISTA = 'transportista',
 }
