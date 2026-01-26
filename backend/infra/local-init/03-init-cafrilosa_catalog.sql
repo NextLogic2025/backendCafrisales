@@ -42,6 +42,7 @@ CREATE TABLE app.categorias (
   nombre           varchar(100) NOT NULL,
   slug             varchar(120) NOT NULL UNIQUE,
   descripcion      text,
+  img_url          varchar(500),
   orden            int NOT NULL DEFAULT 0,
   activo           boolean NOT NULL DEFAULT true,
 
@@ -66,6 +67,7 @@ CREATE TABLE app.productos (
   nombre           varchar(255) NOT NULL,
   slug             varchar(255) NOT NULL UNIQUE,
   descripcion      text,
+  img_url          varchar(500),
   activo           boolean NOT NULL DEFAULT true,
 
   creado_en        timestamptz NOT NULL DEFAULT transaction_timestamp(),

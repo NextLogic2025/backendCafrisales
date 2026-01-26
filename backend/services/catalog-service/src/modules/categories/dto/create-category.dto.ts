@@ -15,6 +15,11 @@ export class CreateCategoryDto {
   descripcion?: string;
 
   @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  img_url?: string;
+
+  @IsOptional()
   @IsInt()
   @Min(0)
   orden?: number;

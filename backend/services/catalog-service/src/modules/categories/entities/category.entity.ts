@@ -14,6 +14,9 @@ export class Category {
   @Column({ type: 'text', nullable: true })
   descripcion?: string;
 
+  @Column({ type: 'varchar', length: 500, nullable: true })
+  img_url?: string;
+
   @Column({ type: 'int', default: 0 })
   orden: number;
 

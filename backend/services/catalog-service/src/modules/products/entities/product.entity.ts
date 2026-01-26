@@ -23,6 +23,9 @@ export class Product {
   @Column({ type: 'text', nullable: true })
   descripcion?: string;
 
+  @Column({ type: 'varchar', length: 500, nullable: true })
+  img_url?: string;
+
   @Column({ type: 'boolean', default: true })
   activo: boolean;
 

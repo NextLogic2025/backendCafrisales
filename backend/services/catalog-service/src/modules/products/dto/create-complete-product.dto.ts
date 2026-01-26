@@ -69,6 +69,11 @@ export class CreateCompleteProductDto {
     @IsString()
     descripcion?: string;
 
+    @IsOptional()
+    @IsString()
+    @MaxLength(500)
+    img_url?: string;
+
     // SKU info
     @ValidateNested()
     @Type(() => SkuDataDto)

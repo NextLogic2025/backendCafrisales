@@ -17,6 +17,11 @@ export class CreateProductDto {
   descripcion?: string;
 
   @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  img_url?: string;
+
+  @IsOptional()
   @IsBoolean()
   activo?: boolean;
 }
