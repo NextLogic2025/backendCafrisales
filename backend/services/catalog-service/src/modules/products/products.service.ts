@@ -86,6 +86,7 @@ export class ProductsService {
         nombre: dto.nombre,
         slug: uniqueProductSlug,
         descripcion: dto.descripcion,
+        img_url: dto.img_url ?? null,
         activo: true,
         creado_por: actorId,
         actualizado_por: actorId,

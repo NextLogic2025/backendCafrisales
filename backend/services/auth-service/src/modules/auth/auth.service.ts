@@ -205,6 +205,7 @@ export class AuthService {
       if ((dto as any).vendedor) payloadObj.vendedor = (dto as any).vendedor;
       if ((dto as any).supervisor) payloadObj.supervisor = (dto as any).supervisor;
       if ((dto as any).bodeguero) payloadObj.bodeguero = (dto as any).bodeguero;
+      if ((dto as any).transportista) payloadObj.transportista = (dto as any).transportista;
       if ((dto as any).creado_por) payloadObj.creado_por = (dto as any).creado_por;
 
       await this.outboxService.createEvent(manager, {

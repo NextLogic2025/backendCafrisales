@@ -37,4 +37,7 @@ export class RegisterDto {
 
   @IsOptional()
   readonly bodeguero?: any;
+
+  @IsOptional()
+  readonly transportista?: any;
 }
