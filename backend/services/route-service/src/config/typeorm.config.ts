@@ -7,8 +7,9 @@ export const typeormConfig = registerAs('typeorm', (): TypeOrmModuleOptions => (
     url: process.env.DATABASE_URL,
     entities: [__dirname + '/../**/*.entity{.ts,.js}'],
     synchronize: false,
-    logging: process.env.NODE_ENV === 'development',
+    //logging: process.env.NODE_ENV === 'development',
     schema: 'app',
+    logging: false,
 }));
 
 export const dataSourceOptions: DataSourceOptions = {
@@ -18,6 +19,7 @@ export const dataSourceOptions: DataSourceOptions = {
     migrations: [__dirname + '/../migrations/*{.ts,.js}'],
     synchronize: false,
     schema: 'app',
+    logging: false,
     extra: {
         // useful for debugging connection issues
         connectionTimeoutMillis: 5000,
