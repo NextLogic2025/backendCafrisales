@@ -4,7 +4,7 @@ import { Repository, DataSource } from 'typeorm';
 import { Pedido } from './entities/pedido.entity';
 import { ItemPedido } from './entities/item-pedido.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { EstadoPedido } from '../../../common/constants/order-status.enum';
+import { EstadoPedido } from '../../common/constants/order-status.enum';
 
 @Injectable()
 export class OrdersService {

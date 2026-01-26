@@ -1,12 +1,12 @@
 import { Controller, Get, Post, Body, Param, Patch, Delete, UseGuards, Query } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
-import { RolesGuard } from '../../../common/guards/roles.guard';
-import { Roles } from '../../../common/decorators/roles.decorator';
-import { CurrentUser } from '../../../common/decorators/current-user.decorator';
-import { RolUsuario } from '../../../common/constants/rol-usuario.enum';
-import { EstadoPedido } from '../../../common/constants/order-status.enum';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { RolUsuario } from '../../common/constants/rol-usuario.enum';
+import { EstadoPedido } from '../../common/constants/order-status.enum';
 
 @Controller('orders')
 export class OrdersController {
