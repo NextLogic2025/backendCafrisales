@@ -1,47 +1,51 @@
-import { Controller, Post, Body, Get, Param, UseGuards, Patch, Delete } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, UseGuards, Put } from '@nestjs/common';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { RolUsuario } from '../../common/enums/rol-usuario.enum';
+import { GetUser, AuthUser } from '../../common/decorators/get-user.decorator';
 import { PricesService } from './prices.service';
+import { CreateSkuPriceDto } from './dto/create-sku-price.dto';
+import { UpdateSkuPriceDto } from './dto/update-price.dto';
 
-@Controller('prices')
+@Controller('skus')
 export class PricesController {
   constructor(private readonly svc: PricesService) {}
 
-  @Get(':skuId')
-  get(@Param('skuId') skuId: string) {
+  @Get(':skuId/precio-vigente')
+  getCurrent(@Param('skuId') skuId: string) {
     return this.svc.getCurrentPrice(skuId);
   }
 
-  @Post()
+  @Get(':skuId/precios-historial')
+  getHistory(@Param('skuId') skuId: string) {
+    return this.svc.getHistory(skuId);
+  }
+
+  @Post('precios-vigentes')
+  getBatch(@Body() body: { sku_ids: string[] }) {
+    return this.svc.getBatchCurrentPrices(body.sku_ids || []);
+  }
+
+  @Post(':skuId/precio')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RolUsuario.ADMIN, RolUsuario.STAFF, RolUsuario.SUPERVISOR)
-  update(@Body() dto: { sku_id: string; precio: number }) {
-    return this.svc.updatePrice(dto);
+  create(
+    @Param('skuId') skuId: string,
+    @Body() dto: CreateSkuPriceDto,
+    @GetUser() user?: AuthUser,
+  ) {
+    return this.svc.createInitialPrice(skuId, dto, user?.userId);
   }
 
-  @Get()
-  list() {
-    return this.svc.findAll();
-  }
-
-  @Get('by-id/:id')
-  getById(@Param('id') id: string) {
-    return this.svc.findOne(id);
-  }
-
-  @Patch(':id')
+  @Put(':skuId/precio')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RolUsuario.ADMIN, RolUsuario.STAFF, RolUsuario.SUPERVISOR)
-  patch(@Param('id') id: string, @Body() dto: Partial<{ precio: number }>) {
-    return this.svc.updateById(id, dto as any);
-  }
-
-  @Delete(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(RolUsuario.ADMIN, RolUsuario.STAFF)
-  remove(@Param('id') id: string) {
-    return this.svc.remove(id);
+  update(
+    @Param('skuId') skuId: string,
+    @Body() dto: UpdateSkuPriceDto,
+    @GetUser() user?: AuthUser,
+  ) {
+    return this.svc.updatePrice(skuId, dto.nuevo_precio, user?.userId);
   }
 }

@@ -21,6 +21,11 @@ class SkuDataDto {
     @IsOptional()
     @IsBoolean()
     requiere_refrigeracion?: boolean;
+
+    @IsOptional()
+    @IsInt()
+    @Min(1)
+    unidades_por_paquete?: number;
 }
 
 class PriceDataDto {

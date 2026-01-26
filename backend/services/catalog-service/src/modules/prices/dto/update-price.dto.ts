@@ -1,10 +1,11 @@
-import { IsUUID, IsNumber, Min } from 'class-validator';
+import { IsNumber, Min, IsOptional, IsString } from 'class-validator';
 
-export class UpdatePriceDto {
-  @IsUUID()
-  sku_id: string;
-
+export class UpdateSkuPriceDto {
   @IsNumber()
   @Min(0)
-  precio: number;
+  nuevo_precio: number;
+
+  @IsOptional()
+  @IsString()
+  motivo?: string;
 }

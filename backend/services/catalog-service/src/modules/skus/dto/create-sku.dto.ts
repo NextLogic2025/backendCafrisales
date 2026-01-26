@@ -1,4 +1,4 @@
-import { IsString, IsUUID, IsInt, Min } from 'class-validator';
+import { IsString, IsUUID, IsInt, Min, IsOptional, IsBoolean, MaxLength } from 'class-validator';
 
 export class CreateSkuDto {
   @IsUUID()
@@ -13,4 +13,22 @@ export class CreateSkuDto {
   @IsInt()
   @Min(1)
   peso_gramos: number;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  tipo_empaque?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  requiere_refrigeracion?: boolean;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  unidades_por_paquete?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  activo?: boolean;
 }

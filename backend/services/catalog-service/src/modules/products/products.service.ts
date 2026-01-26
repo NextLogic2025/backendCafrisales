@@ -7,20 +7,23 @@ import { Category } from '../categories/entities/category.entity';
 import { Sku } from '../skus/entities/sku.entity';
 import { PrecioSku } from '../prices/entities/precio-sku.entity';
 import { slugify, ensureUniqueSlug } from '../../common/utils/slug.utils';
+import { OutboxService } from '../outbox/outbox.service';
 
 @Injectable()
 export class ProductsService {
   constructor(
     @InjectRepository(Product) private repo: Repository<Product>,
+    @InjectRepository(Category) private categoriesRepo: Repository<Category>,
     private dataSource: DataSource,
-  ) { }
+    private outbox: OutboxService,
+  ) {}
 
   /**
    * Creates a complete sellable product in a single transaction:
-   * Category (if needed) → Product → SKU → Price
+   * Category (if needed) -> Product -> SKU -> Price
    */
-  async createComplete(dto: CreateCompleteProductDto) {
-    return this.dataSource.transaction(async (manager) => {
+  async createComplete(dto: CreateCompleteProductDto, actorId?: string) {
+    const result = await this.dataSource.transaction(async (manager) => {
       let categoryId = dto.categoria_id;
 
       // Step 1: Validate or create category
@@ -31,10 +34,7 @@ export class ProductsService {
           );
         }
 
-        // Auto-generate category slug if not provided
         const categorySlug = dto.categoria_slug || slugify(dto.categoria_nombre);
-
-        // Check if category exists by slug
         const existingCategory = await manager.findOne(Category, {
           where: { slug: categorySlug },
         });
@@ -42,7 +42,6 @@ export class ProductsService {
         if (existingCategory) {
           categoryId = existingCategory.id;
         } else {
-          // Ensure unique slug for new category
           const uniqueCategorySlug = await ensureUniqueSlug(
             categorySlug,
             async (slug) => {
@@ -51,20 +50,24 @@ export class ProductsService {
             },
           );
 
-          // Create new category
           const newCategory = manager.create(Category, {
             nombre: dto.categoria_nombre,
             slug: uniqueCategorySlug,
-            descripcion: `Categoría creada automáticamente`,
+            descripcion: 'Categoria creada automaticamente',
+            creado_por: actorId,
+            actualizado_por: actorId,
           });
           const savedCategory = await manager.save(Category, newCategory);
           categoryId = savedCategory.id;
         }
       } else {
-        // Verify category exists
-        const category = await manager.findOne(Category, { where: { id: categoryId } });
+        const category = await manager.findOne(Category, {
+          where: { id: categoryId, activo: true },
+        });
         if (!category) {
-          throw new NotFoundException(`Categoría con ID ${categoryId} no encontrada`);
+          throw new NotFoundException(
+            `Categoria con ID ${categoryId} no encontrada`,
+          );
         }
       }
 
@@ -83,6 +86,9 @@ export class ProductsService {
         nombre: dto.nombre,
         slug: uniqueProductSlug,
         descripcion: dto.descripcion,
+        activo: true,
+        creado_por: actorId,
+        actualizado_por: actorId,
       });
       const savedProduct = await manager.save(Product, product);
 
@@ -93,7 +99,7 @@ export class ProductsService {
 
       if (existingSku) {
         throw new ConflictException(
-          `El código SKU '${dto.sku.codigo_sku}' ya está registrado`,
+          `El codigo SKU '${dto.sku.codigo_sku}' ya esta registrado`,
         );
       }
 
@@ -104,6 +110,9 @@ export class ProductsService {
         peso_gramos: dto.sku.peso_gramos,
         tipo_empaque: dto.sku.tipo_empaque || 'bolsa',
         requiere_refrigeracion: dto.sku.requiere_refrigeracion ?? false,
+        unidades_por_paquete: dto.sku.unidades_por_paquete ?? 1,
+        activo: true,
+        creado_por: actorId,
       });
       const savedSku = await manager.save(Sku, sku);
 
@@ -112,20 +121,56 @@ export class ProductsService {
         sku_id: savedSku.id,
         precio: dto.precio.precio,
         moneda: dto.precio.moneda || 'USD',
+        creado_por: actorId,
       });
       await manager.save(PrecioSku, price);
 
-      // Return complete product with relations
       return manager.findOne(Product, {
         where: { id: savedProduct.id },
         relations: ['categoria', 'skus', 'skus.precios'],
       });
     });
+
+    if (result) {
+      await this.outbox.createEvent('ProductoCreado', result.id, {
+        producto_id: result.id,
+        categoria_id: result.categoria_id,
+        nombre: result.nombre,
+      });
+    }
+
+    return result;
   }
 
-  create(dto: Partial<Product>) {
-    const p = this.repo.create(dto as any);
-    return this.repo.save(p);
+  async create(dto: Partial<Product>, actorId?: string) {
+    const category = await this.categoriesRepo.findOne({
+      where: { id: dto.categoria_id, activo: true },
+    });
+    if (!category) {
+      throw new NotFoundException(`Categoria con ID ${dto.categoria_id} no encontrada`);
+    }
+
+    const baseSlug = dto.slug || slugify(dto.nombre || '');
+    const uniqueSlug = await ensureUniqueSlug(baseSlug, async (slug) => {
+      const existing = await this.repo.findOne({ where: { slug } });
+      return existing !== null;
+    });
+
+    const p = this.repo.create({
+      ...dto,
+      slug: uniqueSlug,
+      activo: dto.activo ?? true,
+      creado_por: actorId,
+      actualizado_por: actorId,
+    } as Product);
+
+    const saved = await this.repo.save(p);
+    await this.outbox.createEvent('ProductoCreado', saved.id, {
+      producto_id: saved.id,
+      categoria_id: saved.categoria_id,
+      nombre: saved.nombre,
+    });
+    return saved;
   }
 
   findAll() {
@@ -135,12 +180,29 @@ export class ProductsService {
     });
   }
 
+  findByCategory(categoriaId: string) {
+    return this.repo.find({
+      where: { categoria_id: categoriaId, activo: true },
+      order: { nombre: 'ASC' },
+    });
+  }
+
   findOne(id: string) {
     return this.repo.findOne({ where: { id }, relations: ['categoria'] });
   }
 
-  async update(id: string, dto: Partial<Product>) {
-    await this.repo.update(id, dto as any);
+  async update(id: string, dto: Partial<Product>, actorId?: string) {
+    if (dto.slug) {
+      const existing = await this.repo.findOne({ where: { slug: dto.slug } });
+      if (existing && existing.id !== id) {
+        throw new ConflictException('El slug ya esta registrado');
+      }
+    }
+
+    await this.repo.update(id, {
+      ...dto,
+      actualizado_por: actorId,
+    } as Product);
     return this.findOne(id);
   }
 

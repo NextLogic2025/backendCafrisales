@@ -1,4 +1,4 @@
-import { IsString, IsUUID, MaxLength, IsOptional } from 'class-validator';
+import { IsString, IsUUID, MaxLength, IsOptional, IsBoolean } from 'class-validator';
 
 export class CreateProductDto {
   @IsUUID()
@@ -15,4 +15,8 @@ export class CreateProductDto {
 
   @IsOptional()
   descripcion?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  activo?: boolean;
 }
