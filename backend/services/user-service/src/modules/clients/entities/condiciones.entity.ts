@@ -11,7 +11,7 @@ export class CondicionesComercialesCliente {
   @Column({ type: 'numeric', precision: 5, scale: 2, nullable: true })
   porcentaje_descuento_max?: number;
 
-  @Column({ type: 'boolean', nullable: true })
+  @Column({ type: 'boolean', default: false })
   requiere_aprobacion_supervisor?: boolean;
 
   @Column({ type: 'text', nullable: true })

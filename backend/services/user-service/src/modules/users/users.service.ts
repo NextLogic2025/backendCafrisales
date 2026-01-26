@@ -46,7 +46,7 @@ export class UsersService {
               cliente_id: savedUser.id,
               permite_negociacion: condicionesPayload.permite_negociacion ?? null,
               porcentaje_descuento_max: condicionesPayload.porcentaje_descuento_max ?? null,
-              requiere_aprobacion_supervisor: condicionesPayload.requiere_aprobacion_supervisor ?? null,
+              requiere_aprobacion_supervisor: condicionesPayload.requiere_aprobacion_supervisor ?? false,
               observaciones: condicionesPayload.observaciones ?? null,
             } as any);
           } catch (err) {
@@ -56,9 +56,8 @@ export class UsersService {
               cliente_id: savedUser.id,
               permite_negociacion: condicionesPayload.permite_negociacion ?? null,
               porcentaje_descuento_max: condicionesPayload.porcentaje_descuento_max ?? null,
-              requiere_aprobacion_supervisor: condicionesPayload.requiere_aprobacion_supervisor ?? null,
+              requiere_aprobacion_supervisor: condicionesPayload.requiere_aprobacion_supervisor ?? false,
               observaciones: condicionesPayload.observaciones || null,
-              actualizado_en: () => 'transaction_timestamp()',
             }, '(cliente_id)');
           }
       }
