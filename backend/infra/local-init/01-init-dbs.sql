@@ -18,6 +18,7 @@ CREATE DATABASE cafrilosa_catalogo;
 CREATE DATABASE cafrilosa_zonas; 
 CREATE DATABASE cafrilosa_pedidos;
 CREATE DATABASE cafrilosa_creditos;
+CREATE DATABASE cafrilosa_rutas;
 \c cafrilosa_auth
 
 -- Extensiones
