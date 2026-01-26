@@ -263,7 +263,8 @@ CREATE TABLE app.outbox_eventos (
   clave_agregado  text NOT NULL,       -- rutero_id
   payload         jsonb NOT NULL,
   creado_en       timestamptz NOT NULL DEFAULT transaction_timestamp(),
-  procesado_en    timestamptz
+  procesado_en    timestamptz,
+  intentos        int NOT NULL DEFAULT 0
 );
 
 CREATE INDEX idx_outbox_pendientes
