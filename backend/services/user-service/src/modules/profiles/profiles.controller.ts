@@ -41,12 +41,31 @@ export class ProfilesController {
     const userId = user?.userId;
     if (!userId) throw new ForbiddenException();
 
+    const allowedPayload: Partial<Perfil> = {};
+    if (typeof body.nombres === 'string') allowedPayload.nombres = body.nombres;
+    if (typeof body.apellidos === 'string') allowedPayload.apellidos = body.apellidos;
+    if (typeof body.telefono === 'string' || body.telefono === null) allowedPayload.telefono = body.telefono as any;
+    if (typeof body.url_avatar === 'string' || body.url_avatar === null) allowedPayload.url_avatar = body.url_avatar as any;
+    if (body.preferencias !== undefined) allowedPayload.preferencias = body.preferencias as any;
+
     const exists = await this.perfilRepo.findOneBy({ usuario_id: userId } as any);
     if (exists) {
-      await this.perfilRepo.update({ usuario_id: userId } as any, body as any);
+      await this.perfilRepo.update(
+        { usuario_id: userId } as any,
+        {
+          ...allowedPayload,
+          actualizado_en: new Date(),
+          actualizado_por: userId,
+          version: (exists as any).version ? (exists as any).version + 1 : 2,
+        } as any,
+      );
       return this.perfilRepo.findOneBy({ usuario_id: userId } as any);
     }
-    const entity = this.perfilRepo.create({ usuario_id: userId, ...body } as any);
+    const entity = this.perfilRepo.create({
+      usuario_id: userId,
+      ...allowedPayload,
+      actualizado_por: userId,
+    } as any);
     return this.perfilRepo.save(entity);
   }
 }
