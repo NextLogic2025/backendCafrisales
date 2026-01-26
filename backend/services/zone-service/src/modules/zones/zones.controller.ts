@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Body, Param, UseGuards, Patch, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, Patch, Put, Query, Req } from '@nestjs/common';
+import { Request } from 'express';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { ZonesService } from './zones.service';
 import { SchedulesService } from '../schedules/schedules.service';
@@ -23,13 +24,14 @@ export class ZonesController {
 
     @Post()
     @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR)
-    create(@Body() createZoneDto: CreateZoneDto): Promise<Zone> {
-        return this.zonesService.create(createZoneDto);
+    create(@Body() createZoneDto: CreateZoneDto, @Req() req: Request): Promise<Zone> {
+        const userId = (req.user as any)?.userId;
+        return this.zonesService.create(createZoneDto, userId);
     }
 
     @Get()
-    findAll(): Promise<Zone[]> {
-        return this.zonesService.findAll();
+    findAll(@Query('estado') estado?: string): Promise<Zone[]> {
+        return this.zonesService.findAll(estado);
     }
 
     @Get(':id')
@@ -39,10 +41,11 @@ export class ZonesController {
 
     @Patch(':id')
     @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR)
-    update(@Param('id') id: string, @Body() updateData: Partial<CreateZoneDto>): Promise<Zone> {
+    update(@Param('id') id: string, @Body() updateData: Partial<CreateZoneDto>, @Req() req: Request): Promise<Zone> {
         // Implement update logic in service, for now mapped to create partial
         // Ideally CreateZoneDto should be UpdateZoneDto or Partial
-        return this.zonesService.update(id, updateData);
+        const userId = (req.user as any)?.userId;
+        return this.zonesService.update(id, updateData, userId);
     }
 
     @Get(':id/horarios')
@@ -58,8 +61,9 @@ export class ZonesController {
 
     @Put(':id/geometria')
     @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR)
-    updateGeometry(@Param('id') id: string, @Body() body: { geometry: object }) {
-        return this.zonesService.updateGeometry(id, body.geometry);
+    updateGeometry(@Param('id') id: string, @Body() body: { geometry: object }, @Req() req: Request) {
+        const userId = (req.user as any)?.userId;
+        return this.zonesService.updateGeometry(id, body.geometry, userId);
     }
 
     @Post('resolver')
