@@ -188,7 +188,10 @@ export class ProductsService {
   }
 
   findOne(id: string) {
-    return this.repo.findOne({ where: { id }, relations: ['categoria'] });
+    return this.repo.findOne({
+      where: { id },
+      relations: ['categoria', 'skus', 'skus.precios'],
+    });
   }
 
   async update(id: string, dto: Partial<Product>, actorId?: string) {
