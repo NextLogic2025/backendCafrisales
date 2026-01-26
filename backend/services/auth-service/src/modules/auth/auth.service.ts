@@ -21,6 +21,9 @@ import { UserExternalService } from '../../services/user-external.service';
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
+  private readonly failedAttemptWindowMs = 15 * 60 * 1000;
+  private readonly maxFailedAttempts = 5;
+  private readonly refreshTtlMs = 30 * 24 * 60 * 60 * 1000;
 
   constructor(
     @InjectRepository(Credential)
@@ -65,6 +68,44 @@ export class AuthService {
     }
   }
 
+  private async shouldBlockCredential(email: string): Promise<boolean> {
+    const since = new Date(Date.now() - this.failedAttemptWindowMs);
+    const failures = await this.loginAttemptRepo.count({
+      where: {
+        email,
+        exitoso: false,
+        intentado_en: MoreThan(since),
+      },
+    });
+    return failures >= this.maxFailedAttempts;
+  }
+
+  private async blockCredential(credential: Credential) {
+    if (!credential || credential.estado !== 'activo') return;
+
+    await this.dataSource.transaction(async manager => {
+      await manager.getRepository(Credential).update(
+        { id: credential.id } as any,
+        {
+          estado: 'bloqueado',
+          bloqueado_motivo: 'intentos_fallidos',
+          bloqueado_en: new Date(),
+        } as any,
+      );
+
+      await this.outboxService.createEvent(manager, {
+        tipo: 'CredencialBloqueada',
+        claveAgregado: credential.id,
+        agregado: 'auth',
+        payload: {
+          usuario_id: credential.id,
+          email: credential.email,
+          motivo: 'intentos_fallidos',
+        },
+      });
+    });
+  }
+
   private async buildTokens(userId: string, email: string, role: string, meta?: { ip?: string; userAgent?: string; device?: any }) {
     const session = await this.sessionService.createSession(userId, { ip: meta?.ip, ua: meta?.userAgent, device: meta?.device });
     const payload = { sub: userId, email, role };
@@ -107,6 +148,9 @@ export class AuthService {
     const passwordMatches = await argon2.verify(credential.password, password).catch(() => false);
     if (!passwordMatches) {
       await this.recordLoginAttempt(email, ip, false, 'password_mismatch');
+      if (await this.shouldBlockCredential(email)) {
+        await this.blockCredential(credential);
+      }
       return null;
     }
 
@@ -133,7 +177,12 @@ export class AuthService {
     return this.dataSource.transaction(async manager => {
       // save credential in auth DB
       try {
-        await manager.getRepository(Credential).save({ id, email: dto.email, password: passwordHash } as any);
+        await manager.getRepository(Credential).save({
+          id,
+          email: dto.email,
+          password: passwordHash,
+          creado_por: dto.creado_por || null,
+        } as any);
       } catch (e: any) {
         // unique violation -> email already registered
         if (e && e.code === '23505') {
@@ -150,6 +199,7 @@ export class AuthService {
       if ((dto as any).vendedor) payloadObj.vendedor = (dto as any).vendedor;
       if ((dto as any).supervisor) payloadObj.supervisor = (dto as any).supervisor;
       if ((dto as any).bodeguero) payloadObj.bodeguero = (dto as any).bodeguero;
+      if ((dto as any).creado_por) payloadObj.creado_por = (dto as any).creado_por;
 
       await this.outboxService.createEvent(manager, {
         tipo: 'UsuarioRegistrado',
@@ -175,14 +225,40 @@ export class AuthService {
       try {
         const ok = await argon2.verify(s.refresh_hash, dto.refresh_token);
         if (ok && !s.revocado_en && new Date(s.expira_en) > new Date()) {
-          const newRefresh = randomBytes(32).toString('hex');
-          s.refresh_hash = await argon2.hash(newRefresh);
-          await this.sessionRepo.save(s);
+          return await this.dataSource.transaction(async manager => {
+            await manager.getRepository(Session).update(
+              { id: s.id } as any,
+              {
+                revocado_en: new Date(),
+                revocado_por: s.usuario_id,
+                revocado_motivo: 'rotacion',
+              } as any,
+            );
 
-          const role = await this.resolveUserRole(s.usuario_id);
-          const payload = { sub: s.usuario_id, role };
-          const accessToken = this.jwtService.sign(payload, { expiresIn: '60m' });
-          return { access_token: accessToken, refresh_token: newRefresh, expires_in: 60 * 60 };
+            const newRefresh = randomBytes(32).toString('hex');
+            const refreshHash = await argon2.hash(newRefresh);
+            const expiresAt = new Date(Date.now() + this.refreshTtlMs);
+
+            const newSession = manager.getRepository(Session).create({
+              usuario_id: s.usuario_id,
+              refresh_hash: refreshHash,
+              direccion_ip: s.direccion_ip || null,
+              user_agent: s.user_agent || null,
+              dispositivo_meta: s.dispositivo_meta || {},
+              expira_en: expiresAt,
+            } as any);
+            await manager.getRepository(Session).save(newSession);
+
+            const credential = await manager.getRepository(Credential).findOneBy({ id: s.usuario_id } as any);
+            const role = await this.resolveUserRole(s.usuario_id);
+            const payload = {
+              sub: s.usuario_id,
+              role,
+              ...(credential?.email ? { email: credential.email } : {}),
+            };
+            const accessToken = this.jwtService.sign(payload, { expiresIn: '15m' });
+            return { access_token: accessToken, refresh_token: newRefresh, expires_in: 900 };
+          });
         }
       } catch (e) {
         // ignore verify errors
@@ -204,6 +280,8 @@ export class AuthService {
         const ok = await argon2.verify(s.refresh_hash, dto.refresh_token);
         if (ok) {
           s.revocado_en = new Date();
+          s.revocado_por = s.usuario_id;
+          s.revocado_motivo = 'logout_usuario';
           await this.sessionRepo.save(s);
           return;
         }
@@ -228,4 +306,3 @@ export class AuthService {
     } as any));
   }
 }
-

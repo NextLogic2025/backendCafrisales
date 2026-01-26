@@ -21,7 +21,7 @@ export class HttpOutboxTransport implements IOutboxTransport {
       'http://user-service:3000';
     const serviceToken = this.configService.get('SERVICE_TOKEN') || process.env.SERVICE_TOKEN || '';
 
-    if (evento.tipo_evento === 'UsuarioRegistrado' || evento.agregado === 'auth') {
+    if (evento.tipo_evento === 'UsuarioRegistrado') {
       const payload = JSON.parse(JSON.stringify(evento.payload));
       if (payload.rol === 'usuario') payload.rol = 'cliente';
 
