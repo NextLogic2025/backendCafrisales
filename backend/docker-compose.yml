@@ -12,11 +12,10 @@ x-common-env: &common-env
   CATALOG_SERVICE_URL: ${CATALOG_URL}
   ZONE_SERVICE_URL: ${ZONAS_URL}
   ORDERS_SERVICE_URL: ${ORDERS_URL}
-  WAREHOUSE_SERVICE_URL: ${WAREHOUSE_URL}
   FINANCE_SERVICE_URL: ${FINANCE_URL}
-  LOGISTICS_SERVICE_URL: ${LOGISTICS_URL}
   CREDIT_SERVICE_URL: ${CREDIT_URL}
   ROUTE_SERVICE_URL: ${ROUTE_URL}
+  DELIVERY_SERVICE_URL: ${DELIVERY_URL}
 
 services:
   # =========================================
@@ -227,6 +226,32 @@ services:
       timeout: 5s
       retries: 10
       start_period: 60s
+  # --- DELIVERY SERVICE ---
+  delivery-service:
+    build:
+      context: ./services/delivery-service
+      dockerfile: Dockerfile
+    container_name: delivery-service
+    restart: on-failure
+    environment:
+      <<: *common-env
+      DATABASE_URL: postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/cafrilosa_entregas
+      UPLOAD_PATH: /app/uploads/evidence
+    ports:
+      - "3008:3000"
+    volumes:
+      - delivery-uploads:/app/uploads/evidence
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - app-network
+    healthcheck:
+      test: [ "CMD-SHELL", "wget -q -T 2 -O /dev/null http://127.0.0.1:3000/api/health || exit 1" ]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
 
 networks:
   app-network:
@@ -234,3 +259,4 @@ networks:
 
 volumes:
   postgres_data:
+  delivery-uploads:
