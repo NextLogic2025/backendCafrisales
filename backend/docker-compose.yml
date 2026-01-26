@@ -179,6 +179,29 @@ services:
       timeout: 5s
       retries: 10
       start_period: 60s
+  # --- CREDIT SERVICE ---
+  credit-service:
+    build:
+      context: ./services/credit-service
+      dockerfile: Dockerfile
+    container_name: credit-service
+    restart: on-failure
+    environment:
+      <<: *common-env
+      DATABASE_URL: postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/cafrilosa_creditos
+    ports:
+      - "3006:3000"
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - app-network
+    healthcheck:
+      test: [ "CMD-SHELL", "wget -q -T 2 -O /dev/null http://127.0.0.1:3000/api/health || exit 1" ]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
 
 networks:
   app-network:

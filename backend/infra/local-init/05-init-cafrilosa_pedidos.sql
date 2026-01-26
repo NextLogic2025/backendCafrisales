@@ -315,7 +315,8 @@ CREATE TABLE app.outbox_eventos (
   clave_agregado  text NOT NULL,     -- pedido_id
   payload         jsonb NOT NULL,    -- permitido para integración
   creado_en       timestamptz NOT NULL DEFAULT transaction_timestamp(),
-  procesado_en    timestamptz
+  procesado_en    timestamptz,
+  intentos        integer NOT NULL DEFAULT 0
 );
 
 CREATE INDEX idx_outbox_pendientes
@@ -383,6 +384,6 @@ CREATE INDEX idx_outbox_pendientes
 
 -- Y recuerda:
 
-REVOKE ALL ON SCHEMA public FROM PUBLIC;
+--REVOKE ALL ON SCHEMA public FROM PUBLIC;
 
-GRANT explícitos por schema/tablas.
+--GRANT explícitos por schema/tablas.
