@@ -34,7 +34,7 @@ BEGIN
 END;
 $$;
 
-CREATE TABLE app.zonas (
+CREATE TABLE IF NOT EXISTS app.zonas (
   id               uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   codigo           varchar(20) NOT NULL UNIQUE,
   nombre           varchar(100) NOT NULL,
@@ -48,16 +48,17 @@ CREATE TABLE app.zonas (
   version          int NOT NULL DEFAULT 1
 );
 
+DROP TRIGGER IF EXISTS trg_zonas_actualizado ON app.zonas;
 CREATE TRIGGER trg_zonas_actualizado
 BEFORE UPDATE ON app.zonas
 FOR EACH ROW EXECUTE FUNCTION audit.set_actualizado();
 
-CREATE INDEX idx_zonas_activas_codigo
+CREATE INDEX IF NOT EXISTS idx_zonas_activas_codigo
   ON app.zonas(codigo)
   WHERE activo;
 
 -- Horarios por zona (0=domingo .. 6=sábado)
-CREATE TABLE app.horarios_zona (
+CREATE TABLE IF NOT EXISTS app.horarios_zona (
   id                 uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   zona_id             uuid NOT NULL REFERENCES app.zonas(id) ON DELETE CASCADE,
   dia_semana          int NOT NULL CHECK (dia_semana BETWEEN 0 AND 6),
@@ -71,11 +72,11 @@ CREATE TABLE app.horarios_zona (
   UNIQUE (zona_id, dia_semana)
 );
 
-CREATE INDEX idx_horarios_zona_zona
+CREATE INDEX IF NOT EXISTS idx_horarios_zona_zona
   ON app.horarios_zona(zona_id);
 
 -- Outbox (opcional)
-CREATE TABLE app.outbox_eventos (
+CREATE TABLE IF NOT EXISTS app.outbox_eventos (
   id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   agregado        text NOT NULL,          -- "zone"
   tipo_evento     text NOT NULL,          -- "ZonaActualizada"
@@ -86,7 +87,7 @@ CREATE TABLE app.outbox_eventos (
   intentos        integer NOT NULL DEFAULT 0
 );
 
-CREATE INDEX idx_outbox_pendientes
+CREATE INDEX IF NOT EXISTS idx_outbox_pendientes
   ON app.outbox_eventos(creado_en)
   WHERE procesado_en IS NULL;
 
@@ -100,9 +101,9 @@ CREATE INDEX idx_outbox_pendientes
 
 -- Solo si necesitas geofencing/cobertura
 ALTER TABLE app.zonas
-  ADD COLUMN zona_geom geometry(MultiPolygon, 4326);
+  ADD COLUMN IF NOT EXISTS zona_geom geometry(MultiPolygon, 4326);
 
-CREATE INDEX idx_zonas_geom
+CREATE INDEX IF NOT EXISTS idx_zonas_geom
   ON app.zonas
   USING GIST (zona_geom);
 
