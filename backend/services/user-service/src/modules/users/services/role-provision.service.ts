@@ -48,6 +48,13 @@ export class RoleProvisionService {
     }
   }
 
+  async clearStaffRecords(manager: EntityManager, userId: string) {
+    await manager.query('DELETE FROM app.vendedores WHERE usuario_id = $1', [userId]);
+    await manager.query('DELETE FROM app.bodegueros WHERE usuario_id = $1', [userId]);
+    await manager.query('DELETE FROM app.transportistas WHERE usuario_id = $1', [userId]);
+    await manager.query('DELETE FROM app.supervisores WHERE usuario_id = $1', [userId]);
+  }
+
   private async createStaff(
     manager: EntityManager,
     tableName: string,

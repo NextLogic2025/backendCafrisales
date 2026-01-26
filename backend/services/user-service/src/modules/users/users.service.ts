@@ -1,4 +1,4 @@
-import { Injectable, Logger, ConflictException } from '@nestjs/common';
+import { Injectable, Logger, ConflictException, BadRequestException, NotFoundException } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { Usuario } from './entities/usuario.entity';
 import { Perfil } from '../profiles/entities/perfil.entity';
@@ -89,7 +89,82 @@ export class UsersService {
   }
 
   async update(id: string, patch: Partial<Usuario>) {
-    await this.dataSource.getRepository(Usuario).update(id, patch as any);
-    return this.findById(id);
+    return this.dataSource.transaction(async manager => {
+      const usuarioRepo = manager.getRepository(Usuario);
+      const current = await usuarioRepo.findOneBy({ id } as any);
+      if (!current) throw new NotFoundException('Usuario no encontrado');
+
+      const nextRole = (patch as any).rol as string | undefined;
+      const updates: Partial<Usuario> = {};
+
+      if ((patch as any).email) updates.email = (patch as any).email;
+      if ((patch as any).estado) updates.estado = (patch as any).estado;
+      if (nextRole) updates.rol = nextRole as any;
+
+      if (nextRole && nextRole !== current.rol) {
+        const codigoEmpleado =
+          (patch as any).codigo_empleado ||
+          (patch as any).codigoEmpleado ||
+          (patch as any).vendedor?.codigo_empleado ||
+          (patch as any).bodeguero?.codigo_empleado ||
+          (patch as any).transportista?.codigo_empleado ||
+          (patch as any).supervisor?.codigo_empleado ||
+          null;
+
+        const supervisorId =
+          (patch as any).supervisor_id ||
+          (patch as any).supervisorId ||
+          (patch as any).vendedor?.supervisor_id ||
+          null;
+
+        const numeroLicencia =
+          (patch as any).numero_licencia ||
+          (patch as any).numeroLicencia ||
+          (patch as any).transportista?.numero_licencia ||
+          null;
+
+        const licenciaVenceEn =
+          (patch as any).licencia_vence_en ||
+          (patch as any).licenciaVenceEn ||
+          (patch as any).transportista?.licencia_vence_en ||
+          null;
+
+        if (['vendedor', 'bodeguero', 'transportista', 'supervisor'].includes(nextRole) && !codigoEmpleado) {
+          throw new BadRequestException('codigo_empleado requerido para el rol');
+        }
+
+        if (nextRole === 'transportista' && !numeroLicencia) {
+          throw new BadRequestException('numero_licencia requerido para transportista');
+        }
+
+        const rolePayload: any = { rol: nextRole, codigo_empleado: codigoEmpleado };
+
+        if (nextRole === 'vendedor') {
+          rolePayload.vendedor = { codigo_empleado: codigoEmpleado, supervisor_id: supervisorId || null };
+        }
+        if (nextRole === 'bodeguero') {
+          rolePayload.bodeguero = { codigo_empleado: codigoEmpleado };
+        }
+        if (nextRole === 'supervisor') {
+          rolePayload.supervisor = { codigo_empleado: codigoEmpleado };
+        }
+        if (nextRole === 'transportista') {
+          rolePayload.transportista = {
+            codigo_empleado: codigoEmpleado,
+            numero_licencia: numeroLicencia,
+            licencia_vence_en: licenciaVenceEn || null,
+          };
+        }
+
+        await this.roleProvision.clearStaffRecords(manager, id);
+        await this.roleProvision.provisionRole(manager, id, rolePayload as any);
+      }
+
+      if (Object.keys(updates).length > 0) {
+        await usuarioRepo.update({ id } as any, updates as any);
+      }
+
+      return this.findById(id);
+    });
   }
 }
