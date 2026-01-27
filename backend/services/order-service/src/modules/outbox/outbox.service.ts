@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, EntityManager } from 'typeorm';
 import { Outbox } from './entities/outbox.entity';
 
 @Injectable()
@@ -18,15 +18,17 @@ export class OutboxService {
         payload: any,
         agregado: string = 'order',
         claveAgregado?: string,
+        manager?: EntityManager,
     ): Promise<Outbox> {
-        const event = this.outboxRepo.create({
+        const repo = manager ? manager.getRepository(Outbox) : this.outboxRepo;
+        const event = repo.create({
             tipo_evento: tipoEvento,
             payload,
             agregado,
             clave_agregado: claveAgregado,
         });
 
-        return this.outboxRepo.save(event);
+        return repo.save(event);
     }
 
     /**

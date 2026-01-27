@@ -3,6 +3,11 @@ import { ConfigService } from '@nestjs/config';
 import { Inject } from '@nestjs/common';
 import { IS2SClient, S2S_CLIENT } from '../common/interfaces/s2s-client.interface';
 
+export interface ClienteCondiciones {
+    permite_negociacion: boolean;
+    max_descuento_porcentaje?: number;
+}
+
 @Injectable()
 export class UserExternalService {
     private readonly logger = new Logger(UserExternalService.name);
@@ -46,5 +51,24 @@ export class UserExternalService {
      */
     async getClientById(clientId: string): Promise<any> {
         return this.getUserById(clientId);
+    }
+
+    /**
+     * Get client negotiation conditions
+     */
+    async getClientConditions(clientId: string): Promise<ClienteCondiciones | null> {
+        try {
+            const conditions = await this.s2sClient.get<ClienteCondiciones>(
+                this.userServiceUrl,
+                `/api/internal/clientes/${clientId}/condiciones`,
+                this.serviceToken,
+            );
+            return conditions;
+        } catch (error) {
+            this.logger.warn(
+                `Failed to fetch client conditions for ${clientId} from user-service: ${error.message}`,
+            );
+            return null;
+        }
     }
 }

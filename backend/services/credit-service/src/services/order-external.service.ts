@@ -31,7 +31,7 @@ export class OrderExternalService {
         try {
             const order = await this.s2sClient.get<any>(
                 this.orderServiceUrl,
-                `/api/internal/orders/${orderId}`,
+                `/api/internal/pedidos/${orderId}`,
                 this.serviceToken,
             );
             return order;

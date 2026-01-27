@@ -1,8 +1,9 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { ValidacionBodega } from './validacion-bodega.entity';
 import { ItemPedido } from '../../orders/entities/item-pedido.entity';
+import { EstadoItemResultado } from '../../../common/constants/item-validation.enum';
 
-@Entity({ schema: 'app', name: 'items_validacion' })
+@Entity({ schema: 'app', name: 'items_validacion_bodega' })
 export class ItemValidacion {
     @PrimaryGeneratedColumn('uuid')
     id: string;
@@ -21,18 +22,26 @@ export class ItemValidacion {
     @Column('uuid')
     item_pedido_id: string;
 
-    @Column('int', { nullable: true })
-    cantidad_disponible: number;
+    @Column({ type: 'enum', enum: EstadoItemResultado })
+    estado_resultado: EstadoItemResultado;
+
+    @Column('uuid', { nullable: true })
+    sku_aprobado_id: string;
+
+    @Column({ length: 255, nullable: true })
+    sku_aprobado_nombre_snapshot: string;
+
+    @Column({ length: 50, nullable: true })
+    sku_aprobado_codigo_snapshot: string;
 
     @Column('int', { nullable: true })
-    cantidad_ajustada: number;
+    cantidad_aprobada: number;
 
-    @Column('text', { nullable: true })
-    motivo_ajuste: string;
+    @Column('text')
+    motivo: string;
 
-    @Column('boolean', { default: true })
-    aprobado: boolean;
-
-    @CreateDateColumn()
+    @Column('timestamptz', {
+        default: () => 'transaction_timestamp()',
+    })
     creado_en: Date;
 }

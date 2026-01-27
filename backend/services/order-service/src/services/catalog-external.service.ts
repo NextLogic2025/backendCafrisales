@@ -1,7 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Inject } from '@nestjs/common';
 import { IS2SClient, S2S_CLIENT } from '../common/interfaces/s2s-client.interface';
+import type { CatalogSkuSnapshot } from '../common/interfaces/catalog-sku-snapshot.interface';
 
 @Injectable()
 export class CatalogExternalService {
@@ -50,5 +50,34 @@ export class CatalogExternalService {
         return results
             .filter((r) => r.status === 'fulfilled' && r.value !== null)
             .map((r: any) => r.value);
+    }
+
+    async getSkuSnapshot(skuId: string): Promise<CatalogSkuSnapshot | null> {
+        const sku = await this.getSkuById(skuId);
+        if (!sku) {
+            return null;
+        }
+
+        const nombre = sku.nombre ?? sku.name ?? 'Sin nombre';
+        const codigo = sku.codigo ?? sku.code ?? sku.sku ?? 'SIN-CODIGO';
+        const peso = sku.peso_gramos ?? sku.peso ?? sku.pesoGramos ?? 0;
+        const tipo = sku.tipo_empaque ?? sku.tipoEmpaque ?? 'desconocido';
+        const precio = sku.precio_vigente ?? sku.precio ?? sku.price ?? 0;
+
+        return {
+            sku_id: skuId,
+            nombre,
+            codigo,
+            peso_gramos: Number(peso),
+            tipo_empaque: tipo,
+            precio_unitario: Number(precio),
+        };
+    }
+
+    async getSkuSnapshots(skuIds: string[]): Promise<CatalogSkuSnapshot[]> {
+        const results = await Promise.allSettled(skuIds.map((id) => this.getSkuSnapshot(id)));
+        return results
+            .filter((result): result is PromiseFulfilledResult<CatalogSkuSnapshot> => result.status === 'fulfilled' && result.value !== null)
+            .map((result) => result.value);
     }
 }

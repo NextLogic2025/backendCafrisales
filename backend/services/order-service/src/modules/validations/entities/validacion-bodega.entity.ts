@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany, CreateDateColumn } from 'typeorm';
+import {
+    Entity,
+    PrimaryGeneratedColumn,
+    Column,
+    ManyToOne,
+    JoinColumn,
+    OneToMany,
+} from 'typeorm';
 import { Pedido } from '../../orders/entities/pedido.entity';
 import { ItemValidacion } from './item-validacion.entity';
 
@@ -15,20 +22,22 @@ export class ValidacionBodega {
     pedido_id: string;
 
     @Column('uuid')
-    bodeguero_id: string;
+    validado_por_id: string;
 
-    @Column('int', { default: 1 })
-    version: number;
+    @Column('int')
+    numero_version: number;
 
-    @Column({ length: 50, default: 'pendiente' })
-    estado: string;
+    @Column('timestamptz', {
+        default: () => 'transaction_timestamp()',
+    })
+    validado_en: Date;
+
+    @Column('boolean', { default: false })
+    requiere_aceptacion_cliente: boolean;
 
     @Column('text', { nullable: true })
-    observaciones: string;
+    motivo_general: string;
 
     @OneToMany(() => ItemValidacion, (item) => item.validacion, { cascade: true })
     items: ItemValidacion[];
-
-    @CreateDateColumn()
-    creado_en: Date;
 }

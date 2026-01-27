@@ -1,164 +1,461 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+    Injectable,
+    NotFoundException,
+    BadRequestException,
+    ForbiddenException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, EntityManager, SelectQueryBuilder } from 'typeorm';
 import { Pedido } from './entities/pedido.entity';
 import { ItemPedido } from './entities/item-pedido.entity';
+import { HistorialEstadoPedido } from '../history/entities/historial-estado-pedido.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { AddItemDto } from './dto/add-item.dto';
+import { CatalogExternalService } from '../../services/catalog-external.service';
+import { UserExternalService, ClienteCondiciones } from '../../services/user-external.service';
+import { ZoneExternalService } from '../../services/zone-external.service';
+import { OutboxService } from '../outbox/outbox.service';
+import { CancelacionPedido } from '../cancellations/entities/cancelacion-pedido.entity';
+import { RolUsuario } from '../../common/constants/rol-usuario.enum';
 import { EstadoPedido } from '../../common/constants/order-status.enum';
+import { OrigenCreacion } from '../../common/constants/creation-source.enum';
+import { TipoDescuento } from '../../common/constants/discount-type.enum';
+import { OrigenPrecio } from '../../common/constants/price-origin.enum';
+import type { CatalogSkuSnapshot } from '../../common/interfaces/catalog-sku-snapshot.interface';
+
+const TAX_RATE = 0.12;
+const DEFAULT_LIST_LIMIT = 100;
+
+interface PreparedItem {
+    sku_id: string;
+    cantidad_solicitada: number;
+    sku_nombre_snapshot: string;
+    sku_codigo_snapshot: string;
+    sku_peso_gramos_snapshot: number;
+    sku_tipo_empaque_snapshot: string;
+    precio_unitario_base: number;
+    precio_unitario_final: number;
+    subtotal: number;
+    descuento_item_tipo?: TipoDescuento;
+    descuento_item_valor?: number;
+    precio_origen: OrigenPrecio;
+    requiere_aprobacion: boolean;
+}
 
 @Injectable()
 export class OrdersService {
     constructor(
         @InjectRepository(Pedido)
         private readonly pedidoRepo: Repository<Pedido>,
-        @InjectRepository(ItemPedido)
-        private readonly itemRepo: Repository<ItemPedido>,
         private readonly dataSource: DataSource,
-    ) { }
+        private readonly catalogExternalService: CatalogExternalService,
+        private readonly userExternalService: UserExternalService,
+        private readonly zoneExternalService: ZoneExternalService,
+        private readonly outboxService: OutboxService,
+    ) {}
 
-    /**
-     * Generate unique order number
-     */
-    private async generateOrderNumber(): Promise<string> {
-        const year = new Date().getFullYear();
-        const count = await this.pedidoRepo.count();
-        const sequence = (count + 1).toString().padStart(4, '0');
-        return `PED-${year}-${sequence}`;
-    }
+    async create(dto: CreateOrderDto, user: { userId: string; role: RolUsuario }): Promise<Pedido> {
+        const isCliente = user.role === RolUsuario.CLIENTE;
+        const origen = isCliente ? OrigenCreacion.CLIENTE : OrigenCreacion.VENDEDOR;
+        const clienteId = isCliente ? user.userId : dto.cliente_id;
+        if (!clienteId) {
+            throw new BadRequestException('Cliente es requerido para crear el pedido');
+        }
 
-    /**
-     * Calculate order totals
-     */
-    private calculateTotals(items: { cantidad: number; precio_unitario: number }[]) {
-        const subtotal = items.reduce((sum, item) => sum + item.cantidad * item.precio_unitario, 0);
-        const impuestos = subtotal * 0.12; // 12% IVA
-        const total = subtotal + impuestos;
+        const cliente = await this.userExternalService.getClientById(clienteId);
+        if (!cliente) {
+            throw new NotFoundException(`Cliente ${clienteId} no encontrado`);
+        }
 
-        return {
-            subtotal: Number(subtotal.toFixed(2)),
-            impuestos: Number(impuestos.toFixed(2)),
-            total: Number(total.toFixed(2)),
-        };
-    }
+        await this.ensureConditionValidation(dto, isCliente, clienteId);
 
-    /**
-     * Create a new order with items (transactional)
-     */
-    async create(dto: CreateOrderDto): Promise<Pedido> {
+        const zoneId = await this.resolveZoneId(dto.zona_id, cliente);
+
+        const skuMap = await this.buildSkuSnapshotMap(dto.items);
+        const items = this.buildItems(dto.items, skuMap);
+        const totals = this.calculateTotals(items, dto);
+
         return this.dataSource.transaction(async (manager) => {
-            // Generate order number
-            const numero_pedido = await this.generateOrderNumber();
-
-            // Calculate totals
-            const totals = this.calculateTotals(dto.items);
-
-            // Create order
+            const numeroPedido = await this.generateOrderNumber(manager);
             const pedido = manager.create(Pedido, {
-                numero_pedido,
-                cliente_id: dto.cliente_id,
-                vendedor_id: dto.vendedor_id,
-                zona_id: dto.zona_id,
-                estado: EstadoPedido.BORRADOR,
+                numero_pedido: numeroPedido,
+                cliente_id: clienteId,
+                zona_id: zoneId,
+                creado_por_id: user.userId,
+                creado_por: user.userId,
+                actualizado_por: user.userId,
+                origen,
+                estado: EstadoPedido.PENDIENTE_VALIDACION,
+                metodo_pago: dto.metodo_pago,
                 notas: dto.notas,
+                fecha_entrega_sugerida: dto.fecha_entrega_sugerida,
                 ...totals,
             });
 
             const savedPedido = await manager.save(Pedido, pedido);
 
-            // Create items
-            const items = dto.items.map((itemDto) => {
-                const subtotal = itemDto.cantidad * itemDto.precio_unitario;
-                return manager.create(ItemPedido, {
+            const itemsEntity = items.map((item) =>
+                manager.create(ItemPedido, {
+                    ...item,
                     pedido_id: savedPedido.id,
-                    sku_id: itemDto.sku_id,
-                    cantidad: itemDto.cantidad,
-                    precio_unitario: itemDto.precio_unitario,
-                    origen_precio: itemDto.origen_precio,
-                    subtotal: Number(subtotal.toFixed(2)),
-                });
-            });
+                    creado_por: user.userId,
+                }),
+            );
 
-            await manager.save(ItemPedido, items);
+            await manager.save(ItemPedido, itemsEntity);
 
-            // Return complete order with items
-            return manager.findOne(Pedido, {
-                where: { id: savedPedido.id },
-                relations: ['items'],
-            });
+            await this.recordHistory(
+                manager,
+                savedPedido.id,
+                EstadoPedido.PENDIENTE_VALIDACION,
+                user.userId,
+                'Pedido creado y en cola de validación',
+            );
+
+            await this.outboxService.createEvent(
+                'PedidoCreado',
+                {
+                    pedido_id: savedPedido.id,
+                    cliente_id: savedPedido.cliente_id,
+                    total: savedPedido.total,
+                },
+                'order',
+                savedPedido.id,
+                manager,
+            );
+
+            return this.findOne(savedPedido.id);
         });
     }
 
-    /**
-     * Find all orders
-     */
     async findAll(): Promise<Pedido[]> {
         return this.pedidoRepo.find({
-            relations: ['items'],
+            relations: ['items', 'validaciones', 'validaciones.items', 'historial'],
             order: { creado_en: 'DESC' },
         });
     }
 
-    /**
-     * Find orders by client
-     */
-    async findByClient(clienteId: string): Promise<Pedido[]> {
+    async findByClient(clienteId: string, estado?: EstadoPedido): Promise<Pedido[]> {
+        const where: any = { cliente_id: clienteId };
+        if (estado) {
+            where.estado = estado;
+        }
         return this.pedidoRepo.find({
-            where: { cliente_id: clienteId },
+            where,
             relations: ['items'],
             order: { creado_en: 'DESC' },
         });
     }
 
-    /**
-     * Find one order by ID
-     */
     async findOne(id: string): Promise<Pedido> {
         const pedido = await this.pedidoRepo.findOne({
             where: { id },
-            relations: ['items'],
+            relations: ['items', 'validaciones', 'validaciones.items', 'historial'],
         });
-
         if (!pedido) {
-            throw new NotFoundException(`Pedido con ID ${id} no encontrado`);
+            throw new NotFoundException(`Pedido ${id} no encontrado`);
         }
-
         return pedido;
     }
 
-    /**
-     * Update order status
-     */
-    async updateStatus(id: string, estado: EstadoPedido): Promise<Pedido> {
-        const pedido = await this.findOne(id);
+    async findPendingValidation(limit = DEFAULT_LIST_LIMIT): Promise<Pedido[]> {
+        return this.pedidoRepo.find({
+            where: { estado: EstadoPedido.PENDIENTE_VALIDACION },
+            order: { creado_en: 'ASC' },
+            take: limit,
+            relations: ['items'],
+        });
+    }
 
-        // Validate state transitions (basic example)
-        if (pedido.estado === EstadoPedido.CONFIRMADO || pedido.estado === EstadoPedido.CANCELADO) {
-            throw new BadRequestException('No se puede cambiar el estado de un pedido confirmado o cancelado');
+    async findByZoneAndDate(
+        zonaId: string,
+        fechaEntrega: string,
+        estados: EstadoPedido[] = [EstadoPedido.VALIDADO, EstadoPedido.ACEPTADO_CLIENTE],
+        limit = DEFAULT_LIST_LIMIT,
+    ): Promise<Pedido[]> {
+        if (!zonaId || !fechaEntrega) {
+            throw new BadRequestException('zona_id y fecha_entrega son obligatorios');
         }
 
-        pedido.estado = estado;
-        await this.pedidoRepo.save(pedido);
+        const query: SelectQueryBuilder<Pedido> = this.pedidoRepo
+            .createQueryBuilder('pedido')
+            .leftJoinAndSelect('pedido.items', 'items')
+            .where('pedido.zona_id = :zonaId', { zonaId })
+            .andWhere('pedido.fecha_entrega_sugerida = :fecha', { fecha: fechaEntrega })
+            .andWhere('pedido.estado IN (:...estados)', { estados })
+            .orderBy('pedido.creado_en', 'ASC')
+            .take(limit);
 
-        return this.findOne(id);
+        return query.getMany();
     }
 
-    /**
-     * Cancel order
-     */
-    async cancel(id: string): Promise<Pedido> {
-        return this.updateStatus(id, EstadoPedido.CANCELADO);
+    private async resolveZoneId(requestedZoneId: string, client: any): Promise<string> {
+        const candidate =
+            requestedZoneId ||
+            client?.zona_id ||
+            client?.zonaId ||
+            client?.zone_id ||
+            client?.zona ||
+            null;
+
+        if (!candidate) {
+            throw new BadRequestException('Zona no disponible para el pedido');
+        }
+
+        const zone = await this.zoneExternalService.getZoneById(candidate);
+        if (!zone) {
+            throw new NotFoundException(`Zona ${candidate} no encontrada`);
+        }
+
+        return candidate;
     }
 
-    /**
-     * Delete order (only if in draft state)
-     */
+    private async buildSkuSnapshotMap(itemDtos: AddItemDto[]): Promise<Map<string, CatalogSkuSnapshot>> {
+        const skuIds = [...new Set(itemDtos.map((item) => item.sku_id))];
+        const snapshots = await this.catalogExternalService.getSkuSnapshots(skuIds);
+        const map = new Map<string, CatalogSkuSnapshot>(snapshots.map((snapshot) => [snapshot.sku_id, snapshot]));
+
+        const missing = skuIds.filter((skuId) => !map.has(skuId));
+        if (missing.length) {
+            throw new NotFoundException(`SKUs no encontrados: ${missing.join(', ')}`);
+        }
+
+        return map;
+    }
+
+    private buildItems(itemDtos: AddItemDto[], snapshotMap: Map<string, CatalogSkuSnapshot>): PreparedItem[] {
+        return itemDtos.map((itemDto) => {
+            const snapshot = snapshotMap.get(itemDto.sku_id);
+            if (!snapshot) {
+                throw new NotFoundException(`SKU ${itemDto.sku_id} no encontrado en catálogo`);
+            }
+
+            const precioBase = Number(snapshot.precio_unitario ?? 0);
+            if (Number.isNaN(precioBase) || precioBase < 0) {
+                throw new BadRequestException(`El SKU ${itemDto.sku_id} no tiene precio válido`);
+            }
+
+            const precioFinal = itemDto.precio_unitario_final ?? precioBase;
+            const subtotal = Number((precioFinal * itemDto.cantidad).toFixed(2));
+
+            const peso = Number(snapshot.peso_gramos ?? 0);
+            if (Number.isNaN(peso) || peso <= 0) {
+                throw new BadRequestException(`El SKU ${itemDto.sku_id} requiere peso válido`);
+            }
+
+            return {
+                sku_id: itemDto.sku_id,
+                cantidad_solicitada: itemDto.cantidad,
+                sku_nombre_snapshot: snapshot.nombre ?? 'Sin nombre',
+                sku_codigo_snapshot: snapshot.codigo ?? 'SIN-CODIGO',
+                sku_peso_gramos_snapshot: Math.floor(peso),
+                sku_tipo_empaque_snapshot: snapshot.tipo_empaque ?? 'desconocido',
+                precio_unitario_base: precioBase,
+                precio_unitario_final: Number(precioFinal.toFixed(2)),
+                subtotal,
+                descuento_item_tipo: itemDto.descuento_item_tipo,
+                descuento_item_valor: itemDto.descuento_item_valor,
+                precio_origen: itemDto.origen_precio,
+                requiere_aprobacion: itemDto.requiere_aprobacion ?? false,
+            };
+        });
+    }
+
+    private calculateTotals(items: PreparedItem[], dto: CreateOrderDto) {
+        const subtotal = Number(items.reduce((sum, item) => sum + item.subtotal, 0).toFixed(2));
+        const descuento_pedido_tipo = dto.descuento_pedido_tipo ?? null;
+        const descuentoValor =
+            descuento_pedido_tipo && dto.descuento_pedido_valor != null
+                ? this.calculateOrderDiscount(subtotal, descuento_pedido_tipo, dto.descuento_pedido_valor)
+                : null;
+
+        const base = Number((subtotal - (descuentoValor ?? 0)).toFixed(2));
+        if (base < 0) {
+            throw new BadRequestException('El descuento no puede ser mayor que el subtotal');
+        }
+
+        const impuesto = Number((base * TAX_RATE).toFixed(2));
+        const total = Number((base + impuesto).toFixed(2));
+
+        return {
+            subtotal,
+            impuesto,
+            total,
+            descuento_pedido_tipo,
+            descuento_pedido_valor: descuentoValor,
+        };
+    }
+
+    private calculateOrderDiscount(subtotal: number, tipo: TipoDescuento, valor: number): number {
+        if (tipo === TipoDescuento.PORCENTAJE) {
+            return Number(((subtotal * valor) / 100).toFixed(2));
+        }
+        return Number(valor.toFixed(2));
+    }
+
+    private ensureDiscountConsistency(dto: CreateOrderDto) {
+        const hasTipo = Boolean(dto.descuento_pedido_tipo);
+        const hasValor = dto.descuento_pedido_valor != null;
+        if (hasTipo !== hasValor) {
+            throw new BadRequestException('El tipo y el valor del descuento deben ir juntos');
+        }
+
+        if (dto.descuento_pedido_tipo === TipoDescuento.PORCENTAJE && dto.descuento_pedido_valor > 100) {
+            throw new BadRequestException('El porcentaje de descuento no puede superar el 100%');
+        }
+    }
+
+    private async ensureConditionValidation(dto: CreateOrderDto, isCliente: boolean, clienteId: string) {
+        this.ensureDiscountConsistency(dto);
+
+        if (isCliente && (dto.descuento_pedido_tipo || dto.descuento_pedido_valor != null)) {
+            throw new BadRequestException('Los clientes no pueden negociar descuentos');
+        }
+
+        if (isCliente) {
+            return;
+        }
+
+        const condiciones: ClienteCondiciones | null = await this.userExternalService.getClientConditions(clienteId);
+        if (!condiciones) {
+            return;
+        }
+
+        if (!condiciones.permite_negociacion && (dto.descuento_pedido_tipo || dto.descuento_pedido_valor != null)) {
+            throw new BadRequestException('El cliente no permite negociaciones');
+        }
+
+        if (
+            dto.descuento_pedido_tipo === TipoDescuento.PORCENTAJE &&
+            typeof condiciones.max_descuento_porcentaje === 'number' &&
+            dto.descuento_pedido_valor > condiciones.max_descuento_porcentaje
+        ) {
+            throw new ForbiddenException('El descuento supera el tope permitido por el cliente');
+        }
+    }
+
+    private async generateOrderNumber(manager: EntityManager): Promise<string> {
+        const year = new Date().getFullYear();
+        const count = await manager.count(Pedido);
+        const sequence = (count + 1).toString().padStart(4, '0');
+        return `PED-${year}-${sequence}`;
+    }
+
+    private async recordHistory(
+        manager: EntityManager,
+        pedidoId: string,
+        estado: EstadoPedido,
+        actorId: string,
+        motivo: string,
+    ) {
+        const historial = manager.create(HistorialEstadoPedido, {
+            pedido_id: pedidoId,
+            estado,
+            cambiado_por_id: actorId,
+            motivo,
+        });
+        await manager.save(HistorialEstadoPedido, historial);
+    }
+
+    async updateStatus(id: string, estado: EstadoPedido, actor?: { userId: string }): Promise<Pedido> {
+        const actorId = actor?.userId ?? 'system';
+        return this.dataSource.transaction(async (manager) => {
+            const pedido = await manager.findOne(Pedido, { where: { id } });
+            if (!pedido) {
+                throw new NotFoundException(`Pedido ${id} no encontrado`);
+            }
+
+            if ([EstadoPedido.ENTREGADO, EstadoPedido.CANCELADO].includes(pedido.estado)) {
+                throw new BadRequestException('No se puede cambiar el estado de un pedido finalizado');
+            }
+
+            pedido.estado = estado;
+            pedido.actualizado_por = actorId;
+            await manager.save(Pedido, pedido);
+
+            await this.recordHistory(manager, pedido.id, estado, actorId, `Estado actualizado manualmente`);
+
+            await this.outboxService.createEvent(
+                `Pedido${this.capitalizeEstado(estado)}`,
+                { pedido_id: pedido.id, estado },
+                'order',
+                pedido.id,
+                manager,
+            );
+
+            return this.findOne(pedido.id);
+        });
+    }
+
+    async cancel(id: string, motivo: string, actorUserId: string): Promise<Pedido> {
+        return this.dataSource.transaction(async (manager) => {
+            const pedido = await manager.findOne(Pedido, { where: { id } });
+            if (!pedido) {
+                throw new NotFoundException(`Pedido ${id} no encontrado`);
+            }
+
+            if ([EstadoPedido.ENTREGADO, EstadoPedido.CANCELADO].includes(pedido.estado)) {
+                throw new BadRequestException('No se puede cancelar un pedido finalizado');
+            }
+
+            pedido.estado = EstadoPedido.CANCELADO;
+            pedido.actualizado_por = actorUserId;
+            await manager.save(Pedido, pedido);
+
+            await this.recordCancellation(
+                manager,
+                pedido.id,
+                actorUserId,
+                motivo || 'Cancelado manualmente',
+            );
+
+            await this.recordHistory(
+                manager,
+                pedido.id,
+                EstadoPedido.CANCELADO,
+                actorUserId,
+                motivo || 'Cancelado manualmente',
+            );
+
+            await this.outboxService.createEvent(
+                'PedidoCancelado',
+                { pedido_id: pedido.id, motivo },
+                'order',
+                pedido.id,
+                manager,
+            );
+
+            return this.findOne(pedido.id);
+        });
+    }
+
     async remove(id: string): Promise<void> {
         const pedido = await this.findOne(id);
-
-        if (pedido.estado !== EstadoPedido.BORRADOR) {
-            throw new BadRequestException('Solo se pueden eliminar pedidos en estado borrador');
+        if (pedido.estado !== EstadoPedido.PENDIENTE_VALIDACION) {
+            throw new BadRequestException('Solo se pueden eliminar pedidos pendientes de validación');
         }
 
         await this.pedidoRepo.remove(pedido);
+    }
+
+    private async recordCancellation(
+        manager: EntityManager,
+        pedidoId: string,
+        actorId: string,
+        motivo: string,
+    ) {
+        const cancelacion = manager.create(CancelacionPedido, {
+            pedido_id: pedidoId,
+            cancelado_por_id: actorId,
+            motivo,
+        });
+        await manager.save(CancelacionPedido, cancelacion);
+    }
+
+    private capitalizeEstado(status: EstadoPedido): string {
+        return status
+            .split('_')
+            .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+            .join('');
     }
 }

@@ -8,16 +8,14 @@ import { envValidationSchema } from './config/env.validation';
 import { JwtStrategy } from './common/strategies/jwt.strategy';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
-import { S2S_CLIENT } from './common/interfaces/s2s-client.interface';
-import { HttpS2SAdapter } from './common/adapters/http-s2s.adapter';
+import { ServiceTokenGuard } from './common/guards/service-token.guard';
 import { HealthModule } from './modules/health/health.module';
 import { CreditsModule } from './modules/credits/credits.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { HistoryModule } from './modules/history/history.module';
 import { OutboxModule } from './modules/outbox/outbox.module';
-import { OrderExternalService } from './services/order-external.service';
-import { UserExternalService } from './services/user-external.service';
+import { ExternalServicesModule } from './modules/external-services/external-services.module';
 
 @Module({
     imports: [
@@ -36,6 +34,7 @@ import { UserExternalService } from './services/user-external.service';
             signOptions: { expiresIn: '60m' },
         }),
         HealthModule,
+        ExternalServicesModule,
         CreditsModule,
         PaymentsModule,
         ReportsModule,
@@ -46,12 +45,7 @@ import { UserExternalService } from './services/user-external.service';
         JwtStrategy,
         JwtAuthGuard,
         RolesGuard,
-        OrderExternalService,
-        UserExternalService,
-        {
-            provide: S2S_CLIENT,
-            useClass: HttpS2SAdapter,
-        },
+        ServiceTokenGuard,
     ],
 })
 export class AppModule { }

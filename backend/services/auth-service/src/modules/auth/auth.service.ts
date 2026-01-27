@@ -1,4 +1,4 @@
-import { Injectable, Logger, UnauthorizedException, ConflictException, Inject, ForbiddenException } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException, ConflictException, Inject, ForbiddenException, InternalServerErrorException } from '@nestjs/common';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { RefreshDto } from './dto/refresh.dto';
@@ -180,7 +180,22 @@ export class AuthService {
     const passwordHash = await argon2.hash(dto.password);
     const id = options?.allowCustomId && dto.usuario_id ? dto.usuario_id : uuidv4();
 
-    return this.dataSource.transaction(async manager => {
+    const payloadObj: any = {
+      id,
+      usuario_id: id,
+      email: dto.email,
+    };
+
+    if ((dto as any).rol) payloadObj.rol = (dto as any).rol;
+    if ((dto as any).perfil) payloadObj.perfil = (dto as any).perfil;
+    if ((dto as any).cliente) payloadObj.cliente = (dto as any).cliente;
+    if ((dto as any).vendedor) payloadObj.vendedor = (dto as any).vendedor;
+    if ((dto as any).supervisor) payloadObj.supervisor = (dto as any).supervisor;
+    if ((dto as any).bodeguero) payloadObj.bodeguero = (dto as any).bodeguero;
+    if ((dto as any).transportista) payloadObj.transportista = (dto as any).transportista;
+    if ((dto as any).creado_por) payloadObj.creado_por = (dto as any).creado_por;
+
+    const result = await this.dataSource.transaction(async manager => {
       // save credential in auth DB
       try {
         await manager.getRepository(Credential).save({
@@ -208,15 +223,28 @@ export class AuthService {
       if ((dto as any).transportista) payloadObj.transportista = (dto as any).transportista;
       if ((dto as any).creado_por) payloadObj.creado_por = (dto as any).creado_por;
 
-      await this.outboxService.createEvent(manager, {
-        tipo: 'CredencialCreada',
-        claveAgregado: id,
-        payload: payloadObj,
-        agregado: 'auth',
+        await this.outboxService.createEvent(manager, {
+          tipo: 'CredencialCreada',
+          claveAgregado: id,
+          payload: payloadObj,
+          agregado: 'auth',
+        });
+
+        return { id, email: dto.email };
       });
 
-      return { id, email: dto.email };
-    });
+    try {
+      await this.userExternalService.syncUser(payloadObj);
+    } catch (error: any) {
+      if (error instanceof ConflictException) {
+        this.logger.warn(`Usuario ${id} ya sincronizado con user-service`);
+      } else {
+        this.logger.error(`Error sincronizando usuario ${id} con user-service`, error);
+        throw new InternalServerErrorException('No se pudo sincronizar el usuario con el servicio de usuarios');
+      }
+    }
+
+    return result;
   }
 
   async refresh(dto: RefreshDto) {

@@ -51,13 +51,13 @@ npm run start:prod
 Gestión completa de pedidos con CRUD, cálculo automático de totales y estados.
 
 **Endpoints:**
-- `POST /api/orders` - Crear pedido
-- `GET /api/orders` - Listar todos
-- `GET /api/orders/my-orders` - Mis pedidos (Cliente)
-- `GET /api/orders/:id` - Ver pedido
-- `PATCH /api/orders/:id/status` - Cambiar estado
-- `PATCH /api/orders/:id/cancel` - Cancelar
-- `DELETE /api/orders/:id` - Eliminar
+- `POST /api/pedidos` - Crear pedido
+- `GET /api/pedidos` - Listar todos
+- `GET /api/pedidos/my-orders` - Mis pedidos (Cliente)
+- `GET /api/pedidos/:id` - Ver pedido
+- `PATCH /api/pedidos/:id/status` - Cambiar estado
+- `PATCH /api/pedidos/:id/cancel` - Cancelar
+- `DELETE /api/pedidos/:id` - Eliminar
 
 ### Validations Module
 Validación de bodega con versionado automático.
@@ -144,7 +144,7 @@ Consulta información de zonas y cobertura.
 ### Crear Pedido
 
 ```bash
-POST /api/orders
+POST /api/pedidos
 Authorization: Bearer <jwt-token>
 Content-Type: application/json
 

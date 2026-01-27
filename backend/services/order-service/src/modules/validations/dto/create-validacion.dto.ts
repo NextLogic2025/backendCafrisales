@@ -1,25 +1,25 @@
-import { IsUUID, IsString, IsOptional, IsArray, ValidateNested, IsInt, IsBoolean } from 'class-validator';
+import { IsUUID, IsString, IsEnum, IsOptional, IsArray, ValidateNested, IsInt, Min } from 'class-validator';
 import { Type } from 'class-transformer';
+import { EstadoItemResultado } from '../../../common/constants/item-validation.enum';
 
-class ItemValidacionDto {
+class ValidacionItemResultadoDto {
     @IsUUID()
     item_pedido_id: string;
 
-    @IsInt()
+    @IsEnum(EstadoItemResultado)
+    estado_resultado: EstadoItemResultado;
+
+    @IsUUID()
     @IsOptional()
-    cantidad_disponible?: number;
+    sku_aprobado_id?: string;
 
     @IsInt()
+    @Min(0)
     @IsOptional()
-    cantidad_ajustada?: number;
+    cantidad_aprobada?: number;
 
     @IsString()
-    @IsOptional()
-    motivo_ajuste?: string;
-
-    @IsBoolean()
-    @IsOptional()
-    aprobado?: boolean = true;
+    motivo: string;
 }
 
 export class CreateValidacionDto {
@@ -35,6 +35,6 @@ export class CreateValidacionDto {
 
     @IsArray()
     @ValidateNested({ each: true })
-    @Type(() => ItemValidacionDto)
-    items: ItemValidacionDto[];
+    @Type(() => ValidacionItemResultadoDto)
+    items_resultados: ValidacionItemResultadoDto[];
 }

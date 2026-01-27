@@ -1,10 +1,17 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn } from 'typeorm';
+import {
+    Entity,
+    PrimaryGeneratedColumn,
+    Column,
+    ManyToOne,
+    JoinColumn,
+} from 'typeorm';
 import { Pedido } from '../../orders/entities/pedido.entity';
+import { EstadoPedido } from '../../../common/constants/order-status.enum';
 
 @Entity({ schema: 'app', name: 'historial_estado_pedido' })
 export class HistorialEstadoPedido {
-    @PrimaryGeneratedColumn('uuid')
-    id: string;
+    @PrimaryGeneratedColumn('increment')
+    id: number;
 
     @ManyToOne(() => Pedido)
     @JoinColumn({ name: 'pedido_id' })
@@ -13,18 +20,17 @@ export class HistorialEstadoPedido {
     @Column('uuid')
     pedido_id: string;
 
-    @Column({ length: 50, nullable: true })
-    estado_anterior: string;
+    @Column({ type: 'enum', enum: EstadoPedido })
+    estado: EstadoPedido;
 
-    @Column({ length: 50 })
-    estado_nuevo: string;
-
-    @Column('uuid', { nullable: true })
-    usuario_id: string;
+    @Column('uuid')
+    cambiado_por_id: string;
 
     @Column('text', { nullable: true })
-    razon: string;
+    motivo: string;
 
-    @CreateDateColumn()
+    @Column('timestamptz', {
+        default: () => 'transaction_timestamp()',
+    })
     creado_en: Date;
 }

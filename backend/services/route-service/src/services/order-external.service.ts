@@ -27,7 +27,7 @@ export class OrderExternalService {
         try {
             return await this.s2sClient.get<any>(
                 this.orderServiceUrl,
-                `/api/internal/orders/${orderId}`,
+                `/api/internal/pedidos/${orderId}`,
                 this.serviceToken,
             );
         } catch (error) {

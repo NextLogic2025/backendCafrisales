@@ -1,19 +1,18 @@
 import { IsUUID, IsString, IsEnum, IsOptional } from 'class-validator';
-
-export enum AccionCliente {
-    ACEPTAR = 'aceptar',
-    RECHAZAR = 'rechazar',
-}
+import { AccionClienteAjuste } from '../../../common/constants/client-action.enum';
 
 export class CreateAccionDto {
+    @IsUUID()
+    pedido_id: string;
+
     @IsUUID()
     validacion_id: string;
 
     @IsUUID()
     cliente_id: string;
 
-    @IsEnum(AccionCliente)
-    accion: AccionCliente;
+    @IsEnum(AccionClienteAjuste)
+    accion: AccionClienteAjuste;
 
     @IsString()
     @IsOptional()

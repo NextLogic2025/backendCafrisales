@@ -1,6 +1,10 @@
 import { Controller, Get, Post, Body, Param, Patch, Delete, UseGuards, Query } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { CreateValidacionDto } from '../validations/dto/create-validacion.dto';
+import { ValidationsService } from '../validations/validations.service';
+import { CreateAccionDto } from '../actions/dto/create-accion.dto';
+import { ActionsService } from '../actions/actions.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -8,19 +12,19 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { RolUsuario } from '../../common/constants/rol-usuario.enum';
 import { EstadoPedido } from '../../common/constants/order-status.enum';
 
-@Controller('orders')
+@Controller('pedidos')
 export class OrdersController {
-    constructor(private readonly ordersService: OrdersService) { }
+    constructor(
+        private readonly ordersService: OrdersService,
+        private readonly validationsService: ValidationsService,
+        private readonly actionsService: ActionsService,
+    ) { }
 
     @Post()
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(RolUsuario.CLIENTE, RolUsuario.VENDEDOR, RolUsuario.ADMIN)
     create(@Body() dto: CreateOrderDto, @CurrentUser() user: any) {
-        // If user is cliente, force cliente_id to be their own ID
-        if (user.role === RolUsuario.CLIENTE) {
-            dto.cliente_id = user.userId;
-        }
-        return this.ordersService.create(dto);
+        return this.ordersService.create(dto, user);
     }
 
     @Get()
@@ -37,6 +41,47 @@ export class OrdersController {
         return this.ordersService.findByClient(user.userId);
     }
 
+    @Get('pending-validation')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(RolUsuario.BODEGUERO, RolUsuario.ADMIN)
+    findPendingValidation(@Query('limit') limit?: string) {
+        const parsedLimit = limit ? Number(limit) : undefined;
+        return this.ordersService.findPendingValidation(parsedLimit);
+    }
+
+    @Get('zona')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(RolUsuario.SUPERVISOR, RolUsuario.ADMIN)
+    findByZone(
+        @Query('zona_id') zonaId: string,
+        @Query('fecha_entrega') fechaEntrega: string,
+        @Query('estado') estado?: string,
+        @Query('limit') limit?: string,
+    ) {
+        const parsedLimit = limit ? Number(limit) : undefined;
+        const estados = estado
+            ? estado.split(',').map((value) => value.trim() as EstadoPedido)
+            : undefined;
+        return this.ordersService.findByZoneAndDate(zonaId, fechaEntrega, estados, parsedLimit);
+    }
+
+    @Post(':id/validar')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(RolUsuario.BODEGUERO, RolUsuario.ADMIN)
+    validarPedido(@Param('id') id: string, @Body() dto: CreateValidacionDto) {
+        dto.pedido_id = id;
+        return this.validationsService.create(dto);
+    }
+
+    @Post(':id/responder-ajuste')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(RolUsuario.CLIENTE)
+    responderAjuste(@Param('id') id: string, @Body() dto: CreateAccionDto, @CurrentUser() user: any) {
+        dto.pedido_id = id;
+        dto.cliente_id = user.userId;
+        return this.actionsService.respondToAdjustment(dto, user.userId);
+    }
+
     @Get(':id')
     @UseGuards(JwtAuthGuard)
     findOne(@Param('id') id: string) {
@@ -46,14 +91,14 @@ export class OrdersController {
     @Patch(':id/status')
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(RolUsuario.ADMIN, RolUsuario.BODEGUERO, RolUsuario.SUPERVISOR)
-    updateStatus(@Param('id') id: string, @Body('estado') estado: EstadoPedido) {
-        return this.ordersService.updateStatus(id, estado);
+    updateStatus(@Param('id') id: string, @Body('estado') estado: EstadoPedido, @CurrentUser() user: any) {
+        return this.ordersService.updateStatus(id, estado, user);
     }
 
     @Patch(':id/cancel')
     @UseGuards(JwtAuthGuard)
-    cancel(@Param('id') id: string) {
-        return this.ordersService.cancel(id);
+    cancel(@Param('id') id: string, @Body('motivo') motivo: string, @CurrentUser() user: any) {
+        return this.ordersService.cancel(id, motivo, user.userId);
     }
 
     @Delete(':id')

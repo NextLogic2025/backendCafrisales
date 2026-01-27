@@ -1,9 +1,11 @@
 export enum EstadoPedido {
-    BORRADOR = 'borrador',
     PENDIENTE_VALIDACION = 'pendiente_validacion',
     VALIDADO = 'validado',
-    AJUSTE_PENDIENTE = 'ajuste_pendiente',
-    CONFIRMADO = 'confirmado',
-    RECHAZADO = 'rechazado',
+    AJUSTADO_BODEGA = 'ajustado_bodega',
+    ACEPTADO_CLIENTE = 'aceptado_cliente',
+    RECHAZADO_CLIENTE = 'rechazado_cliente',
+    ASIGNADO_RUTA = 'asignado_ruta',
+    EN_RUTA = 'en_ruta',
+    ENTREGADO = 'entregado',
     CANCELADO = 'cancelado',
 }

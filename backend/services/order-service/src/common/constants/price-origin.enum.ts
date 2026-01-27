@@ -1,5 +1,5 @@
 export enum OrigenPrecio {
     CATALOGO = 'catalogo',
-    MANUAL = 'manual',
-    PROMOCION = 'promocion',
+    REGLA = 'regla',
+    NEGOCIADO = 'negociado',
 }

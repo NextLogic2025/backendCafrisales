@@ -1,37 +1,48 @@
 import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
 import { RegisterPaymentDto } from './dto/register-payment.dto';
+import { RegistrarPagoDto } from './dto/registrar-pago.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { RolUsuario } from '../../common/constants/rol-usuario.enum';
 
-@Controller('payments')
+@Controller('creditos')
 export class PaymentsController {
-    constructor(private readonly paymentsService: PaymentsService) { }
+    constructor(private readonly paymentsService: PaymentsService) {}
 
-    @Post()
+    @Post(':id/pagos')
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(RolUsuario.VENDEDOR, RolUsuario.ADMIN, RolUsuario.SUPERVISOR)
-    registerPayment(@Body() dto: RegisterPaymentDto) {
-        return this.paymentsService.registerPayment(dto);
+    registerPayment(
+        @Param('id') aprobacionCreditoId: string,
+        @Body() body: RegistrarPagoDto,
+        @CurrentUser() user: any,
+    ) {
+        const actorId = user?.userId || user?.id;
+        const dto: RegisterPaymentDto = {
+            aprobacion_credito_id: aprobacionCreditoId,
+            monto_pago: body.monto_pago,
+            moneda: body.moneda,
+            fecha_pago: body.fecha_pago,
+            registrado_por_id: actorId,
+            metodo_registro: body.metodo_registro,
+            referencia: body.referencia,
+            notas: body.notas,
+        };
+        return this.paymentsService.registerPayment(dto, actorId);
     }
 
-    @Get('credit/:aprobacionCreditoId')
+    @Get(':id/pagos')
     @UseGuards(JwtAuthGuard)
-    findByCredit(@Param('aprobacionCreditoId') aprobacionCreditoId: string) {
+    findByCredit(@Param('id') aprobacionCreditoId: string) {
         return this.paymentsService.findByCredit(aprobacionCreditoId);
     }
 
-    @Get('credit/:aprobacionCreditoId/balance')
+    @Get(':id/pagos/balance')
     @UseGuards(JwtAuthGuard)
-    getBalance(@Param('aprobacionCreditoId') aprobacionCreditoId: string) {
+    getBalance(@Param('id') aprobacionCreditoId: string) {
         return this.paymentsService.calculateBalance(aprobacionCreditoId);
-    }
-
-    @Get(':id')
-    @UseGuards(JwtAuthGuard)
-    findOne(@Param('id') id: string) {
-        return this.paymentsService.findOne(id);
     }
 }

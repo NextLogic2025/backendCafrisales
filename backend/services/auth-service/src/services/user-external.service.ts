@@ -49,4 +49,25 @@ export class UserExternalService {
         const user = await this.getUserById(userId);
         return user?.rol || 'cliente';
     }
+
+    async syncUser(payload: any): Promise<any> {
+        if (!this.serviceToken) {
+            const userId = payload?.id || payload?.usuario_id || 'desconocido';
+            this.logger.warn(`SERVICE_TOKEN no configurado, omitiendo sincronización para ${userId}`);
+            return null;
+        }
+
+        try {
+            return await this.s2sClient.post<any>(
+                this.userServiceUrl,
+                '/api/internal/usuarios/sync',
+                payload,
+                this.serviceToken,
+            );
+        } catch (error) {
+            const userId = payload?.id || payload?.usuario_id || 'desconocido';
+            this.logger.warn(`Failed to sync user ${userId} with user-service: ${error?.message || error}`);
+            throw error;
+        }
+    }
 }
