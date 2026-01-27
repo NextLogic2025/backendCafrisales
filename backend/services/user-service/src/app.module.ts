@@ -20,6 +20,7 @@ import { ProfilesController } from './modules/profiles/profiles.controller';
 import { Cliente } from './modules/clients/entities/cliente.entity';
 import { ClientsController } from './modules/clients/clients.controller';
 import { ClientsQueryController } from './modules/clients/clients-query.controller';
+import { ClientsInternalController } from './modules/clients/clients.internal.controller';
 import { CondicionesComercialesCliente } from './modules/clients/entities/condiciones.entity';
 import { Perfil } from './modules/profiles/entities/perfil.entity';
 import { Outbox } from './modules/outbox/entities/outbox.entity';
@@ -65,6 +66,7 @@ import { AuthExternalService } from './services/auth-external.service';
     ProfilesController,
     ClientsController,
     ClientsQueryController,
+    ClientsInternalController,
     ChannelsController,
     StaffController,
   ],

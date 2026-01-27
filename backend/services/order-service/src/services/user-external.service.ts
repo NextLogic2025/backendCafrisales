@@ -50,7 +50,17 @@ export class UserExternalService {
      * Get client information
      */
     async getClientById(clientId: string): Promise<any> {
-        return this.getUserById(clientId);
+        try {
+            const client = await this.s2sClient.get<any>(
+                this.userServiceUrl,
+                `/api/internal/clientes/${clientId}`,
+                this.serviceToken,
+            );
+            return client;
+        } catch (error) {
+            this.logger.warn(`Failed to fetch client ${clientId} from user-service: ${error.message}`);
+            return null;
+        }
     }
 
     /**
