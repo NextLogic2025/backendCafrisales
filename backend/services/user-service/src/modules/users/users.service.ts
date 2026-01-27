@@ -9,6 +9,7 @@ import { CanalComercial } from '../channels/entities/canal-comercial.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { RoleProvisionService } from './services/role-provision.service';
 import { ProfilesService } from './services/profiles.service';
+import { ZoneExternalService } from '../../services/zone-external.service';
 
 @Injectable()
 export class UsersService {
@@ -18,7 +19,8 @@ export class UsersService {
     private readonly dataSource: DataSource,
     private readonly roleProvision: RoleProvisionService,
     private readonly profilesService: ProfilesService,
-  ) {}
+    private readonly zoneExternalService: ZoneExternalService,
+  ) { }
 
   private splitName(nombre: string) {
     const parts = nombre.trim().split(/\s+/).filter(Boolean);
@@ -75,13 +77,34 @@ export class UsersService {
   }
 
   async create(dto: CreateUserDto) {
+    const role = ((dto as any).rol || 'cliente') as any;
+
+    // Validation logic for zone (NEW)
+    let zonaToValidate: string | null = null;
+
+    if (role === 'cliente') {
+      const payload = (dto.cliente || {});
+      if ('zona_id' in payload) zonaToValidate = (payload as any).zona_id;
+
+      if (dto.cliente && dto.cliente.zona_id) {
+        zonaToValidate = dto.cliente.zona_id;
+      }
+    }
+
+    if (zonaToValidate) {
+      const zone = await this.zoneExternalService.getZoneById(zonaToValidate);
+      if (!zone) {
+        throw new BadRequestException('La zona especificada no es válida o no existe.');
+      }
+    }
+
     return this.dataSource.transaction(async manager => {
       const usuarioRepo = manager.getRepository(Usuario);
       const perfilRepo = manager.getRepository(Perfil);
       const clienteRepo = manager.getRepository(Cliente);
       const outboxRepo = manager.getRepository(Outbox);
 
-      const role = ((dto as any).rol || 'cliente') as any;
+      // Re-build payloads inside transaction as before
       const perfilPayload = this.buildPerfil(dto);
       const clientePayload = await this.buildClientePayload(manager, { ...dto, rol: role } as any);
 
@@ -98,46 +121,46 @@ export class UsersService {
       await this.profilesService.create(manager, savedUser.id, { ...(dto as any), perfil: perfilPayload } as any);
 
       if (role === 'cliente' && clientePayload) {
-          const cliente = clienteRepo.create({
-            usuario_id: savedUser.id,
-            ...clientePayload,
-            creado_por: (dto as any).creado_por || null,
+        const cliente = clienteRepo.create({
+          usuario_id: savedUser.id,
+          ...clientePayload,
+          creado_por: (dto as any).creado_por || null,
+        } as any);
+        const savedCliente = (await clienteRepo.save(cliente as any)) as Cliente;
+
+        // ensure condiciones_comerciales_cliente exists (create empty or with provided values)
+        const condicionesPayload = (clientePayload as any).condiciones || {};
+        try {
+          const condicionesRepo = manager.getRepository(CondicionesComercialesCliente);
+          await condicionesRepo.save({
+            cliente_id: savedUser.id,
+            permite_negociacion: condicionesPayload.permite_negociacion ?? null,
+            porcentaje_descuento_max: condicionesPayload.porcentaje_descuento_max ?? null,
+            requiere_aprobacion_supervisor: condicionesPayload.requiere_aprobacion_supervisor ?? false,
+            observaciones: condicionesPayload.observaciones ?? null,
           } as any);
-          const savedCliente = (await clienteRepo.save(cliente as any)) as Cliente;
+        } catch (err) {
+          // fallback: idempotent insert with ON CONFLICT DO NOTHING via helper
+          const { insertOrIgnore } = await import('../../common/utils/db.utils');
+          await insertOrIgnore(manager, 'app.condiciones_comerciales_cliente', {
+            cliente_id: savedUser.id,
+            permite_negociacion: condicionesPayload.permite_negociacion ?? null,
+            porcentaje_descuento_max: condicionesPayload.porcentaje_descuento_max ?? null,
+            requiere_aprobacion_supervisor: condicionesPayload.requiere_aprobacion_supervisor ?? false,
+            observaciones: condicionesPayload.observaciones || null,
+          }, '(cliente_id)');
+        }
 
-          // ensure condiciones_comerciales_cliente exists (create empty or with provided values)
-          const condicionesPayload = (clientePayload as any).condiciones || {};
-          try {
-            const condicionesRepo = manager.getRepository(CondicionesComercialesCliente);
-            await condicionesRepo.save({
-              cliente_id: savedUser.id,
-              permite_negociacion: condicionesPayload.permite_negociacion ?? null,
-              porcentaje_descuento_max: condicionesPayload.porcentaje_descuento_max ?? null,
-              requiere_aprobacion_supervisor: condicionesPayload.requiere_aprobacion_supervisor ?? false,
-              observaciones: condicionesPayload.observaciones ?? null,
-            } as any);
-          } catch (err) {
-            // fallback: idempotent insert with ON CONFLICT DO NOTHING via helper
-            const { insertOrIgnore } = await import('../../common/utils/db.utils');
-            await insertOrIgnore(manager, 'app.condiciones_comerciales_cliente', {
-              cliente_id: savedUser.id,
-              permite_negociacion: condicionesPayload.permite_negociacion ?? null,
-              porcentaje_descuento_max: condicionesPayload.porcentaje_descuento_max ?? null,
-              requiere_aprobacion_supervisor: condicionesPayload.requiere_aprobacion_supervisor ?? false,
-              observaciones: condicionesPayload.observaciones || null,
-            }, '(cliente_id)');
-          }
-
-          await outboxRepo.save(outboxRepo.create({
-            agregado: 'user',
-            tipo_evento: 'ClienteCreado',
-            clave_agregado: savedUser.id,
-            payload: {
-              usuario_id: savedUser.id,
-              canal_id: savedCliente.canal_id,
-              zona_id: savedCliente.zona_id,
-            },
-          } as any));
+        await outboxRepo.save(outboxRepo.create({
+          agregado: 'user',
+          tipo_evento: 'ClienteCreado',
+          clave_agregado: savedUser.id,
+          payload: {
+            usuario_id: savedUser.id,
+            canal_id: savedCliente.canal_id,
+            zona_id: savedCliente.zona_id,
+          },
+        } as any));
       }
 
       // Delegate role-specific provisioning to RoleProvisionService (SRP)

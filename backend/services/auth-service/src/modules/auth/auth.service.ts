@@ -1,4 +1,4 @@
-import { Injectable, Logger, UnauthorizedException, ConflictException, Inject, ForbiddenException, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException, ConflictException, Inject, ForbiddenException, InternalServerErrorException, BadRequestException } from '@nestjs/common';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { RefreshDto } from './dto/refresh.dto';
@@ -223,25 +223,32 @@ export class AuthService {
       if ((dto as any).transportista) payloadObj.transportista = (dto as any).transportista;
       if ((dto as any).creado_por) payloadObj.creado_por = (dto as any).creado_por;
 
-        await this.outboxService.createEvent(manager, {
-          tipo: 'CredencialCreada',
-          claveAgregado: id,
-          payload: payloadObj,
-          agregado: 'auth',
-        });
-
-        return { id, email: dto.email };
+      await this.outboxService.createEvent(manager, {
+        tipo: 'CredencialCreada',
+        claveAgregado: id,
+        payload: payloadObj,
+        agregado: 'auth',
       });
+
+      return { id, email: dto.email };
+    });
 
     try {
       await this.userExternalService.syncUser(payloadObj);
     } catch (error: any) {
-      if (error instanceof ConflictException) {
+      if (error instanceof ConflictException || (error.status === 409)) {
         this.logger.warn(`Usuario ${id} ya sincronizado con user-service`);
-      } else {
-        this.logger.error(`Error sincronizando usuario ${id} con user-service`, error);
-        throw new InternalServerErrorException('No se pudo sincronizar el usuario con el servicio de usuarios');
+        return; // Idempotency success
       }
+
+      // If it's a client error (e.g. 400 from user-service for FK violation), rethrow it cleanly
+      if (error.status && error.status >= 400 && error.status < 500) {
+        this.logger.error(`Error de cliente sincronizando usuario ${id}: ${error.message}`);
+        throw error;
+      }
+
+      this.logger.error(`Error sincronizando usuario ${id} con user-service`, error);
+      throw new InternalServerErrorException('No se pudo sincronizar el usuario con el servicio de usuarios');
     }
 
     return result;
