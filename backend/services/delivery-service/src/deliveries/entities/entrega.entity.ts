@@ -16,16 +16,13 @@ export class Entrega {
     id: string;
 
     @Column({ name: 'pedido_id', type: 'uuid' })
-    pedidoId: string;
+    pedido_id: string;
 
-    @Column({ name: 'ruta_logistica_id', type: 'uuid', nullable: true })
-    rutaLogisticaId: string;
+    @Column({ name: 'rutero_logistico_id', type: 'uuid' })
+    rutero_logistico_id: string;
 
-    @Column({ name: 'conductor_id', type: 'uuid', nullable: true })
-    conductorId: string;
-
-    @Column({ name: 'vehiculo_id', type: 'uuid', nullable: true })
-    vehiculoId: string;
+    @Column({ name: 'transportista_id', type: 'uuid' })
+    transportista_id: string;
 
     @Column({
         type: 'enum',
@@ -34,44 +31,41 @@ export class Entrega {
     })
     estado: EstadoEntrega;
 
-    @Column({ name: 'direccion_entrega', type: 'text' })
-    direccionEntrega: string;
+    @Column({ name: 'asignado_en', type: 'timestamptz', nullable: true })
+    asignado_en: Date;
 
-    @Column({ name: 'latitud_entrega', type: 'decimal', precision: 10, scale: 7, nullable: true })
-    latitudEntrega: number;
+    @Column({ name: 'salida_ruta_en', type: 'timestamptz', nullable: true })
+    salida_ruta_en: Date;
 
-    @Column({ name: 'longitud_entrega', type: 'decimal', precision: 10, scale: 7, nullable: true })
-    longitudEntrega: number;
+    @Column({ name: 'entregado_en', type: 'timestamptz', nullable: true })
+    entregado_en: Date;
 
-    @Column({ name: 'fecha_programada', type: 'timestamp', nullable: true })
-    fechaProgramada: Date;
-
-    @Column({ name: 'fecha_entrega_real', type: 'timestamp', nullable: true })
-    fechaEntregaReal: Date;
-
-    @Column({ name: 'cliente_nombre', type: 'varchar', length: 200 })
-    clienteNombre: string;
-
-    @Column({ name: 'cliente_telefono', type: 'varchar', length: 20, nullable: true })
-    clienteTelefono: string;
-
-    @Column({ name: 'receptor_nombre', type: 'varchar', length: 200, nullable: true })
-    receptorNombre: string;
+    @Column({ name: 'motivo_no_entrega', type: 'text', nullable: true })
+    motivo_no_entrega: string;
 
     @Column({ name: 'observaciones', type: 'text', nullable: true })
     observaciones: string;
 
-    @Column({ name: 'cantidad_items_entregados', type: 'integer', default: 0 })
-    cantidadItemsEntregados: number;
+    @Column({ name: 'latitud', type: 'numeric', precision: 9, scale: 6, nullable: true })
+    latitud: number;
 
-    @Column({ name: 'cantidad_items_total', type: 'integer', default: 0 })
-    cantidadItemsTotal: number;
+    @Column({ name: 'longitud', type: 'numeric', precision: 9, scale: 6, nullable: true })
+    longitud: number;
 
-    @CreateDateColumn({ name: 'created_at' })
-    createdAt: Date;
+    @CreateDateColumn({ name: 'creado_en' })
+    creado_en: Date;
 
-    @UpdateDateColumn({ name: 'updated_at' })
-    updatedAt: Date;
+    @UpdateDateColumn({ name: 'actualizado_en' })
+    actualizado_en: Date;
+
+    @Column({ name: 'creado_por', type: 'uuid', nullable: true })
+    creado_por: string;
+
+    @Column({ name: 'actualizado_por', type: 'uuid', nullable: true })
+    actualizado_por: string;
+
+    @Column({ name: 'version', type: 'int', default: 1 })
+    version: number;
 
     @OneToMany(() => EvidenciaEntrega, (evidencia) => evidencia.entrega)
     evidencias: EvidenciaEntrega[];

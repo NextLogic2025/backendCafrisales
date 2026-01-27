@@ -1,12 +1,14 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { IncidentsController } from './incidents.controller';
+import { IncidentsDeliveryController } from './incidents.delivery.controller';
 import { IncidentsService } from './incidents.service';
 import { IncidenciaEntrega } from './entities/incidencia-entrega.entity';
+import { OutboxModule } from '../outbox/outbox.module';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([IncidenciaEntrega])],
-    controllers: [IncidentsController],
+    imports: [TypeOrmModule.forFeature([IncidenciaEntrega]), OutboxModule],
+    controllers: [IncidentsController, IncidentsDeliveryController],
     providers: [IncidentsService],
     exports: [IncidentsService],
 })

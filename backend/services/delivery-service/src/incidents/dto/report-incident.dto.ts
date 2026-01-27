@@ -4,7 +4,7 @@ import { SeveridadIncidencia } from '../../common/constants/delivery-enums';
 export class ReportIncidentDto {
     @IsNotEmpty()
     @IsString()
-    titulo: string;
+    tipo_incidencia: string;
 
     @IsNotEmpty()
     @IsString()

@@ -15,41 +15,37 @@ export class EvidenciaEntrega {
     id: string;
 
     @Column({ name: 'entrega_id', type: 'uuid' })
-    entregaId: string;
+    entrega_id: string;
 
     @Column({
         type: 'enum',
         enum: TipoEvidencia,
-        default: TipoEvidencia.FOTO,
     })
     tipo: TipoEvidencia;
 
-    @Column({ name: 'archivo_url', type: 'varchar', length: 500 })
-    archivoUrl: string;
+    @Column({ type: 'text' })
+    url: string;
 
-    @Column({ name: 'archivo_nombre', type: 'varchar', length: 255 })
-    archivoNombre: string;
-
-    @Column({ name: 'archivo_size', type: 'integer', nullable: true })
-    archivoSize: number;
+    @Column({ name: 'hash_archivo', type: 'text', nullable: true })
+    hash_archivo: string;
 
     @Column({ name: 'mime_type', type: 'varchar', length: 100, nullable: true })
-    mimeType: string;
+    mime_type: string;
+
+    @Column({ name: 'tamano_bytes', type: 'bigint', nullable: true })
+    tamano_bytes: number;
 
     @Column({ type: 'text', nullable: true })
     descripcion: string;
 
-    @Column({ name: 'latitud_captura', type: 'decimal', precision: 10, scale: 7, nullable: true })
-    latitudCaptura: number;
+    @Column({ type: 'jsonb', default: {} })
+    meta: any;
 
-    @Column({ name: 'longitud_captura', type: 'decimal', precision: 10, scale: 7, nullable: true })
-    longitudCaptura: number;
+    @CreateDateColumn({ name: 'creado_en' })
+    creado_en: Date;
 
-    @Column({ name: 'capturado_por_user_id', type: 'uuid', nullable: true })
-    capturadoPorUserId: string;
-
-    @CreateDateColumn({ name: 'created_at' })
-    createdAt: Date;
+    @Column({ name: 'creado_por', type: 'uuid', nullable: true })
+    creado_por: string;
 
     @ManyToOne(() => Entrega, (entrega) => entrega.evidencias)
     @JoinColumn({ name: 'entrega_id' })

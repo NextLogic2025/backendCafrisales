@@ -31,25 +31,55 @@ export class EvidenceService {
         this.logger.log(`Uploading evidence for delivery ${entregaId}`);
 
         const evidencia = this.evidenciaRepository.create({
-            entregaId,
+            entrega_id: entregaId,
             tipo: uploadDto.tipo,
             descripcion: uploadDto.descripcion,
-            archivoUrl: `/uploads/evidence/${file.filename}`,
-            archivoNombre: file.originalname,
-            archivoSize: file.size,
-            mimeType: file.mimetype,
-            capturadoPorUserId: userId,
-            latitudCaptura: coordinates?.lat,
-            longitudCaptura: coordinates?.lng,
+            url: `/uploads/evidence/${file.filename}`,
+            mime_type: file.mimetype,
+            tamano_bytes: file.size,
+            meta: {
+                original_name: file.originalname,
+                latitud: coordinates?.lat,
+                longitud: coordinates?.lng,
+            },
+            creado_por: userId,
         });
 
         return await this.evidenciaRepository.save(evidencia);
     }
 
+    async createEvidenceFromUrl(
+        entregaId: string,
+        payload: {
+            tipo: string;
+            url: string;
+            mime_type?: string;
+            hash_archivo?: string;
+            tamano_bytes?: number;
+            descripcion?: string;
+            meta?: any;
+        },
+        userId?: string,
+    ): Promise<EvidenciaEntrega> {
+        const evidencia = this.evidenciaRepository.create({
+            entrega_id: entregaId,
+            tipo: payload.tipo as any,
+            url: payload.url,
+            mime_type: payload.mime_type,
+            hash_archivo: payload.hash_archivo,
+            tamano_bytes: payload.tamano_bytes,
+            descripcion: payload.descripcion,
+            meta: payload.meta || {},
+            creado_por: userId,
+        });
+
+        return this.evidenciaRepository.save(evidencia);
+    }
+
     async findByDelivery(entregaId: string): Promise<EvidenciaEntrega[]> {
         return await this.evidenciaRepository.find({
-            where: { entregaId },
-            order: { createdAt: 'DESC' },
+            where: { entrega_id: entregaId },
+            order: { creado_en: 'DESC' },
         });
     }
 
@@ -65,7 +95,7 @@ export class EvidenceService {
         const evidencia = await this.findOne(id);
 
         // Delete file from filesystem
-        const filePath = path.join(process.cwd(), evidencia.archivoUrl);
+        const filePath = path.join(process.cwd(), evidencia.url || '');
         if (fs.existsSync(filePath)) {
             fs.unlinkSync(filePath);
             this.logger.log(`Deleted file ${filePath}`);

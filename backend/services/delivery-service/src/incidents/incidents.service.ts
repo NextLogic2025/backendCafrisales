@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { IncidenciaEntrega } from './entities/incidencia-entrega.entity';
 import { ReportIncidentDto } from './dto/report-incident.dto';
 import { ResolveIncidentDto } from './dto/resolve-incident.dto';
+import { OutboxService } from '../outbox/outbox.service';
 
 @Injectable()
 export class IncidentsService {
@@ -12,6 +13,7 @@ export class IncidentsService {
     constructor(
         @InjectRepository(IncidenciaEntrega)
         private readonly incidenciaRepository: Repository<IncidenciaEntrega>,
+        private readonly outboxService: OutboxService,
     ) { }
 
     async reportIncident(
@@ -19,34 +21,48 @@ export class IncidentsService {
         reportDto: ReportIncidentDto,
         userId?: string,
     ): Promise<IncidenciaEntrega> {
-        this.logger.log(`Reporting incident for delivery ${entregaId}: ${reportDto.titulo}`);
+        this.logger.log(`Reporting incident for delivery ${entregaId}: ${reportDto.tipo_incidencia}`);
 
         const incidencia = this.incidenciaRepository.create({
-            entregaId,
-            ...reportDto,
-            reportadoPorUserId: userId,
+            entrega_id: entregaId,
+            tipo_incidencia: reportDto.tipo_incidencia,
+            severidad: reportDto.severidad,
+            descripcion: reportDto.descripcion,
+            reportado_por_id: userId,
+            reportado_en: new Date(),
         });
 
-        return await this.incidenciaRepository.save(incidencia);
+        const saved = await this.incidenciaRepository.save(incidencia);
+
+        await this.outboxService.createEvent(
+            'IncidenciaReportada',
+            { entrega_id: entregaId, incidencia_id: saved.id, severidad: saved.severidad },
+            'delivery',
+            saved.id,
+        );
+
+        return saved;
     }
 
     async findAll(): Promise<IncidenciaEntrega[]> {
         return await this.incidenciaRepository.find({
-            order: { createdAt: 'DESC' },
+            order: { reportado_en: 'DESC' },
         });
     }
 
     async findByDelivery(entregaId: string): Promise<IncidenciaEntrega[]> {
         return await this.incidenciaRepository.find({
-            where: { entregaId },
-            order: { createdAt: 'DESC' },
+            where: { entrega_id: entregaId },
+            order: { reportado_en: 'DESC' },
         });
     }
 
-    async findUnresolved(): Promise<IncidenciaEntrega[]> {
+    async findUnresolved(severidad?: string[]): Promise<IncidenciaEntrega[]> {
+        const where: any = { resuelto_en: null };
+        if (severidad && severidad.length > 0) where.severidad = severidad as any;
         return await this.incidenciaRepository.find({
-            where: { resuelto: false },
-            order: { severidad: 'DESC', createdAt: 'ASC' },
+            where,
+            order: { reportado_en: 'DESC' },
         });
     }
 
@@ -65,17 +81,25 @@ export class IncidentsService {
     ): Promise<IncidenciaEntrega> {
         const incidencia = await this.findOne(id);
 
-        if (incidencia.resuelto) {
+        if (incidencia.resuelto_en) {
             throw new BadRequestException('Incident is already resolved');
         }
 
-        incidencia.resuelto = true;
-        incidencia.fechaResolucion = new Date();
-        incidencia.resolucionNotas = resolveDto.resolucionNotas;
-        incidencia.resueltoPorUserId = userId;
+        incidencia.resuelto_en = new Date();
+        incidencia.resolucion = resolveDto.resolucion;
+        incidencia.resuelto_por_id = userId;
 
         this.logger.log(`Resolved incident ${id}`);
-        return await this.incidenciaRepository.save(incidencia);
+        const saved = await this.incidenciaRepository.save(incidencia);
+
+        await this.outboxService.createEvent(
+            'IncidenciaResuelta',
+            { entrega_id: saved.entrega_id, incidencia_id: saved.id },
+            'delivery',
+            saved.id,
+        );
+
+        return saved;
     }
 
     async remove(id: string): Promise<void> {

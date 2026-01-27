@@ -3,7 +3,6 @@ import {
     PrimaryGeneratedColumn,
     Column,
     CreateDateColumn,
-    UpdateDateColumn,
     ManyToOne,
     JoinColumn,
 } from 'typeorm';
@@ -16,13 +15,10 @@ export class IncidenciaEntrega {
     id: string;
 
     @Column({ name: 'entrega_id', type: 'uuid' })
-    entregaId: string;
+    entrega_id: string;
 
-    @Column({ type: 'varchar', length: 200 })
-    titulo: string;
-
-    @Column({ type: 'text' })
-    descripcion: string;
+    @Column({ name: 'tipo_incidencia', type: 'varchar', length: 100 })
+    tipo_incidencia: string;
 
     @Column({
         type: 'enum',
@@ -31,26 +27,26 @@ export class IncidenciaEntrega {
     })
     severidad: SeveridadIncidencia;
 
-    @Column({ name: 'reportado_por_user_id', type: 'uuid', nullable: true })
-    reportadoPorUserId: string;
+    @Column({ type: 'text' })
+    descripcion: string;
 
-    @Column({ name: 'resuelto', type: 'boolean', default: false })
-    resuelto: boolean;
+    @Column({ name: 'reportado_por_id', type: 'uuid' })
+    reportado_por_id: string;
 
-    @Column({ name: 'fecha_resolucion', type: 'timestamp', nullable: true })
-    fechaResolucion: Date;
+    @Column({ name: 'reportado_en', type: 'timestamptz' })
+    reportado_en: Date;
 
-    @Column({ name: 'resolucion_notas', type: 'text', nullable: true })
-    resolucionNotas: string;
+    @Column({ name: 'resuelto_en', type: 'timestamptz', nullable: true })
+    resuelto_en: Date;
 
-    @Column({ name: 'resuelto_por_user_id', type: 'uuid', nullable: true })
-    resueltoPorUserId: string;
+    @Column({ name: 'resuelto_por_id', type: 'uuid', nullable: true })
+    resuelto_por_id: string;
 
-    @CreateDateColumn({ name: 'created_at' })
-    createdAt: Date;
+    @Column({ name: 'resolucion', type: 'text', nullable: true })
+    resolucion: string;
 
-    @UpdateDateColumn({ name: 'updated_at' })
-    updatedAt: Date;
+    @CreateDateColumn({ name: 'creado_en' })
+    creado_en: Date;
 
     @ManyToOne(() => Entrega, (entrega) => entrega.incidencias)
     @JoinColumn({ name: 'entrega_id' })

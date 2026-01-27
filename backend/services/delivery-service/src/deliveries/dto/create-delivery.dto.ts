@@ -1,56 +1,103 @@
-import { IsNotEmpty, IsOptional, IsString, IsNumber, IsDateString, IsUUID, Min, Max } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+    IsArray,
+    IsDateString,
+    IsNumber,
+    IsOptional,
+    IsString,
+    IsUUID,
+    ValidateNested,
+    ArrayMinSize,
+    Min,
+    Max,
+} from 'class-validator';
+import { TipoEvidencia } from '../../common/constants/delivery-enums';
 
-export class CreateDeliveryDto {
-    @IsNotEmpty()
+export class CreateDeliveryStopDto {
     @IsUUID()
-    pedidoId: string;
+    pedido_id: string;
 
-    @IsOptional()
+    @IsNumber()
+    @Min(1)
+    orden: number;
+}
+
+export class CreateDeliveriesBatchDto {
     @IsUUID()
-    rutaLogisticaId?: string;
+    rutero_logistico_id: string;
 
-    @IsOptional()
     @IsUUID()
-    conductorId?: string;
+    transportista_id: string;
 
-    @IsOptional()
-    @IsUUID()
-    vehiculoId?: string;
+    @IsArray()
+    @ArrayMinSize(1)
+    @ValidateNested({ each: true })
+    @Type(() => CreateDeliveryStopDto)
+    paradas: CreateDeliveryStopDto[];
+}
 
-    @IsNotEmpty()
+export class EvidenceInputDto {
     @IsString()
-    direccionEntrega: string;
+    tipo: TipoEvidencia;
+
+    @IsString()
+    url: string;
+
+    @IsOptional()
+    @IsString()
+    mime_type?: string;
+
+    @IsOptional()
+    @IsString()
+    hash_archivo?: string;
+
+    @IsOptional()
+    @IsNumber()
+    tamano_bytes?: number;
+
+    @IsOptional()
+    @IsString()
+    descripcion?: string;
+
+    @IsOptional()
+    meta?: any;
+}
+
+export class CompleteDeliveryDto {
+    @IsOptional()
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => EvidenceInputDto)
+    evidencias?: EvidenceInputDto[];
 
     @IsOptional()
     @IsNumber()
     @Min(-90)
     @Max(90)
-    latitudEntrega?: number;
+    latitud?: number;
 
     @IsOptional()
     @IsNumber()
     @Min(-180)
     @Max(180)
-    longitudEntrega?: number;
-
-    @IsOptional()
-    @IsDateString()
-    fechaProgramada?: string;
-
-    @IsNotEmpty()
-    @IsString()
-    clienteNombre: string;
-
-    @IsOptional()
-    @IsString()
-    clienteTelefono?: string;
+    longitud?: number;
 
     @IsOptional()
     @IsString()
     observaciones?: string;
+}
 
-    @IsNotEmpty()
-    @IsNumber()
-    @Min(0)
-    cantidadItemsTotal: number;
+export class CompletePartialDeliveryDto extends CompleteDeliveryDto {
+    @IsString()
+    motivo_parcial: string;
+}
+
+export class NoDeliveryDto extends CompleteDeliveryDto {
+    @IsString()
+    motivo_no_entrega: string;
+}
+
+export class CancelDeliveryDto {
+    @IsString()
+    motivo: string;
 }

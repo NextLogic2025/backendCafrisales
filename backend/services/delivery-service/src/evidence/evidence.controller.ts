@@ -21,13 +21,13 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { RolUsuario } from '../common/constants/rol-usuario.enum';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 
-@Controller('evidence')
+@Controller('evidencias')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class EvidenceController {
     constructor(private readonly evidenceService: EvidenceService) { }
 
     @Post('upload/:entregaId')
-    @Roles(RolUsuario.ADMIN, RolUsuario.ADMINISTRADOR_LOGISTICA, RolUsuario.CONDUCTOR)
+    @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR, RolUsuario.TRANSPORTISTA)
     @UseInterceptors(
         FileInterceptor('file', {
             storage: diskStorage({
@@ -82,25 +82,25 @@ export class EvidenceController {
             entregaId,
             file,
             uploadDto,
-            user?.id,
+            user?.userId,
             coordinates,
         );
     }
 
-    @Get('delivery/:entregaId')
-    @Roles(RolUsuario.ADMIN, RolUsuario.ADMINISTRADOR_LOGISTICA, RolUsuario.CONDUCTOR)
+    @Get('entrega/:entregaId')
+    @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR, RolUsuario.TRANSPORTISTA)
     findByDelivery(@Param('entregaId') entregaId: string) {
         return this.evidenceService.findByDelivery(entregaId);
     }
 
     @Get(':id')
-    @Roles(RolUsuario.ADMIN, RolUsuario.ADMINISTRADOR_LOGISTICA, RolUsuario.CONDUCTOR)
+    @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR, RolUsuario.TRANSPORTISTA)
     findOne(@Param('id') id: string) {
         return this.evidenceService.findOne(id);
     }
 
     @Delete(':id')
-    @Roles(RolUsuario.ADMIN, RolUsuario.ADMINISTRADOR_LOGISTICA)
+    @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR)
     remove(@Param('id') id: string) {
         return this.evidenceService.remove(id);
     }

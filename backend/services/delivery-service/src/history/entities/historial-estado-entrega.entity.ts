@@ -8,33 +8,24 @@ import { EstadoEntrega } from '../../common/constants/delivery-enums';
 
 @Entity({ name: 'historial_estado_entrega', schema: 'app' })
 export class HistorialEstadoEntrega {
-    @PrimaryGeneratedColumn('uuid')
-    id: string;
+    @PrimaryGeneratedColumn('increment')
+    id: number;
 
     @Column({ name: 'entrega_id', type: 'uuid' })
-    entregaId: string;
+    entrega_id: string;
 
     @Column({
-        name: 'estado_anterior',
-        type: 'enum',
-        enum: EstadoEntrega,
-        nullable: true,
-    })
-    estadoAnterior: EstadoEntrega;
-
-    @Column({
-        name: 'estado_nuevo',
         type: 'enum',
         enum: EstadoEntrega,
     })
-    estadoNuevo: EstadoEntrega;
+    estado: EstadoEntrega;
 
-    @Column({ name: 'cambiado_por_user_id', type: 'uuid', nullable: true })
-    cambiadoPorUserId: string;
+    @Column({ name: 'cambiado_por_id', type: 'uuid' })
+    cambiado_por_id: string;
 
     @Column({ type: 'text', nullable: true })
-    observaciones: string;
+    motivo: string;
 
-    @CreateDateColumn({ name: 'created_at' })
-    createdAt: Date;
+    @CreateDateColumn({ name: 'creado_en' })
+    creado_en: Date;
 }
