@@ -14,6 +14,7 @@ import { AddItemDto } from './dto/add-item.dto';
 import { CatalogExternalService } from '../../services/catalog-external.service';
 import { UserExternalService, ClienteCondiciones } from '../../services/user-external.service';
 import { ZoneExternalService } from '../../services/zone-external.service';
+import { CreditExternalService } from '../../services/credit-external.service';
 import { OutboxService } from '../outbox/outbox.service';
 import { CancelacionPedido } from '../cancellations/entities/cancelacion-pedido.entity';
 import { RolUsuario } from '../../common/constants/rol-usuario.enum';
@@ -21,6 +22,7 @@ import { EstadoPedido } from '../../common/constants/order-status.enum';
 import { OrigenCreacion } from '../../common/constants/creation-source.enum';
 import { TipoDescuento } from '../../common/constants/discount-type.enum';
 import { OrigenPrecio } from '../../common/constants/price-origin.enum';
+import { MetodoPago } from '../../common/constants/payment-method.enum';
 import type { CatalogSkuSnapshot } from '../../common/interfaces/catalog-sku-snapshot.interface';
 
 const TAX_RATE = 0.12;
@@ -51,6 +53,7 @@ export class OrdersService {
         private readonly catalogExternalService: CatalogExternalService,
         private readonly userExternalService: UserExternalService,
         private readonly zoneExternalService: ZoneExternalService,
+        private readonly creditExternalService: CreditExternalService,
         private readonly outboxService: OutboxService,
     ) {}
 
@@ -427,6 +430,67 @@ export class OrdersService {
             await this.outboxService.createEvent(
                 'PedidoCancelado',
                 { pedido_id: pedido.id, motivo },
+                'order',
+                pedido.id,
+                manager,
+            );
+
+            return this.findOne(pedido.id);
+        });
+    }
+
+    async updatePaymentMethod(
+        id: string,
+        metodoPago: MetodoPago,
+        actor: { userId: string; role: RolUsuario },
+    ): Promise<Pedido> {
+        if (!metodoPago) {
+            throw new BadRequestException('Metodo de pago es obligatorio');
+        }
+
+        return this.dataSource.transaction(async (manager) => {
+            const pedido = await manager.findOne(Pedido, { where: { id } });
+            if (!pedido) {
+                throw new NotFoundException(`Pedido ${id} no encontrado`);
+            }
+
+            if (pedido.estado !== EstadoPedido.PENDIENTE_VALIDACION) {
+                throw new BadRequestException('Solo se puede cambiar el metodo de pago en pedidos pendientes');
+            }
+
+            const creditInfo = await this.creditExternalService.getCreditByOrder(pedido.id);
+            const creditEstado = creditInfo?.credito?.estado;
+            if (creditEstado && creditEstado !== 'cancelado') {
+                throw new BadRequestException('No se puede cambiar el metodo de pago con un credito aprobado');
+            }
+
+            if (actor.role === RolUsuario.CLIENTE) {
+                if (pedido.cliente_id !== actor.userId) {
+                    throw new ForbiddenException('No tienes permisos para actualizar este pedido');
+                }
+            } else if (actor.role === RolUsuario.VENDEDOR) {
+                if (pedido.creado_por_id !== actor.userId) {
+                    throw new ForbiddenException('Solo puedes actualizar pedidos creados por ti');
+                }
+            } else {
+                throw new ForbiddenException('No tienes permisos para actualizar este pedido');
+            }
+
+            pedido.metodo_pago = metodoPago;
+            pedido.actualizado_por = actor.userId;
+            await manager.save(Pedido, pedido);
+
+            await this.recordHistory(
+                manager,
+                pedido.id,
+                pedido.estado,
+                actor.userId,
+                `Metodo de pago actualizado a ${metodoPago}`,
+            );
+
+            await this.outboxService.createEvent(
+                'PedidoMetodoPagoActualizado',
+                { pedido_id: pedido.id, metodo_pago: metodoPago },
                 'order',
                 pedido.id,
                 manager,

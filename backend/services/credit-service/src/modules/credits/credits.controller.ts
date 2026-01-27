@@ -48,6 +48,12 @@ export class CreditsController {
         return this.creditsService.processOverdues('sistema');
     }
 
+    @Get('internal/pedido/:pedidoId')
+    @UseGuards(ServiceTokenGuard)
+    getByPedidoInternal(@Param('pedidoId') pedidoId: string) {
+        return this.creditsService.getCreditByOrderInternal(pedidoId);
+    }
+
     @Put(':id/cancelar')
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR)
@@ -66,12 +72,29 @@ export class CreditsController {
 
     @Get()
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR, RolUsuario.VENDEDOR)
-    listar(
+    @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR, RolUsuario.VENDEDOR, RolUsuario.CLIENTE)
+    async listar(
         @Query('cliente_id') clienteId?: string,
         @Query('vendedor_id') vendedorId?: string,
         @Query('estado') estado?: string,
+        @Query('pedido_id') pedidoId?: string,
+        @CurrentUser() user?: any,
     ) {
+        if (pedidoId) {
+            const credit = await this.creditsService.getCreditDetailByOrder(pedidoId);
+            const isClient = user?.role === RolUsuario.CLIENTE;
+            const userId = user?.userId || user?.id;
+            if (isClient && credit?.credito?.cliente_id !== userId) {
+                throw new ForbiddenException('No tienes permisos para ver este credito');
+            }
+            return credit;
+        }
+        if (user?.role === RolUsuario.CLIENTE) {
+            const userId = user?.userId || user?.id;
+            if (!clienteId || clienteId !== userId) {
+                throw new ForbiddenException('No tienes permisos para ver estos creditos');
+            }
+        }
         if (clienteId) {
             return this.creditsService.findByClient(clienteId, estado as EstadoCredito);
         }

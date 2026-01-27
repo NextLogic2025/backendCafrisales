@@ -238,6 +238,31 @@ export class CreditsService {
         };
     }
 
+    async getCreditDetailByOrder(pedidoId: string) {
+        const credit = await this.findByOrder(pedidoId);
+        const totals = await this.fetchTotalsByCreditId(credit.id);
+        return {
+            credito: credit,
+            totales: totals,
+            pagos: credit.pagos || [],
+        };
+    }
+
+    async getCreditByOrderInternal(pedidoId: string) {
+        const credit = await this.creditRepo.findOne({
+            where: { pedido_id: pedidoId },
+        });
+        if (!credit) {
+            return null;
+        }
+        const totals = await this.fetchTotalsByCreditId(credit.id);
+        return {
+            credito: credit,
+            totales: totals,
+            pagos: [],
+        };
+    }
+
     async processOverdues(actorId: string) {
         const today = new Date();
         return this.dataSource.transaction(async (manager) => {

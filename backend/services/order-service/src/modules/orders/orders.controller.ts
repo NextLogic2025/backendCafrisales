@@ -11,6 +11,7 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { RolUsuario } from '../../common/constants/rol-usuario.enum';
 import { EstadoPedido } from '../../common/constants/order-status.enum';
+import { MetodoPago } from '../../common/constants/payment-method.enum';
 
 @Controller('pedidos')
 export class OrdersController {
@@ -99,6 +100,17 @@ export class OrdersController {
     @UseGuards(JwtAuthGuard)
     cancel(@Param('id') id: string, @Body('motivo') motivo: string, @CurrentUser() user: any) {
         return this.ordersService.cancel(id, motivo, user.userId);
+    }
+
+    @Patch(':id/metodo-pago')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(RolUsuario.VENDEDOR)
+    updateMetodoPago(
+        @Param('id') id: string,
+        @Body('metodo_pago') metodoPago: MetodoPago,
+        @CurrentUser() user: any,
+    ) {
+        return this.ordersService.updatePaymentMethod(id, metodoPago, user);
     }
 
     @Delete(':id')
