@@ -30,6 +30,9 @@ export class UsersInternalController {
     } catch (err: any) {
       // map DB unique violations to 409 for outbox processor handling
       if (err && err.code === '23505') {
+        if (err.detail && err.detail.includes('codigo_empleado')) {
+          throw new BadRequestException('El código de empleado ya está en uso.');
+        }
         throw new ConflictException('Resource conflict in user-service');
       }
       if (err && err.code === '23503') {
