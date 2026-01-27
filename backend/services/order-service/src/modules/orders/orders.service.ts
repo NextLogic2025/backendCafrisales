@@ -245,7 +245,7 @@ export class OrdersService {
                 throw new BadRequestException(`El SKU ${itemDto.sku_id} no tiene precio válido`);
             }
 
-            const precioFinal = itemDto.precio_unitario_final ?? precioBase;
+            const precioFinal = this.resolveItemFinalPrice(itemDto, precioBase);
             const subtotal = Number((precioFinal * itemDto.cantidad).toFixed(2));
 
             const peso = Number(snapshot.peso_gramos ?? 0);
@@ -265,10 +265,49 @@ export class OrdersService {
                 subtotal,
                 descuento_item_tipo: itemDto.descuento_item_tipo,
                 descuento_item_valor: itemDto.descuento_item_valor,
-                precio_origen: itemDto.origen_precio,
+                precio_origen: this.resolveItemPriceOrigin(itemDto),
                 requiere_aprobacion: itemDto.requiere_aprobacion ?? false,
             };
         });
+    }
+
+    private resolveItemFinalPrice(itemDto: AddItemDto, precioBase: number): number {
+        if (typeof itemDto.precio_unitario_final === 'number') {
+            return itemDto.precio_unitario_final;
+        }
+
+        const tipo = itemDto.descuento_item_tipo;
+        const valor = itemDto.descuento_item_valor;
+
+        if (!tipo || valor == null) {
+            return precioBase;
+        }
+
+        let final = precioBase;
+        if (tipo === TipoDescuento.PORCENTAJE) {
+            final = precioBase * (1 - valor / 100);
+        } else {
+            final = precioBase - valor;
+        }
+
+        const rounded = Number(final.toFixed(2));
+        if (rounded < 0) {
+            throw new BadRequestException('El descuento no puede dejar el precio en negativo');
+        }
+
+        return rounded;
+    }
+
+    private resolveItemPriceOrigin(itemDto: AddItemDto): OrigenPrecio {
+        if (itemDto.origen_precio) {
+            return itemDto.origen_precio;
+        }
+
+        if (itemDto.descuento_item_tipo || itemDto.descuento_item_valor != null || itemDto.precio_unitario_final != null) {
+            return OrigenPrecio.NEGOCIADO;
+        }
+
+        return OrigenPrecio.CATALOGO;
     }
 
     private calculateTotals(items: PreparedItem[], dto: CreateOrderDto) {
@@ -315,10 +354,36 @@ export class OrdersService {
         }
     }
 
+    private ensureItemDiscountConsistency(items: AddItemDto[]) {
+        items.forEach((item) => {
+            const hasTipo = Boolean(item.descuento_item_tipo);
+            const hasValor = item.descuento_item_valor != null;
+            if (hasTipo !== hasValor) {
+                throw new BadRequestException('El tipo y el valor del descuento de item deben ir juntos');
+            }
+
+            if (item.descuento_item_tipo === TipoDescuento.PORCENTAJE && item.descuento_item_valor > 100) {
+                throw new BadRequestException('El porcentaje de descuento no puede superar el 100%');
+            }
+
+            if (item.precio_unitario_final != null && (hasTipo || hasValor)) {
+                throw new BadRequestException('No se puede enviar precio final y descuento al mismo tiempo');
+            }
+        });
+    }
+
     private async ensureConditionValidation(dto: CreateOrderDto, isCliente: boolean, clienteId: string) {
         this.ensureDiscountConsistency(dto);
+        this.ensureItemDiscountConsistency(dto.items);
 
-        if (isCliente && (dto.descuento_pedido_tipo || dto.descuento_pedido_valor != null)) {
+        const hasItemNegotiation = dto.items.some(
+            (item) =>
+                item.descuento_item_tipo ||
+                item.descuento_item_valor != null ||
+                item.precio_unitario_final != null,
+        );
+
+        if (isCliente && (dto.descuento_pedido_tipo || dto.descuento_pedido_valor != null || hasItemNegotiation)) {
             throw new BadRequestException('Los clientes no pueden negociar descuentos');
         }
 
@@ -331,7 +396,10 @@ export class OrdersService {
             return;
         }
 
-        if (!condiciones.permite_negociacion && (dto.descuento_pedido_tipo || dto.descuento_pedido_valor != null)) {
+        if (
+            !condiciones.permite_negociacion &&
+            (dto.descuento_pedido_tipo || dto.descuento_pedido_valor != null || hasItemNegotiation)
+        ) {
             throw new BadRequestException('El cliente no permite negociaciones');
         }
 
@@ -341,6 +409,17 @@ export class OrdersService {
             dto.descuento_pedido_valor > condiciones.max_descuento_porcentaje
         ) {
             throw new ForbiddenException('El descuento supera el tope permitido por el cliente');
+        }
+
+        if (typeof condiciones.max_descuento_porcentaje === 'number') {
+            dto.items.forEach((item) => {
+                if (
+                    item.descuento_item_tipo === TipoDescuento.PORCENTAJE &&
+                    item.descuento_item_valor > condiciones.max_descuento_porcentaje
+                ) {
+                    throw new ForbiddenException('El descuento supera el tope permitido por el cliente');
+                }
+            });
         }
     }
 
