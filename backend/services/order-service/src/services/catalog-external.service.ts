@@ -58,7 +58,16 @@ export class CatalogExternalService {
             return null;
         }
 
-        const nombre = sku.nombre ?? sku.name ?? 'Sin nombre';
+        const baseNombre = sku.nombre ?? sku.name ?? 'Sin nombre';
+        const productoNombre =
+            sku.producto_nombre ??
+            sku.productoNombre ??
+            sku.producto?.nombre ??
+            sku.product?.name ??
+            sku.productName;
+        const nombre = productoNombre && baseNombre && !String(baseNombre).includes(productoNombre)
+            ? `${productoNombre} - ${baseNombre}`
+            : baseNombre;
         const codigo = sku.codigo ?? sku.code ?? sku.sku ?? 'SIN-CODIGO';
         const peso = sku.peso_gramos ?? sku.peso ?? sku.pesoGramos ?? 0;
         const tipo = sku.tipo_empaque ?? sku.tipoEmpaque ?? 'desconocido';
