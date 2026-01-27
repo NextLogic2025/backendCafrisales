@@ -1,5 +1,19 @@
-import { IsUUID, IsDateString, IsString, IsOptional, IsInt, Min, IsEnum } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsUUID, IsDateString, IsString, IsOptional, IsInt, Min, IsEnum, ValidateNested, IsArray, ArrayMinSize } from 'class-validator';
 import { ResultadoVisita } from '../../../common/constants/route-enums';
+
+export class CreateCommercialStopDto {
+    @IsUUID()
+    cliente_id: string;
+
+    @IsInt()
+    @Min(1)
+    orden_visita: number;
+
+    @IsString()
+    @IsOptional()
+    objetivo?: string;
+}
 
 export class CreateCommercialRouteDto {
     @IsDateString()
@@ -10,6 +24,12 @@ export class CreateCommercialRouteDto {
 
     @IsUUID()
     vendedor_id: string;
+
+    @IsArray()
+    @ArrayMinSize(1)
+    @ValidateNested({ each: true })
+    @Type(() => CreateCommercialStopDto)
+    paradas: CreateCommercialStopDto[];
 }
 
 export class AddVisitDto {
@@ -32,4 +52,10 @@ export class UpdateVisitResultDto {
     @IsString()
     @IsOptional()
     notas?: string;
+}
+
+export class CancelRuteroDto {
+    @IsString()
+    @IsOptional()
+    motivo?: string;
 }

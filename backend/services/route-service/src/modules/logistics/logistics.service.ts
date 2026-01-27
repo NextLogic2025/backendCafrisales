@@ -1,10 +1,22 @@
-import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
+import {
+    BadRequestException,
+    ConflictException,
+    ForbiddenException,
+    Injectable,
+    NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { RuteroLogistico } from './entities/rutero-logistico.entity';
 import { ParadaRuteroLogistico } from './entities/parada-rutero-logistico.entity';
 import { CreateLogisticRouteDto, AddOrderDto } from './dto/logistics-route.dto';
-import { EstadoRutero } from '../../common/constants/route-enums';
+import { EstadoRutero, EstadoVehiculo, TipoRutero } from '../../common/constants/route-enums';
+import { HistorialEstadoRutero } from '../history/entities/historial-estado-rutero.entity';
+import { OutboxService } from '../outbox/outbox.service';
+import { UserExternalService } from '../../services/user-external.service';
+import { ZoneExternalService } from '../../services/zone-external.service';
+import { OrderExternalService } from '../../services/order-external.service';
+import { Vehiculo } from '../fleet/entities/vehiculo.entity';
 
 @Injectable()
 export class LogisticsService {
@@ -13,28 +25,110 @@ export class LogisticsService {
         private readonly routeRepo: Repository<RuteroLogistico>,
         @InjectRepository(ParadaRuteroLogistico)
         private readonly stopRepo: Repository<ParadaRuteroLogistico>,
+        @InjectRepository(Vehiculo)
+        private readonly vehicleRepo: Repository<Vehiculo>,
+        private readonly dataSource: DataSource,
+        private readonly outboxService: OutboxService,
+        private readonly userExternalService: UserExternalService,
+        private readonly zoneExternalService: ZoneExternalService,
+        private readonly orderExternalService: OrderExternalService,
     ) { }
 
     async create(dto: CreateLogisticRouteDto, supervisorId: string): Promise<RuteroLogistico> {
-        const existing = await this.routeRepo.findOne({
-            where: {
-                fecha_rutero: new Date(dto.fecha_rutero),
-                zona_id: dto.zona_id,
-                vehiculo_id: dto.vehiculo_id,
-            },
-        });
-
-        if (existing) {
-            throw new ConflictException('Ya existe un rutero logístico para esta fecha, zona y vehículo');
+        const zone = await this.zoneExternalService.getZoneById(dto.zona_id);
+        if (!zone) {
+            throw new BadRequestException('La zona especificada no es válida o no existe.');
         }
 
-        const route = this.routeRepo.create({
-            ...dto,
-            creado_por_supervisor_id: supervisorId,
-            estado: EstadoRutero.BORRADOR,
-        });
+        const vehicle = await this.vehicleRepo.findOne({ where: { id: dto.vehiculo_id } });
+        if (!vehicle) {
+            throw new BadRequestException('El vehículo especificado no es válido o no existe.');
+        }
+        if (vehicle.estado !== EstadoVehiculo.DISPONIBLE) {
+            throw new BadRequestException('El vehículo no está disponible.');
+        }
 
-        return this.routeRepo.save(route);
+        const isTransporter = await this.userExternalService.isTransporter(dto.transportista_id);
+        if (!isTransporter) {
+            throw new BadRequestException('El transportista asignado no es válido.');
+        }
+
+        const invalidOrders: string[] = [];
+        for (const parada of dto.paradas) {
+            const order = await this.orderExternalService.getOrderById(parada.pedido_id);
+            if (!order) {
+                invalidOrders.push(parada.pedido_id);
+                continue;
+            }
+            if (!['validado', 'aceptado_cliente'].includes(order.estado)) {
+                invalidOrders.push(parada.pedido_id);
+                continue;
+            }
+            if (order.zona_id && order.zona_id !== dto.zona_id) {
+                invalidOrders.push(parada.pedido_id);
+            }
+        }
+
+        if (invalidOrders.length > 0) {
+            throw new BadRequestException(`Pedidos inválidos o fuera de zona: ${invalidOrders.join(', ')}`);
+        }
+
+        try {
+            return await this.dataSource.transaction(async (manager) => {
+                const routeRepo = manager.getRepository(RuteroLogistico);
+                const stopRepo = manager.getRepository(ParadaRuteroLogistico);
+                const historyRepo = manager.getRepository(HistorialEstadoRutero);
+
+                const route = routeRepo.create({
+                    fecha_rutero: new Date(dto.fecha_rutero),
+                    zona_id: dto.zona_id,
+                    vehiculo_id: dto.vehiculo_id,
+                    transportista_id: dto.transportista_id,
+                    creado_por_supervisor_id: supervisorId,
+                    estado: EstadoRutero.BORRADOR,
+                });
+
+                const savedRoute = await routeRepo.save(route);
+
+                const stops = dto.paradas.map((parada) =>
+                    stopRepo.create({
+                        rutero_id: savedRoute.id,
+                        pedido_id: parada.pedido_id,
+                        orden_entrega: parada.orden_entrega,
+                    }),
+                );
+                await stopRepo.save(stops);
+
+                await historyRepo.save({
+                    tipo: TipoRutero.LOGISTICO,
+                    rutero_id: savedRoute.id,
+                    estado: EstadoRutero.BORRADOR,
+                    cambiado_por_id: supervisorId,
+                    motivo: 'Rutero logístico creado',
+                });
+
+                await this.outboxService.createEvent(
+                    'RuteroLogisticoCreado',
+                    {
+                        rutero_id: savedRoute.id,
+                        fecha_rutero: savedRoute.fecha_rutero,
+                        zona_id: savedRoute.zona_id,
+                        vehiculo_id: savedRoute.vehiculo_id,
+                        paradas_count: stops.length,
+                    },
+                    'route',
+                    savedRoute.id,
+                    manager,
+                );
+
+                return savedRoute;
+            });
+        } catch (error: any) {
+            if (error?.code === '23505') {
+                throw new ConflictException('Ya existe un rutero logístico para esta fecha, zona y vehículo');
+            }
+            throw error;
+        }
     }
 
     async addOrder(routeId: string, dto: AddOrderDto): Promise<ParadaRuteroLogistico> {
@@ -51,7 +145,7 @@ export class LogisticsService {
 
         try {
             return await this.stopRepo.save(stop);
-        } catch (error) {
+        } catch (error: any) {
             if (error.code === '23505') {
                 throw new ConflictException('El pedido ya está en el rutero o el orden está duplicado');
             }
@@ -59,7 +153,7 @@ export class LogisticsService {
         }
     }
 
-    async findOne(id: string): Promise<RuteroLogistico> {
+    async findOne(id: string): Promise<any> {
         const route = await this.routeRepo.findOne({
             where: { id },
             relations: ['paradas'],
@@ -70,27 +164,236 @@ export class LogisticsService {
             throw new NotFoundException(`Rutero logístico ${id} no encontrado`);
         }
 
-        return route;
+        const vehicle = await this.vehicleRepo.findOne({ where: { id: route.vehiculo_id } });
+
+        return {
+            ...route,
+            vehiculo: vehicle || null,
+        };
     }
 
-    async findAll(): Promise<RuteroLogistico[]> {
-        return this.routeRepo.find({ order: { fecha_rutero: 'DESC' } });
+    async findAll(transportistaId?: string, estados?: string[]): Promise<RuteroLogistico[]> {
+        const qb = this.routeRepo.createQueryBuilder('r').orderBy('r.fecha_rutero', 'DESC');
+        if (transportistaId) {
+            qb.where('r.transportista_id = :transportistaId', { transportistaId });
+        }
+        if (estados && estados.length > 0) {
+            qb.andWhere('r.estado IN (:...estados)', { estados });
+        }
+        return qb.getMany();
     }
 
     async publish(id: string, userId: string): Promise<RuteroLogistico> {
-        const route = await this.findOne(id);
-        if (route.estado !== EstadoRutero.BORRADOR) {
-            throw new BadRequestException('Solo se pueden publicar ruteros en borrador');
-        }
+        return this.dataSource.transaction(async (manager) => {
+            const routeRepo = manager.getRepository(RuteroLogistico);
+            const historyRepo = manager.getRepository(HistorialEstadoRutero);
+            const vehicleRepo = manager.getRepository(Vehiculo);
 
-        if (!route.paradas || route.paradas.length === 0) {
-            throw new BadRequestException('No se puede publicar un rutero sin pedidos');
-        }
+            const route = await routeRepo.findOne({
+                where: { id },
+                relations: ['paradas'],
+                lock: { mode: 'pessimistic_write' },
+            });
+            if (!route) {
+                throw new NotFoundException(`Rutero logístico ${id} no encontrado`);
+            }
+            if (route.estado !== EstadoRutero.BORRADOR) {
+                throw new BadRequestException('Solo se pueden publicar ruteros en borrador');
+            }
+            if (!route.paradas || route.paradas.length === 0) {
+                throw new BadRequestException('No se puede publicar un rutero sin pedidos');
+            }
 
-        route.estado = EstadoRutero.PUBLICADO;
-        route.publicado_en = new Date();
-        route.publicado_por = userId;
+            const vehicle = await vehicleRepo.findOne({ where: { id: route.vehiculo_id }, lock: { mode: 'pessimistic_write' } });
+            if (!vehicle) {
+                throw new BadRequestException('El vehículo especificado no es válido o no existe.');
+            }
+            if (vehicle.estado !== EstadoVehiculo.DISPONIBLE) {
+                throw new BadRequestException('El vehículo no está disponible.');
+            }
 
-        return this.routeRepo.save(route);
+            route.estado = EstadoRutero.PUBLICADO;
+            route.publicado_en = new Date();
+            route.publicado_por = userId;
+
+            vehicle.estado = EstadoVehiculo.ASIGNADO;
+
+            const saved = await routeRepo.save(route);
+            await vehicleRepo.save(vehicle);
+
+            await historyRepo.save({
+                tipo: TipoRutero.LOGISTICO,
+                rutero_id: id,
+                estado: EstadoRutero.PUBLICADO,
+                cambiado_por_id: userId,
+                motivo: 'Rutero logístico publicado',
+            });
+
+            await this.outboxService.createEvent(
+                'RuteroLogisticoPublicado',
+                { rutero_id: id, fecha_rutero: route.fecha_rutero, vehiculo_id: route.vehiculo_id },
+                'route',
+                id,
+                manager,
+            );
+
+            return saved;
+        });
+    }
+
+    async start(id: string, transportistaId: string): Promise<RuteroLogistico> {
+        return this.dataSource.transaction(async (manager) => {
+            const routeRepo = manager.getRepository(RuteroLogistico);
+            const historyRepo = manager.getRepository(HistorialEstadoRutero);
+
+            const route = await routeRepo.findOne({
+                where: { id },
+                relations: ['paradas'],
+                lock: { mode: 'pessimistic_write' },
+            });
+            if (!route) {
+                throw new NotFoundException(`Rutero logístico ${id} no encontrado`);
+            }
+            if (route.transportista_id !== transportistaId) {
+                throw new ForbiddenException('No autorizado para iniciar este rutero');
+            }
+            if (route.estado !== EstadoRutero.PUBLICADO) {
+                throw new BadRequestException('Solo se pueden iniciar ruteros publicados');
+            }
+
+            route.estado = EstadoRutero.EN_CURSO;
+            route.iniciado_en = new Date();
+            route.iniciado_por = transportistaId;
+
+            const saved = await routeRepo.save(route);
+
+            await historyRepo.save({
+                tipo: TipoRutero.LOGISTICO,
+                rutero_id: id,
+                estado: EstadoRutero.EN_CURSO,
+                cambiado_por_id: transportistaId,
+                motivo: 'Transportista inició rutero',
+            });
+
+            await this.outboxService.createEvent(
+                'RuteroLogisticoIniciado',
+                {
+                    rutero_id: id,
+                    fecha_rutero: route.fecha_rutero,
+                    pedidos: (route.paradas || []).map((p) => p.pedido_id),
+                },
+                'route',
+                id,
+                manager,
+            );
+
+            return saved;
+        });
+    }
+
+    async complete(id: string, transportistaId: string): Promise<RuteroLogistico> {
+        return this.dataSource.transaction(async (manager) => {
+            const routeRepo = manager.getRepository(RuteroLogistico);
+            const historyRepo = manager.getRepository(HistorialEstadoRutero);
+            const vehicleRepo = manager.getRepository(Vehiculo);
+
+            const route = await routeRepo.findOne({
+                where: { id },
+                lock: { mode: 'pessimistic_write' },
+            });
+            if (!route) {
+                throw new NotFoundException(`Rutero logístico ${id} no encontrado`);
+            }
+            if (route.transportista_id !== transportistaId) {
+                throw new ForbiddenException('No autorizado para completar este rutero');
+            }
+            if (route.estado !== EstadoRutero.EN_CURSO) {
+                throw new BadRequestException('Solo se pueden completar ruteros en curso');
+            }
+
+            route.estado = EstadoRutero.COMPLETADO;
+            route.completado_en = new Date();
+            route.completado_por = transportistaId;
+
+            const saved = await routeRepo.save(route);
+
+            const vehicle = await vehicleRepo.findOne({ where: { id: route.vehiculo_id } });
+            if (vehicle) {
+                vehicle.estado = EstadoVehiculo.DISPONIBLE;
+                await vehicleRepo.save(vehicle);
+            }
+
+            await historyRepo.save({
+                tipo: TipoRutero.LOGISTICO,
+                rutero_id: id,
+                estado: EstadoRutero.COMPLETADO,
+                cambiado_por_id: transportistaId,
+                motivo: 'Rutero completado',
+            });
+
+            await this.outboxService.createEvent(
+                'RuteroLogisticoCompletado',
+                { rutero_id: id, fecha_rutero: route.fecha_rutero },
+                'route',
+                id,
+                manager,
+            );
+
+            return saved;
+        });
+    }
+
+    async cancel(id: string, supervisorId: string, motivo?: string): Promise<RuteroLogistico> {
+        return this.dataSource.transaction(async (manager) => {
+            const routeRepo = manager.getRepository(RuteroLogistico);
+            const historyRepo = manager.getRepository(HistorialEstadoRutero);
+            const vehicleRepo = manager.getRepository(Vehiculo);
+
+            const route = await routeRepo.findOne({
+                where: { id },
+                lock: { mode: 'pessimistic_write' },
+            });
+            if (!route) {
+                throw new NotFoundException(`Rutero logístico ${id} no encontrado`);
+            }
+            if (route.estado === EstadoRutero.COMPLETADO || route.estado === EstadoRutero.CANCELADO) {
+                throw new BadRequestException('El rutero no puede ser cancelado');
+            }
+
+            const previousEstado = route.estado;
+
+            route.estado = EstadoRutero.CANCELADO;
+            route.cancelado_en = new Date();
+            route.cancelado_por = supervisorId;
+            route.cancelado_motivo = motivo || null;
+
+            const saved = await routeRepo.save(route);
+
+            if ([EstadoRutero.PUBLICADO, EstadoRutero.EN_CURSO].includes(previousEstado)) {
+                const vehicle = await vehicleRepo.findOne({ where: { id: route.vehiculo_id } });
+                if (vehicle) {
+                    vehicle.estado = EstadoVehiculo.DISPONIBLE;
+                    await vehicleRepo.save(vehicle);
+                }
+            }
+
+            await historyRepo.save({
+                tipo: TipoRutero.LOGISTICO,
+                rutero_id: id,
+                estado: EstadoRutero.CANCELADO,
+                cambiado_por_id: supervisorId,
+                motivo: motivo || 'Rutero cancelado',
+            });
+
+            await this.outboxService.createEvent(
+                'RuteroLogisticoCancelado',
+                { rutero_id: id, fecha_rutero: route.fecha_rutero },
+                'route',
+                id,
+                manager,
+            );
+
+            return saved;
+        });
     }
 }

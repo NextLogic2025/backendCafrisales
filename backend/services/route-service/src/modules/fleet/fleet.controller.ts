@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { FleetService } from './fleet.service';
 import { CreateVehicleDto, UpdateVehicleStatusDto } from './dto/vehicle.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -7,7 +7,7 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { RolUsuario } from '../../common/constants/rol-usuario.enum';
 
-@Controller('fleet')
+@Controller('vehiculos')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class FleetController {
     constructor(private readonly fleetService: FleetService) { }
@@ -19,8 +19,8 @@ export class FleetController {
     }
 
     @Get()
-    findAll() {
-        return this.fleetService.findAll();
+    findAll(@Query('estado') estado?: string) {
+        return this.fleetService.findAll(estado);
     }
 
     @Get(':id')
@@ -28,7 +28,7 @@ export class FleetController {
         return this.fleetService.findOne(id);
     }
 
-    @Patch(':id/status')
+    @Put(':id/estado')
     @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR)
     updateStatus(
         @Param('id') id: string,

@@ -35,4 +35,15 @@ export class OrderExternalService {
             return null;
         }
     }
+
+    async getOrdersByIds(orderIds: string[]): Promise<any[]> {
+        const results: any[] = [];
+        for (const orderId of orderIds) {
+            const order = await this.getOrderById(orderId);
+            if (order) {
+                results.push(order);
+            }
+        }
+        return results;
+    }
 }

@@ -36,13 +36,31 @@ export class UserExternalService {
         }
     }
 
+    async getClientById(clientId: string): Promise<any> {
+        try {
+            return await this.s2sClient.get<any>(
+                this.userServiceUrl,
+                `/api/internal/clientes/${clientId}`,
+                this.serviceToken,
+            );
+        } catch (error) {
+            this.logger.warn(`Failed to fetch client ${clientId}: ${error.message}`);
+            return null;
+        }
+    }
+
     async isSeller(userId: string): Promise<boolean> {
         const user = await this.getUserById(userId);
-        return user?.rol === 'vendedor';
+        return user?.rol === 'vendedor' && user?.estado !== 'inactivo';
     }
 
     async isTransporter(userId: string): Promise<boolean> {
         const user = await this.getUserById(userId);
-        return user?.rol === 'transportista';
+        return user?.rol === 'transportista' && user?.estado !== 'inactivo';
+    }
+
+    async isClient(userId: string): Promise<boolean> {
+        const user = await this.getUserById(userId);
+        return user?.rol === 'cliente' && user?.estado !== 'inactivo';
     }
 }

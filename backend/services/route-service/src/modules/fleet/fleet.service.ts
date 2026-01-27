@@ -26,8 +26,10 @@ export class FleetService {
         return this.vehicleRepo.save(vehicle);
     }
 
-    async findAll(): Promise<Vehiculo[]> {
-        return this.vehicleRepo.find({ order: { placa: 'ASC' } });
+    async findAll(estado?: string): Promise<Vehiculo[]> {
+        const where: any = {};
+        if (estado) where.estado = estado;
+        return this.vehicleRepo.find({ where, order: { placa: 'ASC' } });
     }
 
     async findOne(id: string): Promise<Vehiculo> {
