@@ -124,7 +124,14 @@ export class OrdersService {
                 manager,
             );
 
-            return this.findOne(savedPedido.id);
+            const fullPedido = await manager.findOne(Pedido, {
+                where: { id: savedPedido.id },
+                relations: ['items', 'validaciones', 'validaciones.items', 'historial'],
+            });
+            if (!fullPedido) {
+                throw new NotFoundException(`Pedido ${savedPedido.id} no encontrado`);
+            }
+            return fullPedido;
         });
     }
 

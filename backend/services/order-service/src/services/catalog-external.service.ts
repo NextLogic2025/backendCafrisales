@@ -62,7 +62,13 @@ export class CatalogExternalService {
         const codigo = sku.codigo ?? sku.code ?? sku.sku ?? 'SIN-CODIGO';
         const peso = sku.peso_gramos ?? sku.peso ?? sku.pesoGramos ?? 0;
         const tipo = sku.tipo_empaque ?? sku.tipoEmpaque ?? 'desconocido';
-        const precio = sku.precio_vigente ?? sku.precio ?? sku.price ?? 0;
+        const precio =
+            sku.precio_vigente ??
+            sku.precio ??
+            sku.price ??
+            (Array.isArray(sku.precios)
+                ? Number(sku.precios.find((p) => !p.vigente_hasta)?.precio ?? sku.precios[0]?.precio ?? 0)
+                : 0);
 
         return {
             sku_id: skuId,
