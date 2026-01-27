@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Put, Param, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Put, Param, Query, UseGuards, ForbiddenException } from '@nestjs/common';
 import { CreditsService } from './credits.service';
 import { AprobarCreditoDto } from './dto/aprobar-credito.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -56,6 +56,14 @@ export class CreditsController {
         return this.creditsService.cancel(id, actorId, motivo);
     }
 
+    @Put(':id/rechazar')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(RolUsuario.VENDEDOR, RolUsuario.ADMIN, RolUsuario.SUPERVISOR)
+    rechazar(@Param('id') id: string, @Body('motivo') motivo: string, @CurrentUser() user: any) {
+        const actorId = user?.userId || user?.id;
+        return this.creditsService.cancel(id, actorId, motivo || 'Credito rechazado');
+    }
+
     @Get()
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR, RolUsuario.VENDEDOR)
@@ -74,6 +82,21 @@ export class CreditsController {
         return this.creditsService.findAll();
     }
 
+    @Get('mis')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(RolUsuario.CLIENTE)
+    listarMisCreditos(@CurrentUser() user: any, @Query('estado') estado?: string) {
+        const clienteId = user?.userId || user?.id;
+        if (!clienteId) {
+            throw new ForbiddenException('Cliente no identificado');
+        }
+        if (estado && estado.includes(',')) {
+            const estados = estado.split(',').map((item) => item.trim() as EstadoCredito);
+            return this.creditsService.findByClientStates(clienteId, estados);
+        }
+        return this.creditsService.findByClient(clienteId, estado as EstadoCredito);
+    }
+
     @Get('proximos-vencer')
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR)
@@ -90,14 +113,28 @@ export class CreditsController {
     }
 
     @Get(':id')
-    @UseGuards(JwtAuthGuard)
-    detalle(@Param('id') id: string) {
-        return this.creditsService.getCreditDetail(id);
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR, RolUsuario.VENDEDOR, RolUsuario.CLIENTE)
+    async detalle(@Param('id') id: string, @CurrentUser() user: any) {
+        const credit = await this.creditsService.getCreditDetail(id);
+        const isClient = user?.role === RolUsuario.CLIENTE;
+        const userId = user?.userId || user?.id;
+        if (isClient && credit?.credito?.cliente_id !== userId) {
+            throw new ForbiddenException('No tienes permisos para ver este credito');
+        }
+        return credit;
     }
 
     @Get(':id/pagos')
-    @UseGuards(JwtAuthGuard)
-    pagos(@Param('id') id: string) {
-        return this.creditsService.listPayments(id);
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR, RolUsuario.VENDEDOR, RolUsuario.CLIENTE)
+    async pagos(@Param('id') id: string, @CurrentUser() user: any) {
+        const credit = await this.creditsService.findOne(id);
+        const isClient = user?.role === RolUsuario.CLIENTE;
+        const userId = user?.userId || user?.id;
+        if (isClient && credit.cliente_id !== userId) {
+            throw new ForbiddenException('No tienes permisos para ver este credito');
+        }
+        return credit.pagos || [];
     }
 }

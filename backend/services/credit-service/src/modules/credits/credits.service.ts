@@ -113,6 +113,13 @@ export class CreditsService {
         });
     }
 
+    async findByClientStates(clienteId: string, estados?: EstadoCredito[]): Promise<any[]> {
+        return this.fetchCreditsWithTotals({
+            cliente_id: clienteId,
+            estados,
+        });
+    }
+
     async findBySeller(vendedorId: string, estados?: EstadoCredito[]): Promise<any[]> {
         return this.fetchCreditsWithTotals({
             aprobado_por_vendedor_id: vendedorId,
