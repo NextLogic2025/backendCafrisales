@@ -41,4 +41,8 @@ COPY --chown=node:node --from=builder /app/dist ./dist
 EXPOSE 3000
 
 # Comando de arranque → ¡ESTE es el punto clave para tu proyecto!
+<<<<<<< HEAD
 CMD ["node", "dist/main"]
+=======
+CMD ["node", "dist/main"]
+>>>>>>> edac03e55d932d8cee7f87f3344a6a3c7cd08bd2
