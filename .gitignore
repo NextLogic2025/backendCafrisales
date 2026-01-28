@@ -1,4 +1,8 @@
 # Global ignores for a microservices repository (Node/Nest/TypeScript focused)
+.agents
+.claude
+.codex
+.gemini
 
 # OS files
 .DS_Store
