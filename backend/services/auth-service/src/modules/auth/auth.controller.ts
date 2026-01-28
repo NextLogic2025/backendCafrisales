@@ -7,6 +7,8 @@ import {
   Request,
   ForbiddenException,
   Req,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
@@ -15,7 +17,7 @@ import { RefreshDto } from './dto/refresh.dto';
 import { LogoutDto } from './dto/logout.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { AuthGuard } from '@nestjs/passport';
-import { GetUser } from '../../common/decorators/get-user.decorator';
+import { AuthUser, GetUser } from '../../common/decorators/get-user.decorator';
 import { JwtOrServiceGuard } from '../../common/guards/jwt-or-service.guard';
 
 @Controller('auth')
@@ -24,8 +26,8 @@ export class AuthController {
 
   @UseGuards(AuthGuard('local'))
   @Post('login')
+  @HttpCode(HttpStatus.OK)
   async login(@Request() req: any) {
-    // LocalStrategy validated and attached `req.user`
     const meta = {
       ip:
         (req?.headers?.['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
@@ -39,10 +41,11 @@ export class AuthController {
 
   @UseGuards(JwtOrServiceGuard)
   @Post('register')
-  async register(@Body() dto: RegisterDto, @GetUser() user: any, @Req() req: any) {
+  @HttpCode(HttpStatus.CREATED)
+  async register(@Body() dto: RegisterDto, @GetUser() user: AuthUser | undefined, @Req() req: any) {
     const isServiceAuth = !!req?.serviceAuth;
     if (!isServiceAuth) {
-      const role = (user?.role || user?.rol || '').toLowerCase();
+      const role = (user?.role || '').toLowerCase();
       const allowed = ['admin', 'supervisor', 'staff'];
       if (!allowed.includes(role)) {
         throw new ForbiddenException('No autorizado para crear usuarios');
@@ -51,7 +54,7 @@ export class AuthController {
 
     const payload: RegisterDto = {
       ...dto,
-      creado_por: isServiceAuth ? dto.creado_por : (user?.userId || user?.id || dto.creado_por),
+      creado_por: isServiceAuth ? dto.creado_por : (user?.userId || dto.creado_por),
       usuario_id: isServiceAuth ? dto.usuario_id : undefined,
     } as RegisterDto;
 
@@ -59,19 +62,20 @@ export class AuthController {
   }
 
   @Post('refresh')
+  @HttpCode(HttpStatus.OK)
   async refresh(@Body() dto: RefreshDto) {
     return this.authService.refresh(dto);
   }
 
   @Post('logout')
+  @HttpCode(HttpStatus.NO_CONTENT)
   async logout(@Body() dto: LogoutDto) {
     await this.authService.logout(dto);
-    return { statusCode: 204 };
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('sesiones')
-  async sesiones(@GetUser() user: any) {
-    return this.authService.getSessions(user?.userId || user?.id || null);
+  async sesiones(@GetUser() user: AuthUser | undefined) {
+    return this.authService.getSessions(user?.userId ?? null);
   }
 }

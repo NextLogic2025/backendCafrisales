@@ -7,6 +7,15 @@ import {
 } from 'typeorm';
 import { Credential } from './credential.entity';
 
+/**
+ * Sesiones activas con refresh tokens hasheados.
+ * Mapea a app.sesiones en cafrilosa_auth.
+ * 
+ * NOTA: refresh_hash almacena el hash argon2 del refresh token.
+ * El token en claro NUNCA se persiste.
+ * Los índices idx_sesiones_usuario_activas y idx_sesiones_expira_activas
+ * optimizan consultas de sesiones activas.
+ */
 @Entity({ schema: 'app', name: 'sesiones' })
 export class Session {
   @PrimaryGeneratedColumn('uuid', { name: 'id' })
@@ -29,7 +38,7 @@ export class Session {
   user_agent?: string;
 
   @Column({ name: 'dispositivo_meta', type: 'jsonb', default: () => "'{}'::jsonb" })
-  dispositivo_meta: any;
+  dispositivo_meta: Record<string, unknown>;
 
   @Column({ name: 'expira_en', type: 'timestamptz' })
   expira_en: Date;

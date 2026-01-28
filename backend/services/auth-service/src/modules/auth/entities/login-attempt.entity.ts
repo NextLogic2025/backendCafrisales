@@ -1,9 +1,13 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
+/**
+ * Auditoría de intentos de login para rate limiting y detección de ataques.
+ * Mapea a audit.intentos_login (bigint GENERATED ALWAYS AS IDENTITY).
+ */
 @Entity({ schema: 'audit', name: 'intentos_login' })
 export class LoginAttempt {
-  @PrimaryGeneratedColumn('increment')
-  id: number;
+  @PrimaryGeneratedColumn('identity', { type: 'bigint' })
+  id: string;
 
   @Column({ type: 'citext' })
   email: string;

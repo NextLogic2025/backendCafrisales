@@ -1,15 +1,21 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
+/**
+ * Credenciales de autenticación del usuario.
+ * Mapea a app.credenciales en cafrilosa_auth.
+ * 
+ * NOTA: usuario_id es referencia lógica a user-service (no FK).
+ * El trigger trg_credenciales_actualizado actualiza automáticamente
+ * actualizado_en y version en cada UPDATE.
+ */
 @Entity({ schema: 'app', name: 'credenciales' })
 export class Credential {
-  // DB column is usuario_id uuid PRIMARY KEY (no default in DDL)
   @PrimaryColumn('uuid', { name: 'usuario_id' })
   id: string;
 
   @Column({ name: 'email', type: 'citext', unique: true })
   email: string;
 
-  // DB column is password_hash
   @Column({ name: 'password_hash', type: 'text' })
   password: string;
 
