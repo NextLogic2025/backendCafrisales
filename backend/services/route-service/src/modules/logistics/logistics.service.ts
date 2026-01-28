@@ -186,12 +186,12 @@ export class LogisticsService {
     async publish(id: string, userId: string): Promise<RuteroLogistico> {
         return this.dataSource.transaction(async (manager) => {
             const routeRepo = manager.getRepository(RuteroLogistico);
+            const stopRepo = manager.getRepository(ParadaRuteroLogistico);
             const historyRepo = manager.getRepository(HistorialEstadoRutero);
             const vehicleRepo = manager.getRepository(Vehiculo);
 
             const route = await routeRepo.findOne({
                 where: { id },
-                relations: ['paradas'],
                 lock: { mode: 'pessimistic_write' },
             });
             if (!route) {
@@ -200,7 +200,8 @@ export class LogisticsService {
             if (route.estado !== EstadoRutero.BORRADOR) {
                 throw new BadRequestException('Solo se pueden publicar ruteros en borrador');
             }
-            if (!route.paradas || route.paradas.length === 0) {
+            const paradas = await stopRepo.find({ where: { rutero_id: id } });
+            if (!paradas || paradas.length === 0) {
                 throw new BadRequestException('No se puede publicar un rutero sin pedidos');
             }
 
@@ -244,11 +245,11 @@ export class LogisticsService {
     async start(id: string, transportistaId: string): Promise<RuteroLogistico> {
         return this.dataSource.transaction(async (manager) => {
             const routeRepo = manager.getRepository(RuteroLogistico);
+            const stopRepo = manager.getRepository(ParadaRuteroLogistico);
             const historyRepo = manager.getRepository(HistorialEstadoRutero);
 
             const route = await routeRepo.findOne({
                 where: { id },
-                relations: ['paradas'],
                 lock: { mode: 'pessimistic_write' },
             });
             if (!route) {
@@ -267,6 +268,8 @@ export class LogisticsService {
 
             const saved = await routeRepo.save(route);
 
+            const paradas = await stopRepo.find({ where: { rutero_id: id } });
+
             await historyRepo.save({
                 tipo: TipoRutero.LOGISTICO,
                 rutero_id: id,
@@ -280,7 +283,7 @@ export class LogisticsService {
                 {
                     rutero_id: id,
                     fecha_rutero: route.fecha_rutero,
-                    pedidos: (route.paradas || []).map((p) => p.pedido_id),
+                    pedidos: (paradas || []).map((p) => p.pedido_id),
                 },
                 'route',
                 id,

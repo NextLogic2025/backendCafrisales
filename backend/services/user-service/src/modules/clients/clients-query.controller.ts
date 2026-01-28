@@ -28,7 +28,7 @@ export class ClientsQueryController {
   ) {}
 
   @Get('vendedores/:vendedorId/clientes')
-  @Roles(RolUsuario.ADMIN, RolUsuario.STAFF, RolUsuario.SUPERVISOR, RolUsuario.VENDEDOR)
+  @Roles(RolUsuario.ADMIN, RolUsuario.STAFF, RolUsuario.SUPERVISOR, RolUsuario.VENDEDOR, RolUsuario.TRANSPORTISTA)
   async listByVendedor(@Param('vendedorId') vendedorId: string) {
     const user = await this.usuarioRepo.findOneBy({ id: vendedorId } as any);
     if (!user || user.rol !== 'vendedor' || user.estado !== 'activo') {
@@ -73,7 +73,7 @@ export class ClientsQueryController {
   }
 
   @Get('zonas/:zonaId/clientes')
-  @Roles(RolUsuario.ADMIN, RolUsuario.STAFF, RolUsuario.SUPERVISOR)
+  @Roles(RolUsuario.ADMIN, RolUsuario.STAFF, RolUsuario.SUPERVISOR, RolUsuario.TRANSPORTISTA)
   async listByZona(@Param('zonaId') zonaId: string) {
     const qb = this.clienteRepo
       .createQueryBuilder('c')
