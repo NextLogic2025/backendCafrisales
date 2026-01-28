@@ -9,6 +9,9 @@ import {
   Req,
   HttpCode,
   HttpStatus,
+  Put,
+  Param,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
@@ -19,6 +22,7 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthUser, GetUser } from '../../common/decorators/get-user.decorator';
 import { JwtOrServiceGuard } from '../../common/guards/jwt-or-service.guard';
+import { UpdateEmailDto, UpdatePasswordDto } from './dto/update-credentials.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -77,5 +81,33 @@ export class AuthController {
   @Get('sesiones')
   async sesiones(@GetUser() user: AuthUser | undefined) {
     return this.authService.getSessions(user?.userId ?? null);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('usuarios/:id/password')
+  async updatePassword(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdatePasswordDto,
+    @GetUser() user: AuthUser | undefined,
+  ) {
+    const role = (user?.role || '').toLowerCase();
+    if (!['admin', 'supervisor', 'staff'].includes(role)) {
+      throw new ForbiddenException('No autorizado para actualizar credenciales');
+    }
+    return this.authService.updatePassword(id, dto.password, user?.userId ?? null);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('usuarios/:id/email')
+  async updateEmail(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateEmailDto,
+    @GetUser() user: AuthUser | undefined,
+  ) {
+    const role = (user?.role || '').toLowerCase();
+    if (!['admin', 'supervisor', 'staff'].includes(role)) {
+      throw new ForbiddenException('No autorizado para actualizar credenciales');
+    }
+    return this.authService.updateEmail(id, dto.email, user?.userId ?? null);
   }
 }

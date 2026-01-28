@@ -1,4 +1,4 @@
-import { Injectable, Logger, UnauthorizedException, ConflictException, Inject, ForbiddenException, InternalServerErrorException, BadRequestException } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException, ConflictException, Inject, ForbiddenException, InternalServerErrorException, BadRequestException, NotFoundException } from '@nestjs/common';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { RefreshDto } from './dto/refresh.dto';
@@ -346,5 +346,43 @@ export class AuthService {
       revocado_en: s.revocado_en,
       creado_en: s.creado_en,
     } as any));
+  }
+
+  async updatePassword(usuarioId: string, password: string, actorId: string | null) {
+    const credential = await this.credentialRepo.findOneBy({ id: usuarioId } as any);
+    if (!credential) {
+      throw new NotFoundException('Credencial no encontrada');
+    }
+
+    const passwordHash = await argon2.hash(password);
+    await this.credentialRepo.update(
+      { id: usuarioId } as any,
+      {
+        password: passwordHash,
+        password_alg: 'argon2id',
+        actualizado_por: actorId || null,
+      } as any,
+    );
+
+    return { ok: true };
+  }
+
+  async updateEmail(usuarioId: string, email: string, actorId: string | null) {
+    const credential = await this.credentialRepo.findOneBy({ id: usuarioId } as any);
+    if (!credential) {
+      throw new NotFoundException('Credencial no encontrada');
+    }
+
+    const existing = await this.credentialRepo.findOne({ where: { email } as any });
+    if (existing && existing.id !== usuarioId) {
+      throw new ConflictException('Email ya registrado');
+    }
+
+    await this.credentialRepo.update(
+      { id: usuarioId } as any,
+      { email, actualizado_por: actorId || null } as any,
+    );
+
+    return { ok: true };
   }
 }

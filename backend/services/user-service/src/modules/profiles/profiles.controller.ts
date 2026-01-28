@@ -1,5 +1,8 @@
-import { Controller, Get, Put, Body, NotFoundException, UseGuards } from '@nestjs/common';
+import { Controller, Get, Put, Body, NotFoundException, UseGuards, Param, ParseUUIDPipe } from '@nestjs/common';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { RolUsuario } from '../../common/enums/rol-usuario.enum';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Perfil } from './entities/perfil.entity';
 import { Repository } from 'typeorm';
@@ -64,5 +67,14 @@ export class ProfilesController {
       actualizado_por: userId,
     } as any);
     return this.perfilRepo.save(entity);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Get(':id/perfil')
+  @Roles(RolUsuario.ADMIN, RolUsuario.STAFF, RolUsuario.SUPERVISOR)
+  async getProfileByUser(@Param('id', ParseUUIDPipe) id: string) {
+    const perfil = await this.perfilRepo.findOneBy({ usuario_id: id } as any);
+    if (!perfil) throw new NotFoundException('Perfil no encontrado');
+    return perfil;
   }
 }
