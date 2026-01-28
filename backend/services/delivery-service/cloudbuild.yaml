@@ -1,0 +1,39 @@
+# cloudbuild.yaml GENÉRICO para todos los microservicios
+steps:
+  # 1. Construir imagen
+  - name: 'gcr.io/cloud-builders/docker'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        docker build \
+          -t ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REGISTRY}/${_SERVICE_NAME}:${SHORT_SHA} \
+          -t ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REGISTRY}/${_SERVICE_NAME}:latest \
+          .
+    # IMPORTANTE: Terraform ya le dice que entre a la carpeta correcta, 
+    # así que aquí el dir es '.' (directorio actual del trigger)
+    dir: '.' 
+
+  # 2. Subir imagen
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REGISTRY}/${_SERVICE_NAME}']
+
+  # 3. Desplegar en Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - '${_SERVICE_NAME}'
+      - '--image'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REGISTRY}/${_SERVICE_NAME}:${SHORT_SHA}'
+      - '--region'
+      - '${_REGION}'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated' # OJO: Esto lo bloquearemos con IAM después, pero necesario para iniciar
+      # Terraform inyecta el resto de la configuración (memoria, env vars, vpc),
+      # así que no necesitamos repetirla aquí. Cloud Run preserva la config existente.
+
+images:
+  - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REGISTRY}/${_SERVICE_NAME}:latest'

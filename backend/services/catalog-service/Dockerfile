@@ -1,14 +1,44 @@
+# ── Etapa 1: Build ───────────────────────────────────────────────────────────
 FROM node:24-alpine AS builder
+
 WORKDIR /app
+
+# Copiamos solo lo necesario para dependencias → mejor uso de cache
 COPY package*.json ./
-RUN npm install
+
+# npm ci es más rápido, limpio y reproducible que npm install
+RUN npm ci
+
+# Copiamos el código fuente
 COPY . .
+
+# Construimos la aplicación (genera ./dist con main.js en la raíz)
 RUN npm run build
 
+# ── Etapa 2: Imagen final (lo más liviana posible) ───────────────────────────
 FROM node:24-alpine
+
+# Por seguridad: no correr como root
+USER node
+
 WORKDIR /app
-COPY package*.json ./
-RUN npm install --only=production
-COPY --from=builder /app/dist ./dist
+
+# Copiamos solo package.json para instalar solo dependencias de producción
+COPY --chown=node:node package*.json ./
+
+# Instalamos solo lo necesario en runtime + limpieza de cache
+RUN npm ci --omit=dev --ignore-scripts && npm cache clean --force
+
+# Copiamos solo el resultado del build (dist/)
+COPY --chown=node:node --from=builder /app/dist ./dist
+
+# Si tienes archivos estáticos que deban ir en runtime (ej: uploads vacía, assets, views, etc.)
+# Descomenta y ajusta según necesites:
+# COPY --chown=node:node --from=builder /app/uploads ./uploads
+# COPY --chown=node:node --from=builder /app/public    ./public
+
+# Puerto (solo informativo)
 EXPOSE 3000
-CMD ["node", "dist/main"]
+
+# Comando de arranque → ¡ESTE es el punto clave para tu proyecto!
+CMD ["node", "dist/src/main"]
