@@ -10,6 +10,7 @@ import {
     ParseUUIDPipe,
     HttpCode,
     HttpStatus,
+    ForbiddenException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { NotificationsService } from './notifications.service';
@@ -18,8 +19,13 @@ import { CreateNotificationDto, QueryNotificationsDto } from './dto/notification
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { AuthUser, CurrentUser } from '../../common/decorators/current-user.decorator';
 
+/** Roles que pueden acceder a notificaciones de otros usuarios */
+const ADMIN_ROLES = ['admin', 'supervisor'];
+
 @ApiTags('notifications')
 @Controller('notifications')
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
 export class NotificationsController {
     constructor(
         private readonly notificationsService: NotificationsService,
@@ -27,11 +33,14 @@ export class NotificationsController {
     ) { }
 
     @Post()
-    @UseGuards(JwtAuthGuard)
-    @ApiBearerAuth()
     @HttpCode(HttpStatus.CREATED)
-    @ApiOperation({ summary: 'Crear una notificación' })
-    async create(@Body() dto: CreateNotificationDto) {
+    @ApiOperation({ summary: 'Crear una notificación (solo sistema/admin)' })
+    async create(@Body() dto: CreateNotificationDto, @CurrentUser() user: AuthUser) {
+        // Solo admin/supervisor puede crear notificaciones vía API
+        if (!ADMIN_ROLES.includes(user.role)) {
+            throw new ForbiddenException('Solo administradores pueden crear notificaciones');
+        }
+
         const notification = await this.notificationsService.create(dto);
 
         // Enviar via WebSocket si el usuario está conectado
@@ -43,69 +52,81 @@ export class NotificationsController {
     }
 
     @Get()
-    @UseGuards(JwtAuthGuard)
-    @ApiBearerAuth()
-    @ApiOperation({ summary: 'Obtener notificaciones' })
-    async findAll(@Query() query: QueryNotificationsDto, @CurrentUser() user?: AuthUser) {
+    @ApiOperation({ summary: 'Obtener notificaciones del usuario actual' })
+    async findAll(@Query() query: QueryNotificationsDto, @CurrentUser() user: AuthUser) {
         // Si no es admin/supervisor, forzar filtro por usuario actual
-        if (user && !['admin', 'supervisor'].includes(user.role)) {
+        if (!ADMIN_ROLES.includes(user.role)) {
             query.usuarioId = user.userId;
         }
         return this.notificationsService.findAll(query);
     }
 
+    /**
+     * Endpoint de conteo de no leídas.
+     * IMPORTANTE: Rutas específicas van ANTES de rutas con parámetros (:id)
+     */
     @Get('unread/count')
-    @UseGuards(JwtAuthGuard)
-    @ApiBearerAuth()
     @ApiOperation({ summary: 'Contar notificaciones no leídas' })
-    async getUnreadCount(@CurrentUser() user?: AuthUser) {
-        const usuarioId = user?.userId;
-        if (!usuarioId) {
-            return { count: 0 };
-        }
+    async getUnreadCount(@CurrentUser() user: AuthUser) {
         return {
-            count: await this.notificationsService.getUnreadCount(usuarioId),
+            count: await this.notificationsService.getUnreadCount(user.userId),
         };
-    }
-
-    @Get(':id')
-    @UseGuards(JwtAuthGuard)
-    @ApiBearerAuth()
-    @ApiOperation({ summary: 'Obtener una notificación por ID' })
-    async findOne(@Param('id', ParseUUIDPipe) id: string) {
-        return this.notificationsService.findOne(id);
-    }
-
-    @Patch(':id/mark-read')
-    @UseGuards(JwtAuthGuard)
-    @ApiBearerAuth()
-    @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: 'Marcar notificación como leída' })
-    async markAsRead(@Param('id', ParseUUIDPipe) id: string) {
-        return this.notificationsService.markAsRead(id);
-    }
-
-    @Patch('mark-all-read')
-    @UseGuards(JwtAuthGuard)
-    @ApiBearerAuth()
-    @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: 'Marcar todas las notificaciones como leídas' })
-    async markAllAsRead(@CurrentUser() user?: AuthUser) {
-        const usuarioId = user?.userId;
-        if (!usuarioId) {
-            return { message: 'No user found' };
-        }
-        await this.notificationsService.markAllAsRead(usuarioId);
-        return { message: 'Todas las notificaciones marcadas como leídas' };
     }
 
     @Get('ws/stats')
-    @UseGuards(JwtAuthGuard)
-    @ApiBearerAuth()
     @ApiOperation({ summary: 'Obtener estadísticas de conexiones WebSocket' })
-    async getWebSocketStats() {
+    async getWebSocketStats(@CurrentUser() user: AuthUser) {
+        // Solo admin puede ver stats
+        if (!ADMIN_ROLES.includes(user.role)) {
+            throw new ForbiddenException('Acceso denegado');
+        }
         return {
             connectedUsers: this.notificationsGateway.getConnectedUsersCount(),
         };
+    }
+
+    @Patch('mark-all-read')
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Marcar todas las notificaciones como leídas' })
+    async markAllAsRead(@CurrentUser() user: AuthUser) {
+        await this.notificationsService.markAllAsRead(user.userId);
+        return { message: 'Todas las notificaciones marcadas como leídas' };
+    }
+
+    /**
+     * Obtener notificación por ID.
+     * IMPORTANTE: Esta ruta con :id va DESPUÉS de rutas específicas.
+     */
+    @Get(':id')
+    @ApiOperation({ summary: 'Obtener una notificación por ID' })
+    async findOne(
+        @Param('id', ParseUUIDPipe) id: string,
+        @CurrentUser() user: AuthUser,
+    ) {
+        const notification = await this.notificationsService.findOne(id);
+
+        // Verificar que el usuario sea dueño o admin
+        if (notification.usuarioId !== user.userId && !ADMIN_ROLES.includes(user.role)) {
+            throw new ForbiddenException('No tienes acceso a esta notificación');
+        }
+
+        return notification;
+    }
+
+    @Patch(':id/mark-read')
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Marcar notificación como leída' })
+    async markAsRead(
+        @Param('id', ParseUUIDPipe) id: string,
+        @CurrentUser() user: AuthUser,
+    ) {
+        const notification = await this.notificationsService.findOne(id);
+
+        // Solo el dueño puede marcar como leída
+        if (notification.usuarioId !== user.userId) {
+            throw new ForbiddenException('No puedes marcar esta notificación como leída');
+        }
+
+        return this.notificationsService.markAsRead(id);
     }
 }

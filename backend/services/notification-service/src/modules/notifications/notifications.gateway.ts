@@ -11,7 +11,8 @@ import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { Notification, PrioridadNotificacion } from './entities/notification.entity';
+import { Notification } from './entities/notification.entity';
+import { NotificationsService } from './notifications.service';
 
 interface JwtPayload {
     sub: string;
@@ -49,6 +50,7 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
     constructor(
         private readonly jwtService: JwtService,
         private readonly configService: ConfigService,
+        private readonly notificationsService: NotificationsService,
     ) { }
 
     /**
@@ -156,13 +158,65 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
         return 'pong';
     }
 
+    /**
+     * Marca una notificación como leída via WebSocket.
+     * Valida que el usuario sea el dueño antes de persistir.
+     */
     @SubscribeMessage('mark_read')
-    handleMarkAsRead(
+    async handleMarkAsRead(
         @MessageBody() data: { notificationId: string },
         @ConnectedSocket() client: Socket,
-    ): void {
+    ): Promise<{ success: boolean; error?: string }> {
         const userId = (client as Socket & { userId?: string }).userId;
-        this.logger.log(`Usuario ${userId} marcó notificación ${data.notificationId} como leída via WS`);
-        // El servicio HTTP maneja la persistencia real
+
+        if (!userId) {
+            return { success: false, error: 'No autenticado' };
+        }
+
+        if (!data?.notificationId) {
+            return { success: false, error: 'notificationId requerido' };
+        }
+
+        try {
+            const notification = await this.notificationsService.findOne(data.notificationId);
+
+            // Verificar que el usuario sea el dueño
+            if (notification.usuarioId !== userId) {
+                this.logger.warn(`Usuario ${userId} intentó marcar notificación ${data.notificationId} que no le pertenece`);
+                return { success: false, error: 'No autorizado' };
+            }
+
+            await this.notificationsService.markAsRead(data.notificationId);
+            this.logger.log(`Usuario ${userId} marcó notificación ${data.notificationId} como leída via WS`);
+
+            return { success: true };
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'Error desconocido';
+            this.logger.error(`Error marcando notificación como leída: ${message}`);
+            return { success: false, error: message };
+        }
+    }
+
+    /**
+     * Marca todas las notificaciones del usuario como leídas via WebSocket.
+     */
+    @SubscribeMessage('mark_all_read')
+    async handleMarkAllAsRead(
+        @ConnectedSocket() client: Socket,
+    ): Promise<{ success: boolean; error?: string }> {
+        const userId = (client as Socket & { userId?: string }).userId;
+
+        if (!userId) {
+            return { success: false, error: 'No autenticado' };
+        }
+
+        try {
+            await this.notificationsService.markAllAsRead(userId);
+            this.logger.log(`Usuario ${userId} marcó todas las notificaciones como leídas via WS`);
+            return { success: true };
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'Error desconocido';
+            return { success: false, error: message };
+        }
     }
 }
