@@ -1,10 +1,10 @@
-import { Controller, Get, Post, Put, Body, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Body, Param, Query, UseGuards, ParseUUIDPipe } from '@nestjs/common';
 import { FleetService } from './fleet.service';
 import { CreateVehicleDto, UpdateVehicleStatusDto } from './dto/vehicle.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
-import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { CurrentUser, AuthUser } from '../../common/decorators/current-user.decorator';
 import { RolUsuario } from '../../common/constants/rol-usuario.enum';
 
 @Controller('vehiculos')
@@ -14,7 +14,7 @@ export class FleetController {
 
     @Post()
     @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR)
-    create(@Body() dto: CreateVehicleDto, @CurrentUser() user: any) {
+    create(@Body() dto: CreateVehicleDto, @CurrentUser() user: AuthUser) {
         return this.fleetService.create(dto, user.userId);
     }
 
@@ -24,16 +24,16 @@ export class FleetController {
     }
 
     @Get(':id')
-    findOne(@Param('id') id: string) {
+    findOne(@Param('id', ParseUUIDPipe) id: string) {
         return this.fleetService.findOne(id);
     }
 
     @Put(':id/estado')
     @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR)
     updateStatus(
-        @Param('id') id: string,
+        @Param('id', ParseUUIDPipe) id: string,
         @Body() dto: UpdateVehicleStatusDto,
-        @CurrentUser() user: any,
+        @CurrentUser() user: AuthUser,
     ) {
         return this.fleetService.updateStatus(id, dto, user.userId);
     }
