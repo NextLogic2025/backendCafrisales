@@ -16,7 +16,7 @@ export class StaffService {
   ) {}
 
   listVendedores() {
-    return this.vendedoresRepo.find();
+    return this.vendedoresRepo.find({ where: { activo: true } });
   }
 
   listSupervisores() {
@@ -28,6 +28,6 @@ export class StaffService {
   }
 
   listTransportistas() {
-    return this.transportistasRepo.find();
+    return this.transportistasRepo.find({ where: { activo: true } });
   }
 }

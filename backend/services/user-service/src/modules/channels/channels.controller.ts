@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Patch, Delete, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Patch, Delete, UseGuards, ParseUUIDPipe } from '@nestjs/common';
 import { ChannelsService } from './channels.service';
 import { CreateChannelDto } from './dto/create-channel.dto';
 import { UpdateChannelDto } from './dto/update-channel.dto';
@@ -17,7 +17,7 @@ export class ChannelsController {
   }
 
   @Get(':id')
-  async get(@Param('id') id: string) {
+  async get(@Param('id', ParseUUIDPipe) id: string) {
     return this.service.findOne(id);
   }
 
@@ -31,14 +31,14 @@ export class ChannelsController {
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RolUsuario.ADMIN, RolUsuario.STAFF, RolUsuario.SUPERVISOR)
-  async patch(@Param('id') id: string, @Body() dto: UpdateChannelDto) {
+  async patch(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateChannelDto) {
     return this.service.update(id, dto);
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RolUsuario.ADMIN, RolUsuario.STAFF, RolUsuario.SUPERVISOR)
-  async remove(@Param('id') id: string) {
-    return this.service.remove(id);
+  async remove(@Param('id', ParseUUIDPipe) id: string) {
+    return this.service.deactivate(id);
   }
 }

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Put, NotFoundException, UseGuards, Query, BadRequestException } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Put, NotFoundException, UseGuards, Query, BadRequestException, ParseUUIDPipe } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Cliente } from './entities/cliente.entity';
 import { Repository } from 'typeorm';
@@ -11,7 +11,7 @@ import { RolUsuario } from '../../common/enums/rol-usuario.enum';
 import { Usuario } from '../users/entities/usuario.entity';
 import { Perfil } from '../profiles/entities/perfil.entity';
 import { CanalComercial } from '../channels/entities/canal-comercial.entity';
-import { GetUser } from '../../common/decorators';
+import { GetUser, AuthUser } from '../../common/decorators/get-user.decorator';
 import { Vendedor } from '../staff/entities/vendedor.entity';
 import { AssignVendedorDto } from './dto/assign-vendedor.dto';
 import { OutboxService } from '../outbox/outbox.service';
@@ -82,9 +82,9 @@ export class ClientsController {
 
   @Roles(RolUsuario.SUPERVISOR, RolUsuario.VENDEDOR, RolUsuario.BODEGUERO, RolUsuario.ADMIN, RolUsuario.STAFF)
   @Get(':usuarioId')
-  async get(@Param('usuarioId') usuarioId: string) {
+  async get(@Param('usuarioId', ParseUUIDPipe) usuarioId: string) {
     const cliente = await this.clienteRepo.findOneBy({ usuario_id: usuarioId } as any);
-    if (!cliente) throw new NotFoundException();
+    if (!cliente) throw new NotFoundException('Cliente no encontrado');
 
     const [usuario, perfil, canal] = await Promise.all([
       this.usuarioRepo.findOneBy({ id: usuarioId } as any),
@@ -106,7 +106,9 @@ export class ClientsController {
 
   @Roles(RolUsuario.ADMIN, RolUsuario.STAFF, RolUsuario.SUPERVISOR)
   @Patch(':usuarioId')
-  async patch(@Param('usuarioId') usuarioId: string, @Body() body: Partial<Cliente>) {
+  async patch(@Param('usuarioId', ParseUUIDPipe) usuarioId: string, @Body() body: Partial<Cliente>) {
+    const exists = await this.clienteRepo.findOneBy({ usuario_id: usuarioId } as any);
+    if (!exists) throw new NotFoundException('Cliente no encontrado');
     await this.clienteRepo.update({ usuario_id: usuarioId } as any, body as any);
     return this.clienteRepo.findOneBy({ usuario_id: usuarioId } as any);
   }
@@ -114,11 +116,11 @@ export class ClientsController {
   @Roles(RolUsuario.ADMIN, RolUsuario.STAFF, RolUsuario.SUPERVISOR)
   @Put(':usuarioId/condiciones-comerciales')
   async upsertCondiciones(
-    @Param('usuarioId') usuarioId: string,
+    @Param('usuarioId', ParseUUIDPipe) usuarioId: string,
     @Body() body: Partial<CondicionesComercialesCliente>,
-    @GetUser() user: any,
+    @GetUser() user: AuthUser,
   ) {
-    const actorId = user?.userId || user?.id || null;
+    const actorId = user.userId;
     const exists = await this.condicionesRepo.findOneBy({ cliente_id: usuarioId } as any);
     if (exists) {
       await this.condicionesRepo.update(
@@ -155,9 +157,9 @@ export class ClientsController {
   @Roles(RolUsuario.ADMIN, RolUsuario.STAFF, RolUsuario.SUPERVISOR)
   @Put(':usuarioId/condiciones')
   async upsertCondicionesAlias(
-    @Param('usuarioId') usuarioId: string,
+    @Param('usuarioId', ParseUUIDPipe) usuarioId: string,
     @Body() body: Partial<CondicionesComercialesCliente>,
-    @GetUser() user: any,
+    @GetUser() user: AuthUser,
   ) {
     return this.upsertCondiciones(usuarioId, body, user);
   }
@@ -165,9 +167,9 @@ export class ClientsController {
   @Roles(RolUsuario.ADMIN, RolUsuario.STAFF, RolUsuario.SUPERVISOR)
   @Put(':usuarioId/asignar-vendedor')
   async assignVendedor(
-    @Param('usuarioId') usuarioId: string,
+    @Param('usuarioId', ParseUUIDPipe) usuarioId: string,
     @Body() body: AssignVendedorDto,
-    @GetUser() user: any,
+    @GetUser() user: AuthUser,
   ) {
     const vendedorId = body.vendedor_id;
     const vendedorUser = await this.usuarioRepo.findOneBy({ id: vendedorId } as any);
@@ -181,7 +183,7 @@ export class ClientsController {
     }
 
     const cliente = await this.clienteRepo.findOneBy({ usuario_id: usuarioId } as any);
-    if (!cliente) throw new NotFoundException();
+    if (!cliente) throw new NotFoundException('Cliente no encontrado');
 
     await this.clienteRepo.update(
       { usuario_id: usuarioId } as any,
@@ -191,7 +193,7 @@ export class ClientsController {
     await this.outboxService.createEvent({
       tipo: 'VendedorAsignado',
       claveAgregado: usuarioId,
-      payload: { cliente_id: usuarioId, vendedor_id: vendedorId, asignado_por: user?.userId || user?.id || null },
+      payload: { cliente_id: usuarioId, vendedor_id: vendedorId, asignado_por: user.userId },
     });
 
     return { status: 'ok' };
@@ -199,9 +201,9 @@ export class ClientsController {
 
   @Roles(RolUsuario.ADMIN, RolUsuario.STAFF, RolUsuario.SUPERVISOR, RolUsuario.VENDEDOR)
   @Get(':usuarioId/condiciones')
-  async getCondiciones(@Param('usuarioId') usuarioId: string) {
+  async getCondiciones(@Param('usuarioId', ParseUUIDPipe) usuarioId: string) {
     const cliente = await this.clienteRepo.findOneBy({ usuario_id: usuarioId } as any);
-    if (!cliente) throw new NotFoundException();
+    if (!cliente) throw new NotFoundException('Cliente no encontrado');
 
     const condiciones = await this.condicionesRepo.findOneBy({ cliente_id: usuarioId } as any);
     if (condiciones) {

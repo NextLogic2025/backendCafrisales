@@ -1,10 +1,10 @@
-import { Body, Controller, Get, Param, Patch, Post, Put, UseGuards, BadRequestException, Headers } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Put, UseGuards, BadRequestException, Headers, ParseUUIDPipe } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { RolUsuario } from '../../common/enums/rol-usuario.enum';
-import { GetUser } from '../../common/decorators';
+import { GetUser, AuthUser } from '../../common/decorators/get-user.decorator';
 import { CreateStaffUserDto } from './dto/create-staff-user.dto';
 import { SuspendUserDto } from './dto/suspend-user.dto';
 import { AuthExternalService } from '../../services/auth-external.service';
@@ -22,7 +22,7 @@ export class UsersController {
   async createVendedor(
     @Body() body: CreateStaffUserDto,
     @Headers('authorization') authHeader: string,
-    @GetUser() user: any,
+    @GetUser() user: AuthUser,
   ) {
     return this.createStaffUser('vendedor', body, authHeader, user);
   }
@@ -32,7 +32,7 @@ export class UsersController {
   async createBodeguero(
     @Body() body: CreateStaffUserDto,
     @Headers('authorization') authHeader: string,
-    @GetUser() user: any,
+    @GetUser() user: AuthUser,
   ) {
     return this.createStaffUser('bodeguero', body, authHeader, user);
   }
@@ -42,7 +42,7 @@ export class UsersController {
   async createTransportista(
     @Body() body: CreateStaffUserDto,
     @Headers('authorization') authHeader: string,
-    @GetUser() user: any,
+    @GetUser() user: AuthUser,
   ) {
     return this.createStaffUser('transportista', body, authHeader, user);
   }
@@ -52,7 +52,7 @@ export class UsersController {
   async createSupervisor(
     @Body() body: CreateStaffUserDto,
     @Headers('authorization') authHeader: string,
-    @GetUser() user: any,
+    @GetUser() user: AuthUser,
   ) {
     return this.createStaffUser('supervisor', body, authHeader, user);
   }
@@ -67,34 +67,33 @@ export class UsersController {
     RolUsuario.TRANSPORTISTA,
     RolUsuario.CLIENTE,
   )
-  async get(@Param('id') id: string) {
+  async get(@Param('id', ParseUUIDPipe) id: string) {
     return this.usersService.findById(id);
   }
 
   @Patch(':id')
   @Roles(RolUsuario.ADMIN, RolUsuario.STAFF, RolUsuario.SUPERVISOR)
-  async patch(@Param('id') id: string, @Body() body: any) {
-    return this.usersService.update(id, body);
+  async patch(@Param('id', ParseUUIDPipe) id: string, @Body() body: any, @GetUser() user: AuthUser) {
+    return this.usersService.update(id, { ...body, actualizado_por: user.userId });
   }
 
   @Put(':id/suspender')
   @Roles(RolUsuario.ADMIN, RolUsuario.STAFF, RolUsuario.SUPERVISOR)
   async suspend(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() body: SuspendUserDto,
-    @GetUser() user: any,
+    @GetUser() user: AuthUser,
   ) {
-    const actorId = user?.userId || user?.id || null;
-    return this.usersService.suspend(id, actorId, body?.motivo);
+    return this.usersService.suspend(id, user.userId, body?.motivo);
   }
 
   private async createStaffUser(
     rol: 'vendedor' | 'bodeguero' | 'transportista' | 'supervisor',
     body: CreateStaffUserDto,
     authHeader: string,
-    user: any,
+    user: AuthUser,
   ) {
-    const actorId = user?.userId || user?.id || null;
+    const actorId = user.userId;
     const codigoEmpleado = body.codigo_empleado?.trim();
 
     if (!codigoEmpleado) {
