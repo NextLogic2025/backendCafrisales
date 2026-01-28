@@ -4,6 +4,7 @@ import {
     Put,
     Delete,
     Param,
+    ParseUUIDPipe,
     Body,
     UseGuards,
     Query,
@@ -14,7 +15,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { RolUsuario } from '../common/constants/rol-usuario.enum';
-import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { AuthUser, CurrentUser } from '../common/decorators/current-user.decorator';
 
 @Controller('incidencias')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -33,23 +34,23 @@ export class IncidentsController {
 
     @Get(':id')
     @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR)
-    findOne(@Param('id') id: string) {
+    findOne(@Param('id', ParseUUIDPipe) id: string) {
         return this.incidentsService.findOne(id);
     }
 
     @Put(':id/resolver')
     @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR)
     resolveIncident(
-        @Param('id') id: string,
+        @Param('id', ParseUUIDPipe) id: string,
         @Body() resolveDto: ResolveIncidentDto,
-        @CurrentUser() user?: any,
+        @CurrentUser() user?: AuthUser,
     ) {
         return this.incidentsService.resolveIncident(id, resolveDto, user?.userId);
     }
 
     @Delete(':id')
     @Roles(RolUsuario.ADMIN)
-    remove(@Param('id') id: string) {
+    remove(@Param('id', ParseUUIDPipe) id: string) {
         return this.incidentsService.remove(id);
     }
 }

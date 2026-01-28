@@ -4,6 +4,7 @@ import {
     Get,
     Delete,
     Param,
+    ParseUUIDPipe,
     Body,
     UseGuards,
     UseInterceptors,
@@ -19,7 +20,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { RolUsuario } from '../common/constants/rol-usuario.enum';
-import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { AuthUser, CurrentUser } from '../common/decorators/current-user.decorator';
 
 @Controller('evidencias')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -63,16 +64,16 @@ export class EvidenceController {
         }),
     )
     uploadEvidence(
-        @Param('entregaId') entregaId: string,
+        @Param('entregaId', ParseUUIDPipe) entregaId: string,
         @UploadedFile() file: Express.Multer.File,
         @Body() uploadDto: UploadEvidenceDto,
-        @CurrentUser() user?: any,
+        @CurrentUser() user?: AuthUser,
     ) {
         if (!file) {
             throw new BadRequestException('No file provided');
         }
 
-        // Extract coordinates from body if provided
+        // Extrae coordenadas del body si están presentes
         const coordinates = {
             lat: uploadDto['latitud'] ? parseFloat(uploadDto['latitud']) : undefined,
             lng: uploadDto['longitud'] ? parseFloat(uploadDto['longitud']) : undefined,
@@ -89,19 +90,19 @@ export class EvidenceController {
 
     @Get('entrega/:entregaId')
     @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR, RolUsuario.TRANSPORTISTA)
-    findByDelivery(@Param('entregaId') entregaId: string) {
+    findByDelivery(@Param('entregaId', ParseUUIDPipe) entregaId: string) {
         return this.evidenceService.findByDelivery(entregaId);
     }
 
     @Get(':id')
     @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR, RolUsuario.TRANSPORTISTA)
-    findOne(@Param('id') id: string) {
+    findOne(@Param('id', ParseUUIDPipe) id: string) {
         return this.evidenceService.findOne(id);
     }
 
     @Delete(':id')
     @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR)
-    remove(@Param('id') id: string) {
+    remove(@Param('id', ParseUUIDPipe) id: string) {
         return this.evidenceService.remove(id);
     }
 }
