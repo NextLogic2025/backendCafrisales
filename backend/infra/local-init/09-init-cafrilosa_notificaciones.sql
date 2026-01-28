@@ -5,8 +5,8 @@
 -- PostgreSQL 17
 -- =====================================================
 
-CREATE DATABASE cafrilosa_notificaciones;
-\c cafrilosa_notificaciones;
+
+\c cafrilosa_notificaciones
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
