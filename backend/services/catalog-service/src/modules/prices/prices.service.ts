@@ -95,6 +95,9 @@ export class PricesService {
     if (!skuIds.length) {
       return [];
     }
+    if (skuIds.length > 100) {
+      skuIds = skuIds.slice(0, 100);
+    }
 
     return this.repo
       .createQueryBuilder('precio')
@@ -109,12 +112,11 @@ export class PricesService {
     return this.repo.find();
   }
 
-  findOne(id: string) {
-    return this.repo.findOne({ where: { id } });
-  }
-
-  async remove(id: string) {
-    await this.repo.delete(id);
-    return { deleted: true };
+  async findOne(id: string) {
+    const price = await this.repo.findOne({ where: { id } });
+    if (!price) {
+      throw new NotFoundException(`Precio con ID ${id} no encontrado`);
+    }
+    return price;
   }
 }

@@ -176,6 +176,7 @@ export class ProductsService {
 
   findAll() {
     return this.repo.find({
+      where: { activo: true },
       relations: ['categoria', 'skus', 'skus.precios'],
       order: { nombre: 'ASC' },
     });
@@ -188,17 +189,26 @@ export class ProductsService {
     });
   }
 
-  findOne(id: string) {
-    return this.repo.findOne({
+  async findOne(id: string) {
+    const product = await this.repo.findOne({
       where: { id },
       relations: ['categoria', 'skus', 'skus.precios'],
     });
+    if (!product) {
+      throw new NotFoundException(`Producto con ID ${id} no encontrado`);
+    }
+    return product;
   }
 
   async update(id: string, dto: Partial<Product>, actorId?: string) {
-    if (dto.slug) {
-      const existing = await this.repo.findOne({ where: { slug: dto.slug } });
-      if (existing && existing.id !== id) {
+    const existing = await this.repo.findOne({ where: { id } });
+    if (!existing) {
+      throw new NotFoundException(`Producto con ID ${id} no encontrado`);
+    }
+
+    if (dto.slug && dto.slug !== existing.slug) {
+      const conflict = await this.repo.findOne({ where: { slug: dto.slug } });
+      if (conflict) {
         throw new ConflictException('El slug ya esta registrado');
       }
     }
@@ -210,8 +220,17 @@ export class ProductsService {
     return this.findOne(id);
   }
 
-  async remove(id: string) {
-    await this.repo.delete(id);
-    return { deleted: true };
+  async deactivate(id: string, actorId?: string) {
+    const product = await this.repo.findOne({ where: { id, activo: true } });
+    if (!product) {
+      throw new NotFoundException('Producto no encontrado o ya desactivado');
+    }
+
+    await this.repo.update(id, { activo: false, actualizado_por: actorId } as Product);
+    await this.outbox.createEvent('ProductoDesactivado', id, {
+      producto_id: id,
+      nombre: product.nombre,
+    });
+    return this.repo.findOne({ where: { id } });
   }
 }

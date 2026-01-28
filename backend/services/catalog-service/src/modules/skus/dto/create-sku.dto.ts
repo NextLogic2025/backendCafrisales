@@ -1,13 +1,20 @@
-import { IsString, IsUUID, IsInt, Min, IsOptional, IsBoolean, MaxLength } from 'class-validator';
+import { IsString, IsUUID, IsInt, Min, IsOptional, IsBoolean, MaxLength, IsNotEmpty } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export class CreateSkuDto {
   @IsUUID()
   producto_id: string;
 
   @IsString()
+  @IsNotEmpty()
+  @MaxLength(50)
+  @Transform(({ value }) => value?.trim())
   codigo_sku: string;
 
   @IsString()
+  @IsNotEmpty()
+  @MaxLength(255)
+  @Transform(({ value }) => value?.trim())
   nombre: string;
 
   @IsInt()

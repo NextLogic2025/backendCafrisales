@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, UseGuards, Param, Patch, Delete } from '@nestjs/common';
+import { Controller, Post, Body, Get, UseGuards, Param, Patch, Delete, ParseUUIDPipe } from '@nestjs/common';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -24,15 +24,15 @@ export class ProductsController {
   @Post('complete')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RolUsuario.ADMIN, RolUsuario.STAFF, RolUsuario.SUPERVISOR)
-  createComplete(@Body() dto: CreateCompleteProductDto, @GetUser() user?: AuthUser) {
-    return this.svc.createComplete(dto, user?.userId);
+  createComplete(@Body() dto: CreateCompleteProductDto, @GetUser() user: AuthUser) {
+    return this.svc.createComplete(dto, user.userId);
   }
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RolUsuario.ADMIN, RolUsuario.STAFF, RolUsuario.SUPERVISOR)
-  create(@Body() dto: CreateProductDto, @GetUser() user?: AuthUser) {
-    return this.svc.create(dto as any, user?.userId);
+  create(@Body() dto: CreateProductDto, @GetUser() user: AuthUser) {
+    return this.svc.create(dto as any, user.userId);
   }
 
   @Get()
@@ -41,12 +41,12 @@ export class ProductsController {
   }
 
   @Get(':id')
-  get(@Param('id') id: string) {
+  get(@Param('id', ParseUUIDPipe) id: string) {
     return this.svc.findOne(id);
   }
 
   @Get(':id/skus')
-  listSkus(@Param('id') id: string) {
+  listSkus(@Param('id', ParseUUIDPipe) id: string) {
     return this.skusService.findByProduct(id);
   }
 
@@ -54,17 +54,17 @@ export class ProductsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RolUsuario.ADMIN, RolUsuario.STAFF, RolUsuario.SUPERVISOR)
   patch(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: Partial<CreateProductDto>,
-    @GetUser() user?: AuthUser,
+    @GetUser() user: AuthUser,
   ) {
-    return this.svc.update(id, dto as any, user?.userId);
+    return this.svc.update(id, dto as any, user.userId);
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RolUsuario.ADMIN, RolUsuario.STAFF)
-  remove(@Param('id') id: string) {
-    return this.svc.remove(id);
+  remove(@Param('id', ParseUUIDPipe) id: string, @GetUser() user: AuthUser) {
+    return this.svc.deactivate(id, user.userId);
   }
 }

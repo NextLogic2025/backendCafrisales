@@ -48,6 +48,7 @@ export class SkusService {
 
   findAll() {
     return this.repo.find({
+      where: { activo: true },
       relations: ['producto', 'precios'],
       order: { nombre: 'ASC' },
     });
@@ -55,6 +56,7 @@ export class SkusService {
 
   findAllComplete() {
     return this.repo.find({
+      where: { activo: true },
       relations: ['producto', 'producto.categoria', 'precios'],
     });
   }
@@ -72,6 +74,11 @@ export class SkusService {
   }
 
   search(query: string) {
+    const sanitized = query.replace(/[%_]/g, '');
+    if (!sanitized.trim()) {
+      return Promise.resolve([]);
+    }
+
     return this.repo
       .createQueryBuilder('sku')
       .leftJoin('sku.producto', 'producto')
@@ -79,26 +86,33 @@ export class SkusService {
       .where('sku.activo = true')
       .andWhere('producto.activo = true')
       .andWhere('(sku.codigo_sku ILIKE :q OR sku.nombre ILIKE :q)', {
-        q: `%${query}%`,
+        q: `%${sanitized}%`,
       })
       .orderBy('sku.nombre', 'ASC')
       .limit(50)
       .getMany();
   }
 
-  findOne(id: string) {
-    return this.repo.findOne({
+  async findOne(id: string) {
+    const sku = await this.repo.findOne({
       where: { id },
       relations: ['producto', 'precios'],
     });
+    if (!sku) {
+      throw new NotFoundException(`SKU con ID ${id} no encontrado`);
+    }
+    return sku;
   }
 
   async update(id: string, dto: Partial<Sku>) {
-    if (dto.codigo_sku) {
-      const existing = await this.repo.findOne({
-        where: { codigo_sku: dto.codigo_sku },
-      });
-      if (existing && existing.id !== id) {
+    const existing = await this.repo.findOne({ where: { id } });
+    if (!existing) {
+      throw new NotFoundException(`SKU con ID ${id} no encontrado`);
+    }
+
+    if (dto.codigo_sku && dto.codigo_sku !== existing.codigo_sku) {
+      const conflict = await this.repo.findOne({ where: { codigo_sku: dto.codigo_sku } });
+      if (conflict) {
         throw new ConflictException('El codigo SKU ya esta registrado');
       }
     }
@@ -120,10 +134,5 @@ export class SkusService {
       codigo_sku: sku.codigo_sku,
     });
     return this.findOne(id);
-  }
-
-  async remove(id: string) {
-    await this.repo.delete(id);
-    return { deleted: true };
   }
 }

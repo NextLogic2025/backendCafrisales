@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, UseGuards, Param, Patch, Delete, Put, Query } from '@nestjs/common';
+import { Controller, Post, Body, Get, UseGuards, Param, Patch, Delete, Put, Query, ParseUUIDPipe } from '@nestjs/common';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -14,8 +14,8 @@ export class SkusController {
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RolUsuario.ADMIN, RolUsuario.STAFF, RolUsuario.SUPERVISOR)
-  create(@Body() dto: CreateSkuDto, @GetUser() user?: AuthUser) {
-    return this.svc.create(dto as any, user?.userId);
+  create(@Body() dto: CreateSkuDto, @GetUser() user: AuthUser) {
+    return this.svc.create(dto as any, user.userId);
   }
 
   @Get()
@@ -34,28 +34,28 @@ export class SkusController {
   }
 
   @Get(':id')
-  get(@Param('id') id: string) {
+  get(@Param('id', ParseUUIDPipe) id: string) {
     return this.svc.findOne(id);
   }
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RolUsuario.ADMIN, RolUsuario.STAFF, RolUsuario.SUPERVISOR)
-  patch(@Param('id') id: string, @Body() dto: Partial<CreateSkuDto>) {
+  patch(@Param('id', ParseUUIDPipe) id: string, @Body() dto: Partial<CreateSkuDto>) {
     return this.svc.update(id, dto as any);
   }
 
   @Put(':id/desactivar')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RolUsuario.ADMIN, RolUsuario.STAFF, RolUsuario.SUPERVISOR)
-  deactivate(@Param('id') id: string) {
+  deactivate(@Param('id', ParseUUIDPipe) id: string) {
     return this.svc.deactivate(id);
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RolUsuario.ADMIN, RolUsuario.STAFF)
-  remove(@Param('id') id: string) {
-    return this.svc.remove(id);
+  remove(@Param('id', ParseUUIDPipe) id: string) {
+    return this.svc.deactivate(id);
   }
 }

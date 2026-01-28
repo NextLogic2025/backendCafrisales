@@ -1,19 +1,25 @@
-import { IsString, IsUUID, MaxLength, IsOptional, IsBoolean } from 'class-validator';
+import { IsString, IsUUID, MaxLength, IsOptional, IsBoolean, IsNotEmpty } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export class CreateProductDto {
   @IsUUID()
   categoria_id: string;
 
   @IsString()
+  @IsNotEmpty()
   @MaxLength(255)
+  @Transform(({ value }) => value?.trim())
   nombre: string;
 
   @IsOptional()
   @IsString()
   @MaxLength(255)
+  @Transform(({ value }) => value?.trim())
   slug?: string;
 
   @IsOptional()
+  @IsString()
+  @Transform(({ value }) => value?.trim())
   descripcion?: string;
 
   @IsOptional()

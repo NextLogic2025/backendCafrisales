@@ -1,4 +1,4 @@
-import { Injectable, ConflictException } from '@nestjs/common';
+import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Category } from './entities/category.entity';
@@ -29,18 +29,28 @@ export class CategoriesService {
 
   findAll() {
     return this.repo.find({
+      where: { activo: true },
       order: { orden: 'ASC', nombre: 'ASC' },
     });
   }
 
-  findOne(id: string) {
-    return this.repo.findOne({ where: { id } });
+  async findOne(id: string) {
+    const category = await this.repo.findOne({ where: { id } });
+    if (!category) {
+      throw new NotFoundException(`Categoria con ID ${id} no encontrada`);
+    }
+    return category;
   }
 
   async update(id: string, dto: Partial<Category>, actorId?: string) {
-    if (dto.slug) {
-      const existing = await this.repo.findOne({ where: { slug: dto.slug } });
-      if (existing && existing.id !== id) {
+    const existing = await this.repo.findOne({ where: { id } });
+    if (!existing) {
+      throw new NotFoundException(`Categoria con ID ${id} no encontrada`);
+    }
+
+    if (dto.slug && dto.slug !== existing.slug) {
+      const conflict = await this.repo.findOne({ where: { slug: dto.slug } });
+      if (conflict) {
         throw new ConflictException('El slug ya esta registrado');
       }
     }
@@ -52,8 +62,13 @@ export class CategoriesService {
     return this.findOne(id);
   }
 
-  async remove(id: string) {
-    await this.repo.delete(id);
-    return { deleted: true };
+  async deactivate(id: string, actorId?: string) {
+    const category = await this.repo.findOne({ where: { id, activo: true } });
+    if (!category) {
+      throw new NotFoundException('Categoria no encontrada o ya desactivada');
+    }
+
+    await this.repo.update(id, { activo: false, actualizado_por: actorId } as any);
+    return this.repo.findOne({ where: { id } });
   }
 }
