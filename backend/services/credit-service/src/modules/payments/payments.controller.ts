@@ -1,11 +1,11 @@
-import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, ParseUUIDPipe } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
 import { RegisterPaymentDto } from './dto/register-payment.dto';
 import { RegistrarPagoDto } from './dto/registrar-pago.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
-import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { CurrentUser, AuthUser } from '../../common/decorators/current-user.decorator';
 import { RolUsuario } from '../../common/constants/rol-usuario.enum';
 
 @Controller('creditos')
@@ -16,9 +16,9 @@ export class PaymentsController {
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(RolUsuario.VENDEDOR, RolUsuario.ADMIN, RolUsuario.SUPERVISOR)
     registerPayment(
-        @Param('id') aprobacionCreditoId: string,
+        @Param('id', ParseUUIDPipe) aprobacionCreditoId: string,
         @Body() body: RegistrarPagoDto,
-        @CurrentUser() user: any,
+        @CurrentUser() user: AuthUser,
     ) {
         const actorId = user?.userId || user?.id;
         const dto: RegisterPaymentDto = {
@@ -36,13 +36,13 @@ export class PaymentsController {
 
     @Get(':id/pagos')
     @UseGuards(JwtAuthGuard)
-    findByCredit(@Param('id') aprobacionCreditoId: string) {
+    findByCredit(@Param('id', ParseUUIDPipe) aprobacionCreditoId: string) {
         return this.paymentsService.findByCredit(aprobacionCreditoId);
     }
 
     @Get(':id/pagos/balance')
     @UseGuards(JwtAuthGuard)
-    getBalance(@Param('id') aprobacionCreditoId: string) {
+    getBalance(@Param('id', ParseUUIDPipe) aprobacionCreditoId: string) {
         return this.paymentsService.calculateBalance(aprobacionCreditoId);
     }
 }

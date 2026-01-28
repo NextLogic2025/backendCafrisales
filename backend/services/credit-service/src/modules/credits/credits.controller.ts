@@ -1,11 +1,24 @@
-import { Body, Controller, Get, Post, Put, Param, Query, UseGuards, ForbiddenException } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Get,
+    Post,
+    Put,
+    Param,
+    Query,
+    UseGuards,
+    ForbiddenException,
+    ParseUUIDPipe,
+    ParseIntPipe,
+    DefaultValuePipe,
+} from '@nestjs/common';
 import { CreditsService } from './credits.service';
 import { AprobarCreditoDto } from './dto/aprobar-credito.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { ServiceTokenGuard } from '../../common/guards/service-token.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
-import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { CurrentUser, AuthUser } from '../../common/decorators/current-user.decorator';
 import { RolUsuario } from '../../common/constants/rol-usuario.enum';
 import { EstadoCredito } from '../../common/constants/credit-status.enum';
 import { OrigenCredito } from '../../common/constants/credit-origin.enum';
@@ -17,7 +30,7 @@ export class CreditsController {
     @Post('aprobar')
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(RolUsuario.VENDEDOR, RolUsuario.ADMIN, RolUsuario.SUPERVISOR)
-    aprobarCredito(@Body() dto: AprobarCreditoDto, @CurrentUser() user: any) {
+    aprobarCredito(@Body() dto: AprobarCreditoDto, @CurrentUser() user: AuthUser) {
         const actorId = user?.userId || user?.id;
         return this.creditsService.approve(
             dto,
@@ -31,7 +44,7 @@ export class CreditsController {
     @Post('aprobar-excepcion')
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(RolUsuario.SUPERVISOR, RolUsuario.ADMIN)
-    aprobarCreditoExcepcion(@Body() dto: AprobarCreditoDto, @CurrentUser() user: any) {
+    aprobarCreditoExcepcion(@Body() dto: AprobarCreditoDto, @CurrentUser() user: AuthUser) {
         const actorId = user?.userId || user?.id;
         return this.creditsService.approve(
             dto,
@@ -50,14 +63,18 @@ export class CreditsController {
 
     @Get('internal/pedido/:pedidoId')
     @UseGuards(ServiceTokenGuard)
-    getByPedidoInternal(@Param('pedidoId') pedidoId: string) {
+    getByPedidoInternal(@Param('pedidoId', ParseUUIDPipe) pedidoId: string) {
         return this.creditsService.getCreditByOrderInternal(pedidoId);
     }
 
     @Put(':id/cancelar')
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR)
-    cancelar(@Param('id') id: string, @Body('motivo') motivo: string, @CurrentUser() user: any) {
+    cancelar(
+        @Param('id', ParseUUIDPipe) id: string,
+        @Body('motivo') motivo: string,
+        @CurrentUser() user: AuthUser,
+    ) {
         const actorId = user?.userId || user?.id;
         return this.creditsService.cancel(id, actorId, motivo);
     }
@@ -65,7 +82,11 @@ export class CreditsController {
     @Put(':id/rechazar')
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(RolUsuario.VENDEDOR, RolUsuario.ADMIN, RolUsuario.SUPERVISOR)
-    rechazar(@Param('id') id: string, @Body('motivo') motivo: string, @CurrentUser() user: any) {
+    rechazar(
+        @Param('id', ParseUUIDPipe) id: string,
+        @Body('motivo') motivo: string,
+        @CurrentUser() user: AuthUser,
+    ) {
         const actorId = user?.userId || user?.id;
         return this.creditsService.cancel(id, actorId, motivo || 'Credito rechazado');
     }
@@ -78,7 +99,7 @@ export class CreditsController {
         @Query('vendedor_id') vendedorId?: string,
         @Query('estado') estado?: string,
         @Query('pedido_id') pedidoId?: string,
-        @CurrentUser() user?: any,
+        @CurrentUser() user?: AuthUser,
     ) {
         if (pedidoId) {
             const credit = await this.creditsService.getCreditDetailByOrder(pedidoId);
@@ -108,7 +129,7 @@ export class CreditsController {
     @Get('mis')
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(RolUsuario.CLIENTE)
-    listarMisCreditos(@CurrentUser() user: any, @Query('estado') estado?: string) {
+    listarMisCreditos(@CurrentUser() user: AuthUser, @Query('estado') estado?: string) {
         const clienteId = user?.userId || user?.id;
         if (!clienteId) {
             throw new ForbiddenException('Cliente no identificado');
@@ -123,9 +144,10 @@ export class CreditsController {
     @Get('proximos-vencer')
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR)
-    proximosVencer(@Query('dias') dias?: string) {
-        const parsed = dias ? Number(dias) : 7;
-        return this.creditsService.listUpcomingDue(parsed);
+    proximosVencer(
+        @Query('dias', new DefaultValuePipe(7), ParseIntPipe) dias: number,
+    ) {
+        return this.creditsService.listUpcomingDue(dias);
     }
 
     @Get('reporte-vencidos')
@@ -138,7 +160,7 @@ export class CreditsController {
     @Get(':id')
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR, RolUsuario.VENDEDOR, RolUsuario.CLIENTE)
-    async detalle(@Param('id') id: string, @CurrentUser() user: any) {
+    async detalle(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: AuthUser) {
         const credit = await this.creditsService.getCreditDetail(id);
         const isClient = user?.role === RolUsuario.CLIENTE;
         const userId = user?.userId || user?.id;
@@ -151,7 +173,7 @@ export class CreditsController {
     @Get(':id/pagos')
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR, RolUsuario.VENDEDOR, RolUsuario.CLIENTE)
-    async pagos(@Param('id') id: string, @CurrentUser() user: any) {
+    async pagos(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: AuthUser) {
         const credit = await this.creditsService.findOne(id);
         const isClient = user?.role === RolUsuario.CLIENTE;
         const userId = user?.userId || user?.id;
