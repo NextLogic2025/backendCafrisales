@@ -347,6 +347,35 @@ export class OrdersService {
         };
     }
 
+    private calculateTotalsFromPedido(
+        items: ItemPedido[],
+        descuentoPedidoTipo?: TipoDescuento | null,
+        descuentoPedidoValor?: number | null,
+    ) {
+        const subtotal = Number(items.reduce((sum, item) => sum + Number(item.subtotal || 0), 0).toFixed(2));
+        const descuento_pedido_tipo = descuentoPedidoTipo ?? null;
+        const descuentoValor =
+            descuento_pedido_tipo && descuentoPedidoValor != null
+                ? this.calculateOrderDiscount(subtotal, descuento_pedido_tipo, descuentoPedidoValor)
+                : null;
+
+        const base = Number((subtotal - (descuentoValor ?? 0)).toFixed(2));
+        if (base < 0) {
+            throw new BadRequestException('El descuento no puede ser mayor que el subtotal');
+        }
+
+        const impuesto = Number((base * TAX_RATE).toFixed(2));
+        const total = Number((base + impuesto).toFixed(2));
+
+        return {
+            subtotal,
+            impuesto,
+            total,
+            descuento_pedido_tipo,
+            descuento_pedido_valor: descuentoValor,
+        };
+    }
+
     private calculateOrderDiscount(subtotal: number, tipo: TipoDescuento, valor: number): number {
         if (tipo === TipoDescuento.PORCENTAJE) {
             return Number(((subtotal * valor) / 100).toFixed(2));
@@ -394,6 +423,13 @@ export class OrdersService {
                 item.descuento_item_valor != null ||
                 item.precio_unitario_final != null,
         );
+
+        if (
+            (dto.descuento_pedido_tipo || dto.descuento_pedido_valor != null) &&
+            hasItemNegotiation
+        ) {
+            throw new BadRequestException('No se permite descuento por item y pedido al mismo tiempo');
+        }
 
         if (isCliente && (dto.descuento_pedido_tipo || dto.descuento_pedido_valor != null || hasItemNegotiation)) {
             throw new BadRequestException('Los clientes no pueden negociar descuentos');
@@ -476,6 +512,77 @@ export class OrdersService {
                 pedido.estado,
                 actor.userId,
                 `Promociones aprobadas (${itemsToApprove.length})`,
+            );
+        });
+
+        return this.findOne(pedido.id);
+    }
+
+    async rejectPromotions(
+        pedidoId: string,
+        payload: { reject_all?: boolean; item_ids?: string[] },
+        actor: { userId: string },
+    ): Promise<Pedido> {
+        const pedido = await this.pedidoRepo.findOne({
+            where: { id: pedidoId },
+            relations: ['items'],
+        });
+        if (!pedido) {
+            throw new NotFoundException(`Pedido ${pedidoId} no encontrado`);
+        }
+
+        const pendingItems = pedido.items.filter(
+            (item) => item.requiere_aprobacion && !item.aprobado_en,
+        );
+
+        let itemsToReject: ItemPedido[] = [];
+        if (payload.reject_all) {
+            itemsToReject = pendingItems;
+        } else if (payload.item_ids && payload.item_ids.length > 0) {
+            itemsToReject = pendingItems.filter((item) => payload.item_ids?.includes(item.id));
+        } else {
+            throw new BadRequestException('Debe enviar item_ids o reject_all');
+        }
+
+        if (itemsToReject.length === 0) {
+            throw new BadRequestException('No hay items pendientes de rechazo');
+        }
+
+        await this.dataSource.transaction(async (manager) => {
+            itemsToReject.forEach((item) => {
+                item.descuento_item_tipo = null;
+                item.descuento_item_valor = null;
+                item.precio_unitario_final = item.precio_unitario_base;
+                item.precio_origen = OrigenPrecio.CATALOGO;
+                item.requiere_aprobacion = false;
+                item.aprobado_por = null;
+                item.aprobado_en = null;
+                item.subtotal = Number((item.precio_unitario_final * item.cantidad_solicitada).toFixed(2));
+            });
+
+            await manager.save(ItemPedido, itemsToReject);
+
+            const recalculated = this.calculateTotalsFromPedido(
+                pedido.items,
+                pedido.descuento_pedido_tipo,
+                pedido.descuento_pedido_valor,
+            );
+
+            pedido.subtotal = recalculated.subtotal;
+            pedido.impuesto = recalculated.impuesto;
+            pedido.total = recalculated.total;
+            pedido.descuento_pedido_tipo = recalculated.descuento_pedido_tipo;
+            pedido.descuento_pedido_valor = recalculated.descuento_pedido_valor;
+            pedido.actualizado_por = actor.userId;
+
+            await manager.save(Pedido, pedido);
+
+            await this.recordHistory(
+                manager,
+                pedido.id,
+                pedido.estado,
+                actor.userId,
+                `Promociones rechazadas (${itemsToReject.length})`,
             );
         });
 

@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Param, Patch, Delete, UseGuards, Query } f
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { ApprovePromosDto } from './dto/approve-promos.dto';
+import { RejectPromosDto } from './dto/reject-promos.dto';
 import { CreateValidacionDto } from '../validations/dto/create-validacion.dto';
 import { ValidationsService } from '../validations/validations.service';
 import { CreateAccionDto } from '../actions/dto/create-accion.dto';
@@ -110,6 +111,13 @@ export class OrdersController {
     @Roles(RolUsuario.SUPERVISOR, RolUsuario.ADMIN)
     approvePromotions(@Param('id') id: string, @Body() dto: ApprovePromosDto, @CurrentUser() user: any) {
         return this.ordersService.approvePromotions(id, dto, user);
+    }
+
+    @Patch(':id/rechazar-promociones')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(RolUsuario.SUPERVISOR, RolUsuario.ADMIN)
+    rejectPromotions(@Param('id') id: string, @Body() dto: RejectPromosDto, @CurrentUser() user: any) {
+        return this.ordersService.rejectPromotions(id, dto, user);
     }
 
     @Patch(':id/cancel')
