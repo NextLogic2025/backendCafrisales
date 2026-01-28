@@ -33,7 +33,7 @@ import { ZoneExternalService } from './services/zone-external.service';
         }),
         PassportModule.register({ defaultStrategy: 'jwt' }),
         JwtModule.register({
-            secret: process.env.JWT_SECRET || 'changeme',
+            secret: process.env.JWT_SECRET,
             signOptions: { expiresIn: '60m' },
         }),
         FleetModule,

@@ -55,7 +55,7 @@ import { AuthExternalService } from './services/auth-external.service';
       Transportista,
     ]),
     JwtModule.register({
-      secret: process.env.JWT_SECRET || 'changeme',
+      secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: '15m' },
     }),
     HealthModule,

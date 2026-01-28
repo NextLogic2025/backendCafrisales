@@ -20,7 +20,7 @@ import { JwtOrServiceGuard } from '../../common/guards/jwt-or-service.guard';
     TypeOrmModule.forFeature([Credential, Session, LoginAttempt]),
     OutboxModule,
     JwtModule.register({
-      secret: process.env.JWT_SECRET || 'changeme',
+      secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: '15m' },
     }),
   ],

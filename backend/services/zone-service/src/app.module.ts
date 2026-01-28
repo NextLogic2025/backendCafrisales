@@ -21,7 +21,7 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
         }),
         PassportModule.register({ defaultStrategy: 'jwt' }),
         JwtModule.register({
-            secret: process.env.JWT_SECRET || 'changeme',
+            secret: process.env.JWT_SECRET,
             signOptions: { expiresIn: '15m' },
         }),
         TypeOrmModule.forRootAsync({

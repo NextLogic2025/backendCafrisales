@@ -30,7 +30,7 @@ import { ExternalServicesModule } from './modules/external-services/external-ser
         }),
         PassportModule.register({ defaultStrategy: 'jwt' }),
         JwtModule.register({
-            secret: process.env.JWT_SECRET || 'changeme',
+            secret: process.env.JWT_SECRET,
             signOptions: { expiresIn: '60m' },
         }),
         HealthModule,
