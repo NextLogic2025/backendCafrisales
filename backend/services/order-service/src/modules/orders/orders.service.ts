@@ -24,6 +24,7 @@ import { TipoDescuento } from '../../common/constants/discount-type.enum';
 import { OrigenPrecio } from '../../common/constants/price-origin.enum';
 import { MetodoPago } from '../../common/constants/payment-method.enum';
 import type { CatalogSkuSnapshot } from '../../common/interfaces/catalog-sku-snapshot.interface';
+import type { AuthUser } from '../../common/decorators/current-user.decorator';
 
 const TAX_RATE = 0.12;
 const DEFAULT_LIST_LIMIT = 100;
@@ -57,7 +58,7 @@ export class OrdersService {
         private readonly outboxService: OutboxService,
     ) {}
 
-    async create(dto: CreateOrderDto, user: { userId: string; role: RolUsuario }): Promise<Pedido> {
+    async create(dto: CreateOrderDto, user: AuthUser): Promise<Pedido> {
         const isCliente = user.role === RolUsuario.CLIENTE;
         const origen = isCliente ? OrigenCreacion.CLIENTE : OrigenCreacion.VENDEDOR;
         const clienteId = isCliente ? user.userId : dto.cliente_id;
@@ -469,7 +470,7 @@ export class OrdersService {
     async approvePromotions(
         pedidoId: string,
         payload: { approve_all?: boolean; item_ids?: string[] },
-        actor: { userId: string },
+        actor: AuthUser,
     ): Promise<Pedido> {
         const pedido = await this.pedidoRepo.findOne({
             where: { id: pedidoId },
@@ -521,7 +522,7 @@ export class OrdersService {
     async rejectPromotions(
         pedidoId: string,
         payload: { reject_all?: boolean; item_ids?: string[] },
-        actor: { userId: string },
+        actor: AuthUser,
     ): Promise<Pedido> {
         const pedido = await this.pedidoRepo.findOne({
             where: { id: pedidoId },
@@ -589,7 +590,7 @@ export class OrdersService {
         return this.findOne(pedido.id);
     }
 
-    async updateStatus(id: string, estado: EstadoPedido, actor?: { userId: string }): Promise<Pedido> {
+    async updateStatus(id: string, estado: EstadoPedido, actor?: AuthUser): Promise<Pedido> {
         const actorId = actor?.userId ?? 'system';
         return this.dataSource.transaction(async (manager) => {
             const pedido = await manager.findOne(Pedido, { where: { id } });
@@ -664,7 +665,7 @@ export class OrdersService {
     async updatePaymentMethod(
         id: string,
         metodoPago: MetodoPago,
-        actor: { userId: string; role: RolUsuario },
+        actor: AuthUser,
     ): Promise<Pedido> {
         if (!metodoPago) {
             throw new BadRequestException('Metodo de pago es obligatorio');

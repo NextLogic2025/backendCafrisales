@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, ParseUUIDPipe } from '@nestjs/common';
 import { ValidationsService } from './validations.service';
 import { CreateValidacionDto } from './dto/create-validacion.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -19,13 +19,13 @@ export class ValidationsController {
 
     @Get('order/:pedidoId')
     @UseGuards(JwtAuthGuard)
-    findByOrder(@Param('pedidoId') pedidoId: string) {
+    findByOrder(@Param('pedidoId', ParseUUIDPipe) pedidoId: string) {
         return this.validationsService.findByOrder(pedidoId);
     }
 
     @Get(':id')
     @UseGuards(JwtAuthGuard)
-    findOne(@Param('id') id: string) {
+    findOne(@Param('id', ParseUUIDPipe) id: string) {
         return this.validationsService.findOne(id);
     }
 }
