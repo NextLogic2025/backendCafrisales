@@ -20,6 +20,7 @@ CREATE DATABASE cafrilosa_pedidos;
 CREATE DATABASE cafrilosa_creditos;
 CREATE DATABASE cafrilosa_rutas;
 CREATE DATABASE cafrilosa_entregas;
+CREATE DATABASE cafrilosa_notificaciones;
 \c cafrilosa_auth
 
 -- Extensiones

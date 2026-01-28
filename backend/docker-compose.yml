@@ -16,6 +16,7 @@ x-common-env: &common-env
   CREDIT_SERVICE_URL: ${CREDIT_URL}
   ROUTE_SERVICE_URL: ${ROUTE_URL}
   DELIVERY_SERVICE_URL: ${DELIVERY_URL}
+  NOTIFICATION_SERVICE_URL: ${NOTIFICATION_URL}
 
 services:
   # =========================================
@@ -241,6 +242,41 @@ services:
       - "3008:3000"
     volumes:
       - delivery-uploads:/app/uploads/evidence
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - app-network
+    healthcheck:
+      test: [ "CMD-SHELL", "wget -q -T 2 -O /dev/null http://127.0.0.1:3000/api/health || exit 1" ]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+  # --- NOTIFICATION SERVICE ---
+  notification-service:
+    build:
+      context: ./services/notification-service
+      dockerfile: Dockerfile
+    container_name: notification-service
+    restart: on-failure
+    environment:
+      <<: *common-env
+      # Main notification database
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: cafrilosa_notificaciones
+      DB_LOGGING: "false"
+      # Order service database (for reading outbox)
+      ORDER_DB_HOST: ${DB_HOST}
+      ORDER_DB_PORT: ${DB_PORT}
+      ORDER_DB_USER: ${DB_USER}
+      ORDER_DB_PASSWORD: ${DB_PASSWORD}
+      ORDER_DB_NAME: cafrilosa_pedidos
+    ports:
+      - "3009:3000"
     depends_on:
       database:
         condition: service_healthy
