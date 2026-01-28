@@ -53,6 +53,11 @@ export class AddOrderDto {
     orden_entrega: number;
 }
 
+export class UpdateVehicleDto {
+    @IsUUID('4', { message: 'vehiculo_id debe ser un UUID v??lido' })
+    vehiculo_id: string;
+}
+
 export class CancelRuteroDto {
     @IsString({ message: 'motivo debe ser texto' })
     @MaxLength(1000, { message: 'motivo no puede exceder 1000 caracteres' })

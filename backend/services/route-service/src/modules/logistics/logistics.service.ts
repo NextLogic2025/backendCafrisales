@@ -25,9 +25,11 @@ export class LogisticsService {
         private readonly routeRepo: Repository<RuteroLogistico>,
         @InjectRepository(ParadaRuteroLogistico)
         private readonly stopRepo: Repository<ParadaRuteroLogistico>,
-        @InjectRepository(Vehiculo)
-        private readonly vehicleRepo: Repository<Vehiculo>,
-        private readonly dataSource: DataSource,
+    @InjectRepository(Vehiculo)
+    private readonly vehicleRepo: Repository<Vehiculo>,
+    @InjectRepository(HistorialEstadoRutero)
+    private readonly historyRepo: Repository<HistorialEstadoRutero>,
+    private readonly dataSource: DataSource,
         private readonly outboxService: OutboxService,
         private readonly userExternalService: UserExternalService,
         private readonly zoneExternalService: ZoneExternalService,
@@ -151,6 +153,77 @@ export class LogisticsService {
             }
             throw error;
         }
+    }
+
+    async removeOrder(routeId: string, pedidoId: string): Promise<{ removed: boolean }> {
+        const route = await this.routeRepo.findOne({ where: { id: routeId } });
+        if (!route) {
+            throw new NotFoundException(`Rutero logÃ­stico ${routeId} no encontrado`);
+        }
+        if (route.estado !== EstadoRutero.BORRADOR) {
+            throw new BadRequestException('Solo se pueden quitar pedidos de ruteros en borrador');
+        }
+
+        const stop = await this.stopRepo.findOne({ where: { rutero_id: routeId, pedido_id: pedidoId } });
+        if (!stop) {
+            throw new NotFoundException('El pedido no estÃ¡ en este rutero');
+        }
+
+        await this.stopRepo.remove(stop);
+
+        const remaining = await this.stopRepo.find({
+            where: { rutero_id: routeId },
+            order: { orden_entrega: 'ASC' },
+        });
+        const updated = remaining.map((item, index) => ({
+            ...item,
+            orden_entrega: index + 1,
+        }));
+        await this.stopRepo.save(updated);
+
+        return { removed: true };
+    }
+
+    async updateVehicle(routeId: string, dto: { vehiculo_id: string }, supervisorId: string): Promise<RuteroLogistico> {
+        const route = await this.routeRepo.findOne({ where: { id: routeId } });
+        if (!route) {
+            throw new NotFoundException(`Rutero logÃ­stico ${routeId} no encontrado`);
+        }
+        if (route.estado !== EstadoRutero.BORRADOR) {
+            throw new BadRequestException('Solo se puede cambiar el vehÃ­culo en ruteros borrador');
+        }
+
+        const vehicle = await this.vehicleRepo.findOne({ where: { id: dto.vehiculo_id } });
+        if (!vehicle) {
+            throw new BadRequestException('El vehÃ­culo especificado no es vÃ¡lido o no existe.');
+        }
+        if (vehicle.estado !== EstadoVehiculo.DISPONIBLE) {
+            throw new BadRequestException('El vehÃ­culo no estÃ¡ disponible.');
+        }
+
+        route.vehiculo_id = dto.vehiculo_id;
+        const saved = await this.routeRepo.save(route);
+
+        await this.historyRepo.save({
+            tipo: TipoRutero.LOGISTICO,
+            rutero_id: routeId,
+            estado: route.estado,
+            cambiado_por_id: supervisorId,
+            motivo: 'VehÃ­culo actualizado',
+        });
+
+        return saved;
+    }
+
+    async getHistory(routeId: string): Promise<HistorialEstadoRutero[]> {
+        const route = await this.routeRepo.findOne({ where: { id: routeId } });
+        if (!route) {
+            throw new NotFoundException(`Rutero logÃ­stico ${routeId} no encontrado`);
+        }
+        return this.historyRepo.find({
+            where: { tipo: TipoRutero.LOGISTICO, rutero_id: routeId },
+            order: { creado_en: 'DESC' },
+        });
     }
 
     async findOne(id: string): Promise<any> {

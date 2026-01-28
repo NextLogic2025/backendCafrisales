@@ -1,6 +1,6 @@
-import { Controller, Get, Post, Put, Body, Param, Query, UseGuards, ParseUUIDPipe } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards, ParseUUIDPipe } from '@nestjs/common';
 import { LogisticsService } from './logistics.service';
-import { CreateLogisticRouteDto, AddOrderDto, CancelRuteroDto } from './dto/logistics-route.dto';
+import { CreateLogisticRouteDto, AddOrderDto, CancelRuteroDto, UpdateVehicleDto } from './dto/logistics-route.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -37,6 +37,12 @@ export class LogisticsController {
         return this.logisticsService.findOne(id);
     }
 
+    @Get(':id/historial')
+    @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR, RolUsuario.TRANSPORTISTA)
+    getHistory(@Param('id', ParseUUIDPipe) id: string) {
+        return this.logisticsService.getHistory(id);
+    }
+
     @Put(':id/publicar')
     @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR)
     publish(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: AuthUser) {
@@ -69,5 +75,24 @@ export class LogisticsController {
     @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR)
     addOrder(@Param('id', ParseUUIDPipe) id: string, @Body() dto: AddOrderDto) {
         return this.logisticsService.addOrder(id, dto);
+    }
+
+    @Delete(':id/orders/:pedidoId')
+    @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR)
+    removeOrder(
+        @Param('id', ParseUUIDPipe) id: string,
+        @Param('pedidoId', ParseUUIDPipe) pedidoId: string,
+    ) {
+        return this.logisticsService.removeOrder(id, pedidoId);
+    }
+
+    @Put(':id/vehiculo')
+    @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR)
+    updateVehicle(
+        @Param('id', ParseUUIDPipe) id: string,
+        @Body() dto: UpdateVehicleDto,
+        @CurrentUser() user: AuthUser,
+    ) {
+        return this.logisticsService.updateVehicle(id, dto, user.userId);
     }
 }

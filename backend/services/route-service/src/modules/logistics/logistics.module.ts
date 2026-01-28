@@ -5,6 +5,7 @@ import { LogisticsController } from './logistics.controller';
 import { RuteroLogistico } from './entities/rutero-logistico.entity';
 import { ParadaRuteroLogistico } from './entities/parada-rutero-logistico.entity';
 import { Vehiculo } from '../fleet/entities/vehiculo.entity';
+import { HistorialEstadoRutero } from '../history/entities/historial-estado-rutero.entity';
 import { OutboxModule } from '../outbox/outbox.module';
 import { ExternalServicesModule } from '../../services/external-services.module';
 
@@ -14,7 +15,7 @@ import { ExternalServicesModule } from '../../services/external-services.module'
  */
 @Module({
     imports: [
-        TypeOrmModule.forFeature([RuteroLogistico, ParadaRuteroLogistico, Vehiculo]),
+        TypeOrmModule.forFeature([RuteroLogistico, ParadaRuteroLogistico, Vehiculo, HistorialEstadoRutero]),
         OutboxModule,
         ExternalServicesModule,
     ],
