@@ -4,10 +4,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationsGateway } from '../notifications/notifications.gateway';
+import { TiposNotificacionService } from '../notifications/tipos-notificacion.service';
+import { PrioridadNotificacion } from '../notifications/entities/notification.entity';
 
 /**
- * Outbox entity from order-service (external DB)
- * Esta entidad se conecta a cafrilosa_pedidos.app.outbox_eventos
+ * Outbox entity from order-service (external DB).
+ * Esta entidad se conecta a cafrilosa_pedidos.app.outbox_eventos.
  */
 import { Entity, Column, PrimaryColumn } from 'typeorm';
 
@@ -26,16 +28,30 @@ class OrderOutbox {
     claveAgregado: string;
 
     @Column({ type: 'jsonb' })
-    payload: Record<string, any>;
+    payload: Record<string, unknown>;
 
     @Column({ name: 'creado_en', type: 'timestamptz' })
     creadoEn: Date;
 
     @Column({ name: 'procesado_en', type: 'timestamptz', nullable: true })
-    procesadoEn: Date;
+    procesadoEn: Date | null;
 
     @Column({ type: 'int' })
     intentos: number;
+}
+
+/** Datos para crear una notificación desde un evento de outbox */
+interface NotificationFromEvent {
+    usuarioId: string;
+    tipoCodigo: string;
+    titulo: string;
+    mensaje: string;
+    payload: Record<string, unknown>;
+    origenServicio: string;
+    origenEventoId: string;
+    prioridad: PrioridadNotificacion;
+    requiereAccion: boolean;
+    urlAccion?: string;
 }
 
 @Injectable()
@@ -47,17 +63,18 @@ export class OrderConsumerService {
         private readonly outboxRepo: Repository<OrderOutbox>,
         private readonly notificationsService: NotificationsService,
         private readonly notificationsGateway: NotificationsGateway,
+        private readonly tiposService: TiposNotificacionService,
     ) { }
 
     @Cron(CronExpression.EVERY_10_SECONDS)
-    async processOrderEvents() {
+    async processOrderEvents(): Promise<void> {
         const queryRunner = this.outboxRepo.manager.connection.createQueryRunner();
         await queryRunner.connect();
         await queryRunner.startTransaction();
 
         try {
-            // Lock and fetch unprocessed events using FOR UPDATE SKIP LOCKED
-            const events = await queryRunner.query(
+            // Lock y fetch de eventos no procesados con FOR UPDATE SKIP LOCKED
+            const events: OrderOutbox[] = await queryRunner.query(
                 `SELECT * FROM app.outbox_eventos 
                  WHERE procesado_en IS NULL 
                  ORDER BY creado_en ASC 
@@ -65,25 +82,25 @@ export class OrderConsumerService {
                  FOR UPDATE SKIP LOCKED`
             );
 
-            if (events.length === 0) {
+            if (!events || events.length === 0) {
                 await queryRunner.commitTransaction();
                 return;
             }
 
-            this.logger.log(`Processing ${events.length} order events`);
+            this.logger.log(`Procesando ${events.length} eventos de pedidos`);
 
             for (const event of events) {
                 try {
-                    // Mark as processed FIRST to prevent re-processing
+                    // Marcar como procesado PRIMERO para prevenir re-procesamiento
                     await queryRunner.query(
                         'UPDATE app.outbox_eventos SET procesado_en = NOW() WHERE id = $1',
                         [event.id]
                     );
 
-                    // Then handle the event (create notification)
+                    // Manejar el evento (crear notificación)
                     await this.handleEvent(event);
                 } catch (error) {
-                    this.logger.error(`Error processing event ${event.id}:`, error);
+                    this.logger.error(`Error procesando evento ${event.id}:`, error);
                     await queryRunner.query(
                         'UPDATE app.outbox_eventos SET intentos = intentos + 1 WHERE id = $1',
                         [event.id]
@@ -94,24 +111,26 @@ export class OrderConsumerService {
             await queryRunner.commitTransaction();
         } catch (error) {
             await queryRunner.rollbackTransaction();
-            this.logger.error('Error in order consumer:', error);
+            this.logger.error('Error en order consumer:', error);
         } finally {
             await queryRunner.release();
         }
     }
 
-    private async handleEvent(event: any) {
-        const { tipo_evento: tipoEvento, payload } = event;
+    private async handleEvent(event: OrderOutbox): Promise<void> {
+        const { tipo_evento: tipoEvento, payload } = event as unknown as {
+            tipo_evento: string;
+            payload: Record<string, unknown>;
+        };
 
-        let notificationData = null;
+        let notificationData: NotificationFromEvent | null = null;
 
         switch (tipoEvento) {
             case 'PedidoCreado':
-                // Notificar al vendedor/supervisor
                 if (payload.origen === 'cliente') {
                     notificationData = {
-                        usuarioId: payload.vendedor_id || payload.creado_por_id,
-                        tipo: 'pedido_creado',
+                        usuarioId: (payload.vendedor_id ?? payload.creado_por_id) as string,
+                        tipoCodigo: 'pedido_creado',
                         titulo: '📦 Nuevo Pedido',
                         mensaje: `Pedido #${payload.numero_pedido} creado por cliente`,
                         payload: {
@@ -122,7 +141,7 @@ export class OrderConsumerService {
                         },
                         origenServicio: 'order',
                         origenEventoId: event.id,
-                        prioridad: 'normal',
+                        prioridad: PrioridadNotificacion.NORMAL,
                         requiereAccion: true,
                         urlAccion: `/pedidos/${payload.pedido_id}`,
                     };
@@ -130,10 +149,9 @@ export class OrderConsumerService {
                 break;
 
             case 'PedidoValidadoBodega':
-                // Notificar al cliente
                 notificationData = {
-                    usuarioId: payload.cliente_id,
-                    tipo: 'pedido_aprobado',
+                    usuarioId: payload.cliente_id as string,
+                    tipoCodigo: 'pedido_aprobado',
                     titulo: '✅ Pedido Aprobado',
                     mensaje: `Tu pedido #${payload.numero_pedido} ha sido aprobado por bodega`,
                     payload: {
@@ -142,17 +160,16 @@ export class OrderConsumerService {
                     },
                     origenServicio: 'order',
                     origenEventoId: event.id,
-                    prioridad: 'alta',
+                    prioridad: PrioridadNotificacion.ALTA,
                     requiereAccion: false,
                     urlAccion: `/pedidos/${payload.pedido_id}`,
                 };
                 break;
 
             case 'PedidoAjustadoBodega':
-                // Notificar al cliente sobre ajustes
                 notificationData = {
-                    usuarioId: payload.cliente_id,
-                    tipo: 'pedido_ajustado',
+                    usuarioId: payload.cliente_id as string,
+                    tipoCodigo: 'pedido_ajustado',
                     titulo: '⚠️ Pedido Ajustado',
                     mensaje: `Tu pedido #${payload.numero_pedido} requiere tu aprobación por cambios realizados`,
                     payload: {
@@ -162,7 +179,7 @@ export class OrderConsumerService {
                     },
                     origenServicio: 'order',
                     origenEventoId: event.id,
-                    prioridad: 'urgente',
+                    prioridad: PrioridadNotificacion.URGENTE,
                     requiereAccion: true,
                     urlAccion: `/pedidos/${payload.pedido_id}/validar`,
                 };
@@ -171,8 +188,8 @@ export class OrderConsumerService {
             case 'PedidoRechazadoCliente':
             case 'PedidoCancelado':
                 notificationData = {
-                    usuarioId: payload.cliente_id,
-                    tipo: 'pedido_cancelado',
+                    usuarioId: payload.cliente_id as string,
+                    tipoCodigo: 'pedido_cancelado',
                     titulo: '❌ Pedido Cancelado',
                     mensaje: `El pedido #${payload.numero_pedido} ha sido cancelado`,
                     payload: {
@@ -182,14 +199,15 @@ export class OrderConsumerService {
                     },
                     origenServicio: 'order',
                     origenEventoId: event.id,
-                    prioridad: 'normal',
+                    prioridad: PrioridadNotificacion.NORMAL,
+                    requiereAccion: false,
                 };
                 break;
 
             case 'PedidoAsignadoRuta':
                 notificationData = {
-                    usuarioId: payload.cliente_id,
-                    tipo: 'pedido_asignado_ruta',
+                    usuarioId: payload.cliente_id as string,
+                    tipoCodigo: 'pedido_asignado_ruta',
                     titulo: '🚚 Pedido en Preparación',
                     mensaje: `Tu pedido #${payload.numero_pedido} ha sido asignado a una ruta`,
                     payload: {
@@ -199,22 +217,60 @@ export class OrderConsumerService {
                     },
                     origenServicio: 'order',
                     origenEventoId: event.id,
-                    prioridad: 'normal',
+                    prioridad: PrioridadNotificacion.NORMAL,
+                    requiereAccion: false,
                 };
                 break;
 
             default:
-                this.logger.debug(`Unhandled event type: ${tipoEvento}`);
+                this.logger.debug(`Tipo de evento no manejado: ${tipoEvento}`);
         }
 
         if (notificationData) {
-            const notification = await this.notificationsService.create(notificationData);
+            await this.createNotificationFromEvent(notificationData);
+        }
+    }
 
-            // Enviar via WebSocket si está conectado
-            if (this.notificationsGateway.isUserConnected(notificationData.usuarioId)) {
-                this.notificationsGateway.sendToUser(notificationData.usuarioId, notification);
-                this.logger.log(`Real-time notification sent to user ${notificationData.usuarioId}`);
-            }
+    /**
+     * Crea una notificación desde un evento, resolviendo el código de tipo a UUID.
+     */
+    private async createNotificationFromEvent(data: NotificationFromEvent): Promise<void> {
+        const tipoId = await this.tiposService.getIdByCodigo(data.tipoCodigo);
+
+        if (!tipoId) {
+            this.logger.warn(`Tipo de notificación '${data.tipoCodigo}' no encontrado, creando...`);
+            // Auto-crear el tipo si no existe (útil en desarrollo)
+            const nuevoTipo = await this.tiposService.create({
+                codigo: data.tipoCodigo,
+                nombre: data.tipoCodigo.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+            });
+            await this.createAndSendNotification(data, nuevoTipo.id);
+        } else {
+            await this.createAndSendNotification(data, tipoId);
+        }
+    }
+
+    private async createAndSendNotification(
+        data: NotificationFromEvent,
+        tipoId: string,
+    ): Promise<void> {
+        const notification = await this.notificationsService.create({
+            usuarioId: data.usuarioId,
+            tipoId,
+            titulo: data.titulo,
+            mensaje: data.mensaje,
+            payload: data.payload,
+            origenServicio: data.origenServicio,
+            origenEventoId: data.origenEventoId,
+            prioridad: data.prioridad,
+            requiereAccion: data.requiereAccion,
+            urlAccion: data.urlAccion,
+        });
+
+        // Enviar via WebSocket si el usuario está conectado
+        if (this.notificationsGateway.isUserConnected(data.usuarioId)) {
+            this.notificationsGateway.sendToUser(data.usuarioId, notification);
+            this.logger.log(`Notificación en tiempo real enviada a usuario ${data.usuarioId}`);
         }
     }
 }

@@ -1,20 +1,27 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-
+import helmet from 'helmet';
 import { AppModule } from './app.module';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
     const logger = new Logger('Bootstrap');
     const app = await NestFactory.create(AppModule);
 
-
+    // Seguridad: cabeceras HTTP contra XSS, clickjacking, sniffing
+    app.use(helmet());
 
     // CORS
     app.enableCors({
-        origin: process.env.CORS_ORIGIN || '*',
+        origin: process.env.CORS_ORIGIN?.split(',').map((o) => o.trim()).filter(Boolean) || '*',
         credentials: true,
+        methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization'],
     });
+
+    // Filtro global para formatear errores y ocultar detalles sensibles
+    app.useGlobalFilters(new HttpExceptionFilter());
 
     // Global validation pipe
     app.useGlobalPipes(
@@ -38,6 +45,9 @@ async function bootstrap() {
 
     const document = SwaggerModule.createDocument(app, config);
     SwaggerModule.setup('api/docs', app, document);
+
+    // Graceful shutdown: cierra conexiones pendientes antes de terminar
+    app.enableShutdownHooks();
 
     const port = process.env.PORT || 3000;
     await app.listen(port);

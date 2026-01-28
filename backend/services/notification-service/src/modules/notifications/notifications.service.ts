@@ -1,7 +1,7 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Notification } from './entities/notification.entity';
+import { Notification, PrioridadNotificacion } from './entities/notification.entity';
 import { CreateNotificationDto, QueryNotificationsDto } from './dto/notification.dto';
 
 @Injectable()
@@ -16,19 +16,19 @@ export class NotificationsService {
     async create(dto: CreateNotificationDto): Promise<Notification> {
         const notification = this.notificationRepo.create({
             usuarioId: dto.usuarioId,
-            tipo: dto.tipo,
+            tipoId: dto.tipoId,
             titulo: dto.titulo,
             mensaje: dto.mensaje,
-            payload: dto.payload,
+            payload: dto.payload ?? {},
             origenServicio: dto.origenServicio,
-            origenEventoId: dto.origenEventoId,
-            prioridad: dto.prioridad || 'normal',
-            requiereAccion: dto.requiereAccion || false,
-            urlAccion: dto.urlAccion,
+            origenEventoId: dto.origenEventoId ?? null,
+            prioridad: dto.prioridad ?? PrioridadNotificacion.NORMAL,
+            requiereAccion: dto.requiereAccion ?? false,
+            urlAccion: dto.urlAccion ?? null,
         });
 
         const saved = await this.notificationRepo.save(notification);
-        this.logger.log(`Notification created: ${saved.id} for user ${saved.usuarioId}`);
+        this.logger.log(`Notificación creada: ${saved.id} para usuario ${saved.usuarioId}`);
         return saved;
     }
 
@@ -39,8 +39,8 @@ export class NotificationsService {
             qb.where('n.usuario_id = :usuarioId', { usuarioId: query.usuarioId });
         }
 
-        if (query.tipo) {
-            qb.andWhere('n.tipo = :tipo', { tipo: query.tipo });
+        if (query.tipoId) {
+            qb.andWhere('n.tipo_id = :tipoId', { tipoId: query.tipoId });
         }
 
         if (query.soloNoLeidas) {
@@ -48,7 +48,7 @@ export class NotificationsService {
         }
 
         qb.orderBy('n.creado_en', 'DESC');
-        qb.limit(query.limit || 50);
+        qb.limit(query.limit ?? 50);
 
         return qb.getMany();
     }
@@ -56,7 +56,7 @@ export class NotificationsService {
     async findOne(id: string): Promise<Notification> {
         const notification = await this.notificationRepo.findOne({ where: { id } });
         if (!notification) {
-            throw new NotFoundException(`Notification ${id} not found`);
+            throw new NotFoundException(`Notificación ${id} no encontrada`);
         }
         return notification;
     }
@@ -81,15 +81,16 @@ export class NotificationsService {
         );
     }
 
-    async deleteExpired(): Promise<void> {
+    async deleteExpired(): Promise<number> {
         const result = await this.notificationRepo
             .createQueryBuilder()
             .delete()
             .where('expira_en IS NOT NULL AND expira_en < NOW()')
             .execute();
 
-        if (result.affected > 0) {
-            this.logger.log(`Deleted ${result.affected} expired notifications`);
+        if (result.affected && result.affected > 0) {
+            this.logger.log(`Eliminadas ${result.affected} notificaciones expiradas`);
         }
+        return result.affected ?? 0;
     }
 }

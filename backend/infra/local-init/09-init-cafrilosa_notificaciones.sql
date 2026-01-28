@@ -1,10 +1,12 @@
 -- =====================================================
 -- NOTIFICATION-SERVICE
 -- Base: cafrilosa_notificaciones
--- Propósito: Sistema híbrido de notificaciones con WebSocket
+-- Propósito: Notificaciones híbridas (WebSocket + email/sms opcional)
+-- PostgreSQL 17
 -- =====================================================
 
-\c cafrilosa_notificaciones
+CREATE DATABASE cafrilosa_notificaciones;
+\c cafrilosa_notificaciones;
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
@@ -12,7 +14,7 @@ REVOKE ALL ON SCHEMA public FROM PUBLIC;
 CREATE SCHEMA IF NOT EXISTS app;
 CREATE SCHEMA IF NOT EXISTS audit;
 
--- Trigger para actualizado_en + version
+-- Trigger actualizado_en + version (estándar)
 CREATE OR REPLACE FUNCTION audit.set_actualizado()
 RETURNS trigger
 LANGUAGE plpgsql
@@ -27,77 +29,89 @@ END;
 $$;
 
 -- =========================
--- Tipos ENUM
+-- ENUMs (solo estables)
 -- =========================
 DO $$
 BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'tipo_notificacion') THEN
-    CREATE TYPE tipo_notificacion AS ENUM (
-      'pedido_creado',
-      'pedido_aprobado',
-      'pedido_ajustado',
-      'pedido_rechazado',
-      'pedido_asignado_ruta',
-      'pedido_en_ruta',
-      'pedido_entregado',
-      'pedido_cancelado',
-      'credito_aprobado',
-      'credito_rechazado',
-      'credito_vencido',
-      'pago_registrado',
-      'entrega_iniciada',
-      'entrega_completada',
-      'incidente_reportado',
-      'rutero_asignado',
-      'rutero_iniciado',
-      'rutero_completado'
-    );
-  END IF;
-
   IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'prioridad_notificacion') THEN
     CREATE TYPE prioridad_notificacion AS ENUM ('baja','normal','alta','urgente');
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'canal_notificacion') THEN
+    CREATE TYPE canal_notificacion AS ENUM ('websocket','email','sms');
   END IF;
 END$$;
 
 -- =========================
--- 1) Notificaciones principales
+-- 1) Catálogo de tipos
+-- =========================
+-- En vez de ENUM: permite crecer/cambiar sin migraciones.
+CREATE TABLE app.tipos_notificacion (
+  id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  codigo       varchar(50) NOT NULL UNIQUE,   -- ej: "pedido_creado", "credito_aprobado"
+  nombre       varchar(120) NOT NULL,         -- ej: "Pedido creado"
+  descripcion  text,
+  activo       boolean NOT NULL DEFAULT true,
+  creado_en    timestamptz NOT NULL DEFAULT transaction_timestamp(),
+  creado_por   uuid
+);
+
+CREATE INDEX idx_tipos_notificacion_activos
+  ON app.tipos_notificacion(codigo)
+  WHERE activo;
+
+-- =========================
+-- 2) Notificaciones
 -- =========================
 CREATE TABLE app.notificaciones (
   id                uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  
-  -- Destinatario
-  usuario_id        uuid NOT NULL,  -- cliente, vendedor, bodeguero, etc
-  
-  -- Contenido
-  tipo              tipo_notificacion NOT NULL,
+
+  -- Destinatario (referencia lógica a user-service)
+  usuario_id        uuid NOT NULL,
+
+  -- Tipo / contenido
+  tipo_id           uuid NOT NULL REFERENCES app.tipos_notificacion(id),
   titulo            varchar(255) NOT NULL,
   mensaje           text NOT NULL,
-  
-  -- Metadata del evento origen
-  payload           jsonb,                   -- datos adicionales (pedido_id, monto, etc)
-  origen_servicio   varchar(50) NOT NULL,    -- 'order', 'credit', 'delivery', 'route'
-  origen_evento_id  uuid,                    -- ID del evento outbox original
-  
-  -- Configuración
+
+  -- Metadata del evento origen (para trazabilidad e idempotencia)
+  origen_servicio   varchar(50) NOT NULL,  -- "order","credit","route","delivery","auth","user","catalog","zone"
+  origen_evento_id  uuid,                  -- id del outbox original (si aplica)
+  payload           jsonb NOT NULL DEFAULT '{}'::jsonb, -- metadata flexible (NO core)
+
+  -- UX
   prioridad         prioridad_notificacion NOT NULL DEFAULT 'normal',
-  requiere_accion   boolean NOT NULL DEFAULT false,  -- notif requiere interacción del usuario
-  url_accion        text,                            -- URL para la acción (ej: /pedidos/123)
-  
-  -- Estado
+  requiere_accion   boolean NOT NULL DEFAULT false,
+  url_accion        text,  -- ruta/URL relativa para navegación
+
+  -- Estado lectura
   leida             boolean NOT NULL DEFAULT false,
   leida_en          timestamptz,
-  
+
   -- Expiración (opcional)
   expira_en         timestamptz,
-  
-  -- Auditoría
+
+  -- Auditoría estándar
   creado_en         timestamptz NOT NULL DEFAULT transaction_timestamp(),
   actualizado_en    timestamptz NOT NULL DEFAULT transaction_timestamp(),
+  creado_por        uuid,
+  actualizado_por   uuid,
   version           int NOT NULL DEFAULT 1,
-  
+
+  -- Coherencia lectura
   CHECK (
     (leida = false AND leida_en IS NULL) OR
-    (leida = true AND leida_en IS NOT NULL)
+    (leida = true  AND leida_en IS NOT NULL)
+  ),
+
+  -- Coherencia acción
+  CHECK (
+    requiere_accion = false OR url_accion IS NOT NULL
+  ),
+
+  -- Coherencia expiración
+  CHECK (
+    expira_en IS NULL OR expira_en > creado_en
   )
 );
 
@@ -105,43 +119,54 @@ CREATE TRIGGER trg_notificaciones_actualizado
 BEFORE UPDATE ON app.notificaciones
 FOR EACH ROW EXECUTE FUNCTION audit.set_actualizado();
 
--- Índices para consultas eficientes
-CREATE INDEX idx_notif_usuario_fecha 
+-- Índices para UI (inbox)
+CREATE INDEX idx_notif_usuario_fecha
   ON app.notificaciones(usuario_id, creado_en DESC);
 
-CREATE INDEX idx_notif_usuario_no_leidas 
-  ON app.notificaciones(usuario_id, creado_en DESC) 
+CREATE INDEX idx_notif_usuario_no_leidas
+  ON app.notificaciones(usuario_id, creado_en DESC)
   WHERE leida = false;
 
-CREATE INDEX idx_notif_tipo_usuario 
-  ON app.notificaciones(tipo, usuario_id, creado_en DESC);
+CREATE INDEX idx_notif_tipo_usuario_fecha
+  ON app.notificaciones(tipo_id, usuario_id, creado_en DESC);
 
-CREATE INDEX idx_notif_expiracion 
-  ON app.notificaciones(expira_en) 
+CREATE INDEX idx_notif_expiracion
+  ON app.notificaciones(expira_en)
   WHERE expira_en IS NOT NULL;
 
+-- Idempotencia: evita duplicar notificación si se re-procesa el mismo evento
+-- (solo aplica cuando origen_evento_id existe)
+CREATE UNIQUE INDEX ux_notif_origen_evento_usuario
+  ON app.notificaciones(origen_servicio, origen_evento_id, usuario_id)
+  WHERE origen_evento_id IS NOT NULL;
+
 -- =========================
--- 2) Preferencias de notificación por usuario
+-- 3) Preferencias por usuario (defaults + no molestar)
 -- =========================
 CREATE TABLE app.preferencias_notificacion (
-  usuario_id        uuid PRIMARY KEY,
-  
-  -- Canales habilitados
-  websocket_enabled boolean NOT NULL DEFAULT true,
-  email_enabled     boolean NOT NULL DEFAULT true,
-  sms_enabled       boolean NOT NULL DEFAULT false,
-  
-  -- Tipos de notificación suscritos (jsonb array de tipos)
-  tipos_suscritos   jsonb NOT NULL DEFAULT '[]'::jsonb,
-  
-  -- Configuración de "no molestar"
-  no_molestar       boolean NOT NULL DEFAULT false,
-  no_molestar_desde time,
-  no_molestar_hasta time,
-  
-  creado_en         timestamptz NOT NULL DEFAULT transaction_timestamp(),
-  actualizado_en    timestamptz NOT NULL DEFAULT transaction_timestamp(),
-  version           int NOT NULL DEFAULT 1
+  usuario_id          uuid PRIMARY KEY,
+
+  -- Defaults por canal (si no hay suscripción específica por tipo)
+  websocket_enabled   boolean NOT NULL DEFAULT true,
+  email_enabled       boolean NOT NULL DEFAULT true,
+  sms_enabled         boolean NOT NULL DEFAULT false,
+
+  -- No molestar
+  no_molestar         boolean NOT NULL DEFAULT false,
+  no_molestar_desde   time,
+  no_molestar_hasta   time,
+
+  creado_en           timestamptz NOT NULL DEFAULT transaction_timestamp(),
+  actualizado_en      timestamptz NOT NULL DEFAULT transaction_timestamp(),
+  creado_por          uuid,
+  actualizado_por     uuid,
+  version             int NOT NULL DEFAULT 1,
+
+  -- Coherencia DND
+  CHECK (
+    no_molestar = false
+    OR (no_molestar_desde IS NOT NULL AND no_molestar_hasta IS NOT NULL)
+  )
 );
 
 CREATE TRIGGER trg_preferencias_actualizado
@@ -149,17 +174,61 @@ BEFORE UPDATE ON app.preferencias_notificacion
 FOR EACH ROW EXECUTE FUNCTION audit.set_actualizado();
 
 -- =========================
--- 3) Outbox para propagación
+-- 4) Suscripciones por tipo (normalizado, queryable)
+-- =========================
+-- Define overrides por tipo para un usuario.
+-- Si no existe registro, usar defaults de preferencias_notificacion.
+CREATE TABLE app.suscripciones_notificacion (
+  usuario_id        uuid NOT NULL,
+  tipo_id           uuid NOT NULL REFERENCES app.tipos_notificacion(id) ON DELETE CASCADE,
+
+  websocket_enabled boolean,
+  email_enabled     boolean,
+  sms_enabled       boolean,
+
+  creado_en         timestamptz NOT NULL DEFAULT transaction_timestamp(),
+  actualizado_en    timestamptz NOT NULL DEFAULT transaction_timestamp(),
+  version           int NOT NULL DEFAULT 1,
+
+  PRIMARY KEY (usuario_id, tipo_id)
+);
+
+CREATE TRIGGER trg_suscripciones_actualizado
+BEFORE UPDATE ON app.suscripciones_notificacion
+FOR EACH ROW EXECUTE FUNCTION audit.set_actualizado();
+
+CREATE INDEX idx_suscripciones_tipo
+  ON app.suscripciones_notificacion(tipo_id);
+
+-- =========================
+-- 5) Historial de envíos (debug/observabilidad)
+-- =========================
+CREATE TABLE app.historial_envios (
+  id               bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  notificacion_id  uuid NOT NULL REFERENCES app.notificaciones(id) ON DELETE CASCADE,
+
+  canal            canal_notificacion NOT NULL,
+  exitoso          boolean NOT NULL,
+  error_mensaje    text,
+
+  enviado_en       timestamptz NOT NULL DEFAULT transaction_timestamp()
+);
+
+CREATE INDEX idx_historial_notificacion
+  ON app.historial_envios(notificacion_id, enviado_en DESC);
+
+-- =========================
+-- 6) Outbox para propagación (si otros sistemas consumen notif)
 -- =========================
 CREATE TABLE app.outbox_eventos (
   id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  agregado        text NOT NULL,     -- 'notification'
-  tipo_evento     text NOT NULL,     -- 'NotificacionCreada', 'NotificacionLeida'
+  agregado        text NOT NULL,     -- "notification"
+  tipo_evento     text NOT NULL,     -- "NotificacionCreada", "NotificacionLeida", etc.
   clave_agregado  text NOT NULL,     -- notification_id
   payload         jsonb NOT NULL,
   creado_en       timestamptz NOT NULL DEFAULT transaction_timestamp(),
   procesado_en    timestamptz,
-  intentos        integer NOT NULL DEFAULT 0
+  intentos        integer NOT NULL DEFAULT 0 CHECK (intentos >= 0)
 );
 
 CREATE INDEX idx_outbox_pendientes
@@ -167,38 +236,26 @@ CREATE INDEX idx_outbox_pendientes
   WHERE procesado_en IS NULL;
 
 -- =========================
--- 4) Historial de envíos (para debugging)
--- =========================
-CREATE TABLE app.historial_envios (
-  id                bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  notificacion_id   uuid NOT NULL REFERENCES app.notificaciones(id) ON DELETE CASCADE,
-  
-  canal             varchar(50) NOT NULL,  -- 'websocket', 'email', 'sms'
-  exitoso           boolean NOT NULL,
-  error_mensaje     text,
-  
-  enviado_en        timestamptz NOT NULL DEFAULT transaction_timestamp()
-);
-
-CREATE INDEX idx_historial_notificacion
-  ON app.historial_envios(notificacion_id, enviado_en DESC);
-
--- =========================
--- 5) Función helper para limpiar notificaciones expiradas
+-- 7) Helper: limpieza de expiradas
 -- =========================
 CREATE OR REPLACE FUNCTION app.limpiar_notificaciones_expiradas()
-RETURNS void
+RETURNS integer
 LANGUAGE plpgsql
 AS $$
+DECLARE
+  v_count integer;
 BEGIN
   DELETE FROM app.notificaciones
-  WHERE expira_en IS NOT NULL AND expira_en < transaction_timestamp();
+  WHERE expira_en IS NOT NULL
+    AND expira_en < transaction_timestamp();
+
+  GET DIAGNOSTICS v_count = ROW_COUNT;
+  RETURN v_count;
 END;
 $$;
 
--- Comentarios útiles
-COMMENT ON TABLE app.notificaciones IS 'Notificaciones en tiempo real para usuarios del sistema';
-COMMENT ON COLUMN app.notificaciones.requiere_accion IS 'Indica si la notificación requiere una acción explícita del usuario';
-COMMENT ON COLUMN app.notificaciones.url_accion IS 'URL relativa o ruta para navegar cuando el usuario hace clic';
-COMMENT ON TABLE app.preferencias_notificacion IS 'Preferencias de notificación por usuario';
-COMMENT ON TABLE app.historial_envios IS 'Registro de intentos de envío por canal para debugging';
+COMMENT ON TABLE app.notificaciones IS 'Notificaciones para usuarios del sistema (WS/email/sms) con trazabilidad por evento.';
+COMMENT ON TABLE app.tipos_notificacion IS 'Catálogo de tipos de notificación (extensible sin migraciones).';
+COMMENT ON TABLE app.preferencias_notificacion IS 'Preferencias por usuario (defaults + no molestar).';
+COMMENT ON TABLE app.suscripciones_notificacion IS 'Overrides por tipo de notificación por usuario.';
+COMMENT ON TABLE app.historial_envios IS 'Registro de intentos de envío por canal (observabilidad).';

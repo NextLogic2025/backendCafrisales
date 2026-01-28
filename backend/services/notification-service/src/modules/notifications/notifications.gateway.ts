@@ -8,19 +8,32 @@ import {
     ConnectedSocket,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { Logger, UseGuards } from '@nestjs/common';
-import { Notification } from './entities/notification.entity';
+import { Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
+import { Notification, PrioridadNotificacion } from './entities/notification.entity';
+
+interface JwtPayload {
+    sub: string;
+    role: string;
+    iat?: number;
+    exp?: number;
+}
 
 /**
- * WebSocket Gateway para notificaciones en tiempo real
- * 
+ * WebSocket Gateway para notificaciones en tiempo real.
+ * Valida JWT en el handshake antes de aceptar la conexión.
+ *
  * Los clientes se conectan con:
  * const socket = io('http://localhost:3000/notifications', {
- *   auth: { userId: 'uuid-del-usuario' }
+ *   auth: { token: 'jwt-token' }
  * });
  */
 @WebSocketGateway({
-    cors: { origin: '*' },
+    cors: {
+        origin: process.env.CORS_ORIGIN?.split(',') ?? '*',
+        credentials: true,
+    },
     namespace: '/notifications',
 })
 export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -28,32 +41,65 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
     server: Server;
 
     private readonly logger = new Logger(NotificationsGateway.name);
-    private readonly connectedUsers = new Map<string, Set<string>>(); // userId -> Set<socketId>
+    /** Mapa de userId → Set<socketId> para tracking de conexiones */
+    private readonly connectedUsers = new Map<string, Set<string>>();
+    /** Mapa inverso socketId → userId para lookup rápido en disconnect */
+    private readonly socketToUser = new Map<string, string>();
 
-    handleConnection(client: Socket) {
-        const userId = client.handshake.auth?.userId;
+    constructor(
+        private readonly jwtService: JwtService,
+        private readonly configService: ConfigService,
+    ) { }
 
-        if (!userId) {
-            this.logger.warn(`Client ${client.id} connected without userId, disconnecting`);
+    /**
+     * Valida el token JWT del handshake y registra la conexión.
+     * Rechaza conexiones sin token válido.
+     */
+    async handleConnection(client: Socket): Promise<void> {
+        const token = client.handshake.auth?.token;
+
+        if (!token) {
+            this.logger.warn(`Cliente ${client.id} conectado sin token, desconectando`);
+            client.emit('error', { message: 'Token requerido' });
             client.disconnect();
             return;
         }
 
-        // Join user room
-        client.join(`user:${userId}`);
+        try {
+            const payload = this.jwtService.verify<JwtPayload>(token, {
+                secret: this.configService.get<string>('JWT_SECRET'),
+            });
 
-        // Track connection
-        if (!this.connectedUsers.has(userId)) {
-            this.connectedUsers.set(userId, new Set());
+            const userId = payload.sub;
+            if (!userId) {
+                throw new Error('Token inválido: falta sub');
+            }
+
+            // Guardar userId en el socket para acceso posterior
+            (client as Socket & { userId: string }).userId = userId;
+
+            // Unir a room del usuario
+            client.join(`user:${userId}`);
+
+            // Registrar conexión
+            if (!this.connectedUsers.has(userId)) {
+                this.connectedUsers.set(userId, new Set());
+            }
+            this.connectedUsers.get(userId)!.add(client.id);
+            this.socketToUser.set(client.id, userId);
+
+            this.logger.log(`Cliente ${client.id} conectado para usuario ${userId}`);
+            this.logger.debug(`Total usuarios conectados: ${this.connectedUsers.size}`);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'Token inválido';
+            this.logger.warn(`Token inválido para cliente ${client.id}: ${message}`);
+            client.emit('error', { message: 'Token inválido o expirado' });
+            client.disconnect();
         }
-        this.connectedUsers.get(userId).add(client.id);
-
-        this.logger.log(`Client ${client.id} connected for user ${userId}`);
-        this.logger.debug(`Total connected users: ${this.connectedUsers.size}`);
     }
 
-    handleDisconnect(client: Socket) {
-        const userId = client.handshake.auth?.userId;
+    handleDisconnect(client: Socket): void {
+        const userId = this.socketToUser.get(client.id);
 
         if (userId) {
             const userSockets = this.connectedUsers.get(userId);
@@ -63,18 +109,20 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
                     this.connectedUsers.delete(userId);
                 }
             }
+            this.socketToUser.delete(client.id);
         }
 
-        this.logger.log(`Client ${client.id} disconnected`);
+        this.logger.log(`Cliente ${client.id} desconectado`);
     }
 
     /**
-     * Envía una notificación a un usuario específico
+     * Envía una notificación a un usuario específico.
+     * Solo envía campos necesarios para el frontend.
      */
-    sendToUser(userId: string, notification: Notification) {
+    sendToUser(userId: string, notification: Notification): void {
         this.server.to(`user:${userId}`).emit('notification', {
             id: notification.id,
-            tipo: notification.tipo,
+            tipoId: notification.tipoId,
             titulo: notification.titulo,
             mensaje: notification.mensaje,
             payload: notification.payload,
@@ -84,27 +132,21 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
             creadoEn: notification.creadoEn,
         });
 
-        this.logger.log(`Notification ${notification.id} sent to user ${userId}`);
+        this.logger.log(`Notificación ${notification.id} enviada a usuario ${userId}`);
     }
 
     /**
-     * Broadcast a todos los usuarios conectados
+     * Broadcast a todos los usuarios conectados (solo admin/sistema).
      */
-    broadcast(notification: Notification) {
+    broadcast(notification: Notification): void {
         this.server.emit('notification', notification);
-        this.logger.log(`Broadcast notification ${notification.id}`);
+        this.logger.log(`Broadcast notificación ${notification.id}`);
     }
 
-    /**
-     * Obtiene el número de usuarios conectados
-     */
     getConnectedUsersCount(): number {
         return this.connectedUsers.size;
     }
 
-    /**
-     * Verifica si un usuario está conectado
-     */
     isUserConnected(userId: string): boolean {
         return this.connectedUsers.has(userId);
     }
@@ -119,8 +161,8 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
         @MessageBody() data: { notificationId: string },
         @ConnectedSocket() client: Socket,
     ): void {
-        const userId = client.handshake.auth?.userId;
-        this.logger.log(`User ${userId} marked notification ${data.notificationId} as read`);
-        // El controlador HTTP también puede manejar esto
+        const userId = (client as Socket & { userId?: string }).userId;
+        this.logger.log(`Usuario ${userId} marcó notificación ${data.notificationId} como leída via WS`);
+        // El servicio HTTP maneja la persistencia real
     }
 }
