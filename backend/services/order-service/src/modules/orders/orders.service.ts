@@ -12,7 +12,7 @@ import { HistorialEstadoPedido } from '../history/entities/historial-estado-pedi
 import { CreateOrderDto } from './dto/create-order.dto';
 import { AddItemDto } from './dto/add-item.dto';
 import { CatalogExternalService } from '../../services/catalog-external.service';
-import { UserExternalService, ClienteCondiciones } from '../../services/user-external.service';
+import { UserExternalService } from '../../services/user-external.service';
 import { ZoneExternalService } from '../../services/zone-external.service';
 import { CreditExternalService } from '../../services/credit-external.service';
 import { OutboxService } from '../outbox/outbox.service';
@@ -175,6 +175,18 @@ export class OrdersService {
             take: limit,
             relations: ['items'],
         });
+    }
+
+    async findPendingPromoApproval(limit = DEFAULT_LIST_LIMIT): Promise<Pedido[]> {
+        return this.pedidoRepo
+            .createQueryBuilder('pedido')
+            .leftJoinAndSelect('pedido.items', 'items')
+            .where('items.requiere_aprobacion = :req', { req: true })
+            .andWhere('items.aprobado_en IS NULL')
+            .orderBy('pedido.creado_en', 'ASC')
+            .take(limit)
+            .distinct(true)
+            .getMany();
     }
 
     async findByZoneAndDate(
@@ -391,36 +403,8 @@ export class OrdersService {
             return;
         }
 
-        const condiciones: ClienteCondiciones | null = await this.userExternalService.getClientConditions(clienteId);
-        if (!condiciones) {
-            return;
-        }
-
-        if (
-            !condiciones.permite_negociacion &&
-            (dto.descuento_pedido_tipo || dto.descuento_pedido_valor != null || hasItemNegotiation)
-        ) {
-            throw new BadRequestException('El cliente no permite negociaciones');
-        }
-
-        if (
-            dto.descuento_pedido_tipo === TipoDescuento.PORCENTAJE &&
-            typeof condiciones.max_descuento_porcentaje === 'number' &&
-            dto.descuento_pedido_valor > condiciones.max_descuento_porcentaje
-        ) {
-            throw new ForbiddenException('El descuento supera el tope permitido por el cliente');
-        }
-
-        if (typeof condiciones.max_descuento_porcentaje === 'number') {
-            dto.items.forEach((item) => {
-                if (
-                    item.descuento_item_tipo === TipoDescuento.PORCENTAJE &&
-                    item.descuento_item_valor > condiciones.max_descuento_porcentaje
-                ) {
-                    throw new ForbiddenException('El descuento supera el tope permitido por el cliente');
-                }
-            });
-        }
+        // Vendedor/admin pueden negociar siempre; no se bloquea por condiciones del cliente.
+        return;
     }
 
     private async generateOrderNumber(manager: EntityManager): Promise<string> {
@@ -444,6 +428,58 @@ export class OrdersService {
             motivo,
         });
         await manager.save(HistorialEstadoPedido, historial);
+    }
+
+    async approvePromotions(
+        pedidoId: string,
+        payload: { approve_all?: boolean; item_ids?: string[] },
+        actor: { userId: string },
+    ): Promise<Pedido> {
+        const pedido = await this.pedidoRepo.findOne({
+            where: { id: pedidoId },
+            relations: ['items'],
+        });
+        if (!pedido) {
+            throw new NotFoundException(`Pedido ${pedidoId} no encontrado`);
+        }
+
+        const pendingItems = pedido.items.filter(
+            (item) => item.requiere_aprobacion && !item.aprobado_en,
+        );
+
+        let itemsToApprove: ItemPedido[] = [];
+        if (payload.approve_all) {
+            itemsToApprove = pendingItems;
+        } else if (payload.item_ids && payload.item_ids.length > 0) {
+            itemsToApprove = pendingItems.filter((item) => payload.item_ids?.includes(item.id));
+        } else {
+            throw new BadRequestException('Debe enviar item_ids o approve_all');
+        }
+
+        if (itemsToApprove.length === 0) {
+            throw new BadRequestException('No hay items pendientes de aprobacion');
+        }
+
+        const approvedAt = new Date();
+
+        await this.dataSource.transaction(async (manager) => {
+            itemsToApprove.forEach((item) => {
+                item.aprobado_en = approvedAt;
+                item.aprobado_por = actor.userId;
+            });
+
+            await manager.save(ItemPedido, itemsToApprove);
+
+            await this.recordHistory(
+                manager,
+                pedido.id,
+                pedido.estado,
+                actor.userId,
+                `Promociones aprobadas (${itemsToApprove.length})`,
+            );
+        });
+
+        return this.findOne(pedido.id);
     }
 
     async updateStatus(id: string, estado: EstadoPedido, actor?: { userId: string }): Promise<Pedido> {

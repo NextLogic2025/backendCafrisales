@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Body, Param, Patch, Delete, UseGuards, Query } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { ApprovePromosDto } from './dto/approve-promos.dto';
 import { CreateValidacionDto } from '../validations/dto/create-validacion.dto';
 import { ValidationsService } from '../validations/validations.service';
 import { CreateAccionDto } from '../actions/dto/create-accion.dto';
@@ -50,6 +51,14 @@ export class OrdersController {
         return this.ordersService.findPendingValidation(parsedLimit);
     }
 
+    @Get('promociones-pendientes')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(RolUsuario.SUPERVISOR, RolUsuario.ADMIN)
+    findPendingPromoApprovals(@Query('limit') limit?: string) {
+        const parsedLimit = limit ? Number(limit) : undefined;
+        return this.ordersService.findPendingPromoApproval(parsedLimit);
+    }
+
     @Get('zona')
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(RolUsuario.SUPERVISOR, RolUsuario.ADMIN)
@@ -94,6 +103,13 @@ export class OrdersController {
     @Roles(RolUsuario.ADMIN, RolUsuario.BODEGUERO, RolUsuario.SUPERVISOR)
     updateStatus(@Param('id') id: string, @Body('estado') estado: EstadoPedido, @CurrentUser() user: any) {
         return this.ordersService.updateStatus(id, estado, user);
+    }
+
+    @Patch(':id/aprobar-promociones')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(RolUsuario.SUPERVISOR, RolUsuario.ADMIN)
+    approvePromotions(@Param('id') id: string, @Body() dto: ApprovePromosDto, @CurrentUser() user: any) {
+        return this.ordersService.approvePromotions(id, dto, user);
     }
 
     @Patch(':id/cancel')
