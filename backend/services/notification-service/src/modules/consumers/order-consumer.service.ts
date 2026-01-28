@@ -58,6 +58,10 @@ interface NotificationFromEvent {
 export class OrderConsumerService {
     private readonly logger = new Logger(OrderConsumerService.name);
 
+    // Cache de usuarios por rol (5 minutos)
+    private roleCache: Map<string, { users: { id: string }[], timestamp: number }> = new Map();
+    private readonly CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutos
+
     constructor(
         @InjectRepository(OrderOutbox, 'orderConnection')
         private readonly outboxRepo: Repository<OrderOutbox>,
@@ -65,6 +69,62 @@ export class OrderConsumerService {
         private readonly notificationsGateway: NotificationsGateway,
         private readonly tiposService: TiposNotificacionService,
     ) { }
+
+    /**
+     * Obtiene lista de usuarios por rol desde user-service
+     * Usa cache por 5 minutos para evitar consultas excesivas
+     */
+    private async getUsersByRole(role: string): Promise<{ id: string }[]> {
+        const cached = this.roleCache.get(role);
+        const now = Date.now();
+
+        if (cached && (now - cached.timestamp) < this.CACHE_TTL_MS) {
+            this.logger.debug(`Using cached users for role ${role} (${cached.users.length} users)`);
+            return cached.users;
+        }
+
+        this.logger.log(`Fetching users for role ${role} from user-service...`);
+        try {
+            const userServiceUrl = process.env.USER_SERVICE_URL || 'http://user-service:3000';
+            const url = `${userServiceUrl}/api/usuarios/by-role/${role}`;
+            this.logger.debug(`Requesting: ${url}`);
+
+            // Timeout de 3 segundos
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 3000);
+
+            const response = await fetch(url, { signal: controller.signal });
+            clearTimeout(timeoutId);
+
+            if (!response.ok) {
+                this.logger.warn(`Failed to fetch users by role ${role}: ${response.status} ${response.statusText}`);
+                throw new Error(`Fetch failed with status ${response.status}`);
+            }
+
+            const users = await response.json();
+            this.logger.log(`Successfully fetched ${Array.isArray(users) ? users.length : 0} users for role ${role}`);
+
+            const userIds = Array.isArray(users) ? users.map((u: any) => ({ id: u.id })) : [];
+
+            this.roleCache.set(role, { users: userIds, timestamp: now });
+            return userIds;
+        } catch (error) {
+            this.logger.error(`Error fetching users by role ${role}:`, error);
+
+            // FALLBACK para desarrollo/seed data
+            const FALLBACK_USERS: Record<string, { id: string }[]> = {
+                'supervisor': [{ id: 'a1000000-0000-0000-0000-000000000001' }], // Admin 1
+                'bodeguero': [{ id: 'c1000000-0000-0000-0000-000000000001' }]  // José Bodega
+            };
+
+            if (FALLBACK_USERS[role]) {
+                this.logger.warn(`Using FALLBACK users for role ${role}`);
+                return FALLBACK_USERS[role];
+            }
+
+            return [];
+        }
+    }
 
     @Cron(CronExpression.EVERY_10_SECONDS)
     async processOrderEvents(): Promise<void> {
@@ -128,23 +188,97 @@ export class OrderConsumerService {
         switch (tipoEvento) {
             case 'PedidoCreado':
                 if (payload.origen === 'cliente') {
-                    notificationData = {
-                        usuarioId: (payload.vendedor_id ?? payload.creado_por_id) as string,
-                        tipoCodigo: 'pedido_creado',
-                        titulo: '📦 Nuevo Pedido',
-                        mensaje: `Pedido #${payload.numero_pedido} creado por cliente`,
-                        payload: {
-                            pedido_id: payload.pedido_id,
-                            numero_pedido: payload.numero_pedido,
-                            cliente_id: payload.cliente_id,
-                            total: payload.total,
-                        },
-                        origenServicio: 'order',
-                        origenEventoId: event.id,
-                        prioridad: PrioridadNotificacion.NORMAL,
-                        requiereAccion: true,
-                        urlAccion: `/pedidos/${payload.pedido_id}`,
-                    };
+                    const notifications: NotificationFromEvent[] = [];
+
+                    // 1. Cliente (confirmación)
+                    if (payload.cliente_id) {
+                        notifications.push({
+                            usuarioId: payload.cliente_id as string,
+                            tipoCodigo: 'pedido_creado',
+                            titulo: '✅ Pedido Creado',
+                            mensaje: `Tu pedido #${payload.numero_pedido} ha sido creado exitosamente`,
+                            payload: {
+                                pedido_id: payload.pedido_id,
+                                numero_pedido: payload.numero_pedido,
+                                total: payload.total,
+                            },
+                            origenServicio: 'order',
+                            origenEventoId: event.id,
+                            prioridad: PrioridadNotificacion.NORMAL,
+                            requiereAccion: false,
+                            urlAccion: `/pedidos/${payload.pedido_id}`,
+                        });
+                    }
+
+                    // 2. Vendedor
+                    if (payload.vendedor_id) {
+                        notifications.push({
+                            usuarioId: payload.vendedor_id as string,
+                            tipoCodigo: 'pedido_creado',
+                            titulo: '📦 Nuevo Pedido',
+                            mensaje: `Pedido #${payload.numero_pedido} creado por tu cliente`,
+                            payload: {
+                                pedido_id: payload.pedido_id,
+                                numero_pedido: payload.numero_pedido,
+                                cliente_id: payload.cliente_id,
+                                total: payload.total,
+                            },
+                            origenServicio: 'order',
+                            origenEventoId: event.id,
+                            prioridad: PrioridadNotificacion.NORMAL,
+                            requiereAccion: true,
+                            urlAccion: `/pedidos/${payload.pedido_id}`,
+                        });
+                    }
+
+                    // 3. Supervisores (TODOS)
+                    const supervisores = await this.getUsersByRole('supervisor');
+                    supervisores.forEach(supervisor => {
+                        notifications.push({
+                            usuarioId: supervisor.id,
+                            tipoCodigo: 'pedido_creado',
+                            titulo: '📋 Nuevo Pedido',
+                            mensaje: `Pedido #${payload.numero_pedido} en el sistema`,
+                            payload: {
+                                pedido_id: payload.pedido_id,
+                                numero_pedido: payload.numero_pedido,
+                                cliente_id: payload.cliente_id,
+                                total: payload.total,
+                            },
+                            origenServicio: 'order',
+                            origenEventoId: event.id,
+                            prioridad: PrioridadNotificacion.NORMAL,
+                            requiereAccion: false,
+                            urlAccion: `/pedidos/${payload.pedido_id}`,
+                        });
+                    });
+
+                    // 4. Bodegueros (TODOS)
+                    const bodegueros = await this.getUsersByRole('bodeguero');
+                    bodegueros.forEach(bodeguero => {
+                        notifications.push({
+                            usuarioId: bodeguero.id,
+                            tipoCodigo: 'pedido_creado',
+                            titulo: '📦 Pedido Pendiente',
+                            mensaje: `Pedido #${payload.numero_pedido} requiere validación`,
+                            payload: {
+                                pedido_id: payload.pedido_id,
+                                numero_pedido: payload.numero_pedido,
+                            },
+                            origenServicio: 'order',
+                            origenEventoId: event.id,
+                            prioridad: PrioridadNotificacion.NORMAL,
+                            requiereAccion: true,
+                            urlAccion: `/pedidos/${payload.pedido_id}`,
+                        });
+                    });
+
+                    // Crear TODAS las notificaciones
+                    for (const notif of notifications) {
+                        await this.createNotificationFromEvent(notif);
+                    }
+
+                    this.logger.log(`Created ${notifications.length} notifications for PedidoCreado #${payload.numero_pedido}`);
                 }
                 break;
 
@@ -254,6 +388,15 @@ export class OrderConsumerService {
         data: NotificationFromEvent,
         tipoId: string,
     ): Promise<void> {
+        // Si no hay usuario destino, saltar la creación y loguear para trazabilidad
+        if (!data.usuarioId) {
+            this.logger.warn(`Evento ${data.origenEventoId} omitido: usuarioId ausente`, {
+                tipoCodigo: data.tipoCodigo,
+                payload: data.payload,
+            });
+            return;
+        }
+
         const notification = await this.notificationsService.create({
             usuarioId: data.usuarioId,
             tipoId,

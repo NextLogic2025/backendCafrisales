@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Notification, PrioridadNotificacion } from './entities/notification.entity';
@@ -14,6 +14,10 @@ export class NotificationsService {
     ) { }
 
     async create(dto: CreateNotificationDto): Promise<Notification> {
+        if (!dto || !dto.usuarioId) {
+            this.logger.warn('Intento de crear notificación sin usuarioId', dto ?? {});
+            throw new BadRequestException('usuarioId requerido para crear notificación');
+        }
         const notification = this.notificationRepo.create({
             usuarioId: dto.usuarioId,
             tipoId: dto.tipoId,

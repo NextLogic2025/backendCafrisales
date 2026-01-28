@@ -15,7 +15,7 @@ export class UsersController {
   constructor(
     private readonly usersService: UsersService,
     private readonly authExternalService: AuthExternalService,
-  ) {}
+  ) { }
 
   @Post('vendedor')
   @Roles(RolUsuario.ADMIN, RolUsuario.STAFF, RolUsuario.SUPERVISOR)
@@ -55,6 +55,12 @@ export class UsersController {
     @GetUser() user: AuthUser,
   ) {
     return this.createStaffUser('supervisor', body, authHeader, user);
+  }
+
+  @Get('by-role/:role')
+  @Roles(RolUsuario.ADMIN, RolUsuario.STAFF, RolUsuario.SUPERVISOR)
+  async getUsersByRole(@Param('role') role: string) {
+    return this.usersService.findByRole(role as RolUsuario);
   }
 
   @Get(':id')

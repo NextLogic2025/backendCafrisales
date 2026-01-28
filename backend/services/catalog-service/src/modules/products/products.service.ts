@@ -137,6 +137,7 @@ export class ProductsService {
         producto_id: result.id,
         categoria_id: result.categoria_id,
         nombre: result.nombre,
+        creado_por: actorId ?? null,
       });
     }
 
@@ -170,6 +171,7 @@ export class ProductsService {
       producto_id: saved.id,
       categoria_id: saved.categoria_id,
       nombre: saved.nombre,
+      creado_por: actorId ?? null,
     });
     return saved;
   }

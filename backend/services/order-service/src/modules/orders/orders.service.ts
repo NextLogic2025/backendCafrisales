@@ -56,7 +56,7 @@ export class OrdersService {
         private readonly zoneExternalService: ZoneExternalService,
         private readonly creditExternalService: CreditExternalService,
         private readonly outboxService: OutboxService,
-    ) {}
+    ) { }
 
     async create(dto: CreateOrderDto, user: AuthUser): Promise<Pedido> {
         const isCliente = user.role === RolUsuario.CLIENTE;
@@ -120,7 +120,10 @@ export class OrdersService {
                 'PedidoCreado',
                 {
                     pedido_id: savedPedido.id,
+                    numero_pedido: savedPedido.numero_pedido,
                     cliente_id: savedPedido.cliente_id,
+                    vendedor_id: cliente.vendedor_id || cliente.vendedorId || null,
+                    origen: origen === OrigenCreacion.CLIENTE ? 'cliente' : 'vendedor',
                     total: savedPedido.total,
                 },
                 'order',
@@ -610,7 +613,7 @@ export class OrdersService {
 
             await this.outboxService.createEvent(
                 `Pedido${this.capitalizeEstado(estado)}`,
-                { pedido_id: pedido.id, estado },
+                { pedido_id: pedido.id, estado, cliente_id: pedido.cliente_id, numero_pedido: (pedido as any).numero_pedido },
                 'order',
                 pedido.id,
                 manager,
@@ -652,7 +655,7 @@ export class OrdersService {
 
             await this.outboxService.createEvent(
                 'PedidoCancelado',
-                { pedido_id: pedido.id, motivo },
+                { pedido_id: pedido.id, motivo, cliente_id: pedido.cliente_id, numero_pedido: (pedido as any).numero_pedido },
                 'order',
                 pedido.id,
                 manager,

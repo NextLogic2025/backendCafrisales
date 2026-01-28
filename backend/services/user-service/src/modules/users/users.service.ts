@@ -208,6 +208,14 @@ export class UsersService {
     return this.dataSource.getRepository(Usuario).findOneBy({ id } as any);
   }
 
+  async findByRole(rol: string) {
+    return this.dataSource.getRepository(Usuario).find({
+      where: { rol } as any,
+      select: ['id', 'email', 'rol'],
+    });
+  }
+
+
   async update(id: string, patch: Partial<Usuario>) {
     return this.dataSource.transaction(async manager => {
       const usuarioRepo = manager.getRepository(Usuario);
