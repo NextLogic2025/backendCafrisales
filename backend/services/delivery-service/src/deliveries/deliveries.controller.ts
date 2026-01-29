@@ -22,11 +22,16 @@ import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { RolUsuario } from '../common/constants/rol-usuario.enum';
 import { AuthUser, CurrentUser } from '../common/decorators/current-user.decorator';
+import { IncidentsService } from '../incidents/incidents.service';
+import { ReportIncidentDto } from '../incidents/dto/report-incident.dto';
 
 @Controller('entregas')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class DeliveriesController {
-    constructor(private readonly deliveriesService: DeliveriesService) { }
+    constructor(
+        private readonly deliveriesService: DeliveriesService,
+        private readonly incidentsService: IncidentsService,
+    ) { }
 
     @Get()
     @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR, RolUsuario.TRANSPORTISTA)
@@ -115,5 +120,15 @@ export class DeliveriesController {
         @CurrentUser() user?: AuthUser,
     ) {
         return this.deliveriesService.cancelDelivery(id, dto, user?.userId);
+    }
+
+    @Post(':id/incidencias')
+    @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR, RolUsuario.TRANSPORTISTA)
+    reportIncident(
+        @Param('id', ParseUUIDPipe) id: string,
+        @Body() dto: ReportIncidentDto,
+        @CurrentUser() user?: AuthUser,
+    ) {
+        return this.incidentsService.reportIncident(id, dto, user?.userId);
     }
 }

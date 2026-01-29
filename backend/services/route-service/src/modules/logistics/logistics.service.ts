@@ -16,6 +16,7 @@ import { OutboxService } from '../outbox/outbox.service';
 import { UserExternalService } from '../../services/user-external.service';
 import { ZoneExternalService } from '../../services/zone-external.service';
 import { OrderExternalService } from '../../services/order-external.service';
+import { DeliveryExternalService } from '../../services/delivery-external.service';
 import { Vehiculo } from '../fleet/entities/vehiculo.entity';
 
 @Injectable()
@@ -25,15 +26,16 @@ export class LogisticsService {
         private readonly routeRepo: Repository<RuteroLogistico>,
         @InjectRepository(ParadaRuteroLogistico)
         private readonly stopRepo: Repository<ParadaRuteroLogistico>,
-    @InjectRepository(Vehiculo)
-    private readonly vehicleRepo: Repository<Vehiculo>,
-    @InjectRepository(HistorialEstadoRutero)
-    private readonly historyRepo: Repository<HistorialEstadoRutero>,
-    private readonly dataSource: DataSource,
+        @InjectRepository(Vehiculo)
+        private readonly vehicleRepo: Repository<Vehiculo>,
+        @InjectRepository(HistorialEstadoRutero)
+        private readonly historyRepo: Repository<HistorialEstadoRutero>,
+        private readonly dataSource: DataSource,
         private readonly outboxService: OutboxService,
         private readonly userExternalService: UserExternalService,
         private readonly zoneExternalService: ZoneExternalService,
         private readonly orderExternalService: OrderExternalService,
+        private readonly deliveryExternalService: DeliveryExternalService,
     ) { }
 
     async create(dto: CreateLogisticRouteDto, supervisorId: string): Promise<RuteroLogistico> {
@@ -342,6 +344,18 @@ export class LogisticsService {
             const saved = await routeRepo.save(route);
 
             const paradas = await stopRepo.find({ where: { rutero_id: id } });
+
+            // Crear entregas en delivery-service
+            if (paradas && paradas.length > 0) {
+                await this.deliveryExternalService.createDeliveriesBatch({
+                    rutero_logistico_id: id,
+                    transportista_id: transportistaId,
+                    paradas: paradas.map((p) => ({
+                        pedido_id: p.pedido_id,
+                        orden_entrega: p.orden_entrega,
+                    })),
+                });
+            }
 
             await historyRepo.save({
                 tipo: TipoRutero.LOGISTICO,
