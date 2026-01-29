@@ -4,6 +4,7 @@ import {
     Post,
     Patch,
     Body,
+    Put,
     Param,
     Query,
     UseGuards,
@@ -11,11 +12,13 @@ import {
     HttpCode,
     HttpStatus,
     ForbiddenException,
+    BadRequestException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { NotificationsService } from './notifications.service';
 import { NotificationsGateway } from './notifications.gateway';
-import { CreateNotificationDto, QueryNotificationsDto } from './dto/notification.dto';
+import { TiposNotificacionService } from './tipos-notificacion.service';
+import { CreateNotificationDto, QueryNotificationsDto, SubscriptionDto } from './dto/notification.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { AuthUser, CurrentUser } from '../../common/decorators/current-user.decorator';
 
@@ -30,6 +33,7 @@ export class NotificationsController {
     constructor(
         private readonly notificationsService: NotificationsService,
         private readonly notificationsGateway: NotificationsGateway,
+        private readonly tiposService: TiposNotificacionService,
     ) { }
 
     @Post()
@@ -83,6 +87,37 @@ export class NotificationsController {
         return {
             connectedUsers: this.notificationsGateway.getConnectedUsersCount(),
         };
+    }
+
+    @Get('types')
+    @ApiOperation({ summary: 'Listar tipos de notificación (activos)' })
+    async getTypes() {
+        return this.tiposService.findAllActivos();
+    }
+
+    @Get('subscriptions')
+    @ApiOperation({ summary: 'Obtener suscripciones del usuario actual' })
+    async getSubscriptions(@CurrentUser() user: AuthUser) {
+        return this.notificationsService.getSubscriptions(user.userId);
+    }
+
+    @Put('subscriptions')
+    @ApiOperation({ summary: 'Crear/actualizar suscripción del usuario a un tipo' })
+    async upsertSubscription(@Body() dto: SubscriptionDto, @CurrentUser() user: AuthUser) {
+        let tipoId = dto.tipoId;
+        if (!tipoId) {
+            if (!dto.tipoCodigo) throw new BadRequestException('tipoCodigo o tipoId requerido');
+            tipoId = await this.tiposService.getIdByCodigoOrFail(dto.tipoCodigo);
+        }
+
+        await this.notificationsService.upsertSubscription(user.userId, {
+            tipoId,
+            websocketEnabled: typeof dto.websocketEnabled === 'undefined' ? null : dto.websocketEnabled,
+            emailEnabled: typeof dto.emailEnabled === 'undefined' ? null : dto.emailEnabled,
+            smsEnabled: typeof dto.smsEnabled === 'undefined' ? null : dto.smsEnabled,
+        });
+
+        return { message: 'Suscripción actualizada' };
     }
 
     @Patch('mark-all-read')

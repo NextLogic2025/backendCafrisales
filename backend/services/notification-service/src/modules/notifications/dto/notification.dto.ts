@@ -101,3 +101,30 @@ export class MarkAsReadDto {
     @IsUUID('4', { message: 'id debe ser un UUID v4 válido' })
     id: string;
 }
+
+export class SubscriptionDto {
+    @ApiProperty({ description: 'Código del tipo de notificación (ej: pedido_creado)', required: false })
+    @IsOptional()
+    @IsString()
+    tipoCodigo?: string;
+
+    @ApiProperty({ description: 'ID del tipo (UUID) opcional', required: false })
+    @IsOptional()
+    @IsUUID('4')
+    tipoId?: string;
+
+    @ApiProperty({ description: 'Recepción por WebSocket', required: false })
+    @IsOptional()
+    @IsBoolean()
+    websocketEnabled?: boolean;
+
+    @ApiProperty({ description: 'Recepción por Email', required: false })
+    @IsOptional()
+    @IsBoolean()
+    emailEnabled?: boolean;
+
+    @ApiProperty({ description: 'Recepción por SMS', required: false })
+    @IsOptional()
+    @IsBoolean()
+    smsEnabled?: boolean;
+}
