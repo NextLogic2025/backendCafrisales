@@ -13,6 +13,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Notification } from './entities/notification.entity';
 import { NotificationsService } from './notifications.service';
+import { CanalNotificacion } from './entities/historial-envio.entity';
 
 interface JwtPayload {
     sub: string;
@@ -135,6 +136,15 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
         });
 
         this.logger.log(`Notificación ${notification.id} enviada a usuario ${userId}`);
+
+        // Registrar historial de envío (asumimos envío por WS)
+        try {
+            this.notificationsService.recordHistorial(notification.id, CanalNotificacion.WEBSOCKET, true).catch(err => {
+                this.logger.warn(`No se pudo registrar historial para notificación ${notification.id}: ${err?.message ?? err}`);
+            });
+        } catch (err) {
+            this.logger.warn(`Error registrando historial de notificación ${notification.id}: ${err?.message ?? err}`);
+        }
     }
 
     /**
