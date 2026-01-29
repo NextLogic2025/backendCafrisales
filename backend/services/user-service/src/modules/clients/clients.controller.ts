@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Put, NotFoundException, UseGuards, Query, BadRequestException, ParseUUIDPipe } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Put, NotFoundException, UseGuards, Query, BadRequestException, ParseUUIDPipe, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Cliente } from './entities/cliente.entity';
 import { Repository } from 'typeorm';
@@ -33,7 +33,7 @@ export class ClientsController {
     @InjectRepository(Vendedor)
     private readonly vendedorRepo: Repository<Vendedor>,
     private readonly outboxService: OutboxService,
-  ) {}
+  ) { }
 
   @Get()
   @Roles(RolUsuario.ADMIN, RolUsuario.STAFF, RolUsuario.SUPERVISOR)
@@ -80,9 +80,13 @@ export class ClientsController {
     return this.clienteRepo.save(entity);
   }
 
-  @Roles(RolUsuario.SUPERVISOR, RolUsuario.VENDEDOR, RolUsuario.BODEGUERO, RolUsuario.ADMIN, RolUsuario.STAFF, RolUsuario.TRANSPORTISTA)
+  @Roles(RolUsuario.SUPERVISOR, RolUsuario.VENDEDOR, RolUsuario.BODEGUERO, RolUsuario.ADMIN, RolUsuario.STAFF, RolUsuario.TRANSPORTISTA, RolUsuario.CLIENTE)
   @Get(':usuarioId')
-  async get(@Param('usuarioId', ParseUUIDPipe) usuarioId: string) {
+  async get(@Param('usuarioId', ParseUUIDPipe) usuarioId: string, @GetUser() user: AuthUser) {
+    // Clients can only access their own profile
+    if (user.role === RolUsuario.CLIENTE && user.userId !== usuarioId) {
+      throw new ForbiddenException('No tienes permisos para ver este cliente');
+    }
     const cliente = await this.clienteRepo.findOneBy({ usuario_id: usuarioId } as any);
     if (!cliente) throw new NotFoundException('Cliente no encontrado');
 

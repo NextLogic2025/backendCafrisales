@@ -6,7 +6,7 @@ import {
     NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, IsNull, Repository } from 'typeorm';
 import { RuteroComercial } from './entities/rutero-comercial.entity';
 import { ParadaRuteroComercial } from './entities/parada-rutero-comercial.entity';
 import { CreateCommercialRouteDto, AddVisitDto, UpdateVisitResultDto } from './dto/commercial-route.dto';
@@ -281,10 +281,11 @@ export class CommercialService {
             }
 
             const pendingStops = await stopRepo.count({
-                where: { rutero_id: id, checkout_en: null as any },
+                where: { rutero_id: id, checkout_en: IsNull() },
             });
+            console.log(`[CommercialService.complete] Rutero ${id}: pendingStops=${pendingStops}`);
             if (pendingStops > 0) {
-                throw new BadRequestException('No se puede completar el rutero con paradas pendientes');
+                throw new BadRequestException(`No se puede completar el rutero con ${pendingStops} parada(s) pendiente(s)`);
             }
 
             route.estado = EstadoRutero.COMPLETADO;
