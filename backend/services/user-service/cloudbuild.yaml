@@ -9,7 +9,8 @@ steps:
           -t ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REGISTRY}/${_SERVICE_NAME}:${SHORT_SHA} \
           -t ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REGISTRY}/${_SERVICE_NAME}:latest \
           .
-    dir: '.' 
+    # BUENO: Esto entra a la carpeta del servicio específico
+    dir: 'backend/services/${_SERVICE_NAME}'
 
   # 2. Subir imagen
   - name: 'gcr.io/cloud-builders/docker'
