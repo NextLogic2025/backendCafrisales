@@ -15,8 +15,9 @@ export class HistorialEstadoCredito {
     aprobacion_credito_id: string;
 
     @Column({
-        type: 'varchar',
-        length: 20,
+        type: 'enum',
+        enum: EstadoCredito,
+        enumName: 'estado_credito',
     })
     estado: EstadoCredito;
 
