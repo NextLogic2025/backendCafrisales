@@ -8,9 +8,8 @@ steps:
         docker build \
           -t ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REGISTRY}/${_SERVICE_NAME}:${SHORT_SHA} \
           -t ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REGISTRY}/${_SERVICE_NAME}:latest \
-          .
-    # BUENO: Esto entra a la carpeta del servicio específico
-    dir: 'backend/services/${_SERVICE_NAME}' 
+          backend/services/${_SERVICE_NAME}
+    # ^^^ CORRECCIÓN: Quitamos 'dir' y pusimos la ruta aquí arriba ^^^
 
   # 2. Subir imagen
   - name: 'gcr.io/cloud-builders/docker'
@@ -34,6 +33,5 @@ steps:
 images:
   - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REGISTRY}/${_SERVICE_NAME}:latest'
 
-# --- LA SOLUCIÓN MÁGICA ESTÁ AQUÍ ---
 options:
   logging: CLOUD_LOGGING_ONLY
