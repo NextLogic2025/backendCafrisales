@@ -1,9 +1,14 @@
-import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
+import { Usuario } from '../../users/entities/usuario.entity';
 
 @Entity({ name: 'transportistas', schema: 'app' })
 export class Transportista {
   @PrimaryColumn('uuid')
   usuario_id: string;
+
+  @OneToOne(() => Usuario)
+  @JoinColumn({ name: 'usuario_id' })
+  usuario: Usuario;
 
   @Column({ type: 'varchar', length: 50, unique: true })
   codigo_empleado: string;

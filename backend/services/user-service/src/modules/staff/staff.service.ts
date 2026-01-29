@@ -13,21 +13,21 @@ export class StaffService {
     @InjectRepository(Supervisor) private readonly supervisoresRepo: Repository<Supervisor>,
     @InjectRepository(Bodeguero) private readonly bodeguerosRepo: Repository<Bodeguero>,
     @InjectRepository(Transportista) private readonly transportistasRepo: Repository<Transportista>,
-  ) {}
+  ) { }
 
   listVendedores() {
-    return this.vendedoresRepo.find({ where: { activo: true } });
+    return this.vendedoresRepo.find({ where: { activo: true }, relations: ['usuario', 'usuario.perfil'] });
   }
 
   listSupervisores() {
-    return this.supervisoresRepo.find();
+    return this.supervisoresRepo.find({ relations: ['usuario', 'usuario.perfil'] });
   }
 
   listBodegueros() {
-    return this.bodeguerosRepo.find();
+    return this.bodeguerosRepo.find({ relations: ['usuario', 'usuario.perfil'] });
   }
 
   listTransportistas() {
-    return this.transportistasRepo.find({ where: { activo: true } });
+    return this.transportistasRepo.find({ where: { activo: true }, relations: ['usuario', 'usuario.perfil'] });
   }
 }
