@@ -10,10 +10,7 @@ output "artifact_registry_repo" {
   value       = module.artifact_registry.repository_url
 }
 
-output "vpc_connector_id" {
-  description = "ID del conector VPC (Útil para depuración)"
-  value       = module.networking.vpc_connector_id
-}
+# (ELIMINADO: Output vpc_connector_id - Ya no existe)
 
 output "cloud_sql_private_ip" {
   description = "IP Privada de la base de datos (Accesible solo desde la VPC)"

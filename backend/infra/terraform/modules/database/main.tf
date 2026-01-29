@@ -30,10 +30,15 @@ resource "google_sql_user" "root" {
   password = var.root_password
 }
 
-# 3. Bases de Datos Lógicas
+# 3. Bases de Datos Lógicas (CORREGIDO)
 resource "google_sql_database" "databases" {
   for_each = toset(var.services)
-  name     = "cafrilosa_${replace(replace(each.key, "-service", ""), "-", "_")}"
+
+  # LÓGICA CONDICIONAL:
+  # Si es 'notification-service', usa 'cafrilosa_notificaciones' (plural español).
+  # Si es cualquier otro, usa la lógica estándar (ej. auth-service -> cafrilosa_auth).
+  name = each.key == "notification-service" ? "cafrilosa_notificaciones" : "cafrilosa_${replace(replace(each.key, "-service", ""), "-", "_")}"
+  
   instance = google_sql_database_instance.master.name
 }
 

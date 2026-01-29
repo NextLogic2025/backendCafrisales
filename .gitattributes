@@ -1,1 +1,24 @@
+# Forzar saltos de línea LF (Linux) para todo el mundo
 * text=auto eol=lf
+
+# Archivos específicos que SIEMPRE deben ser LF (Crítico para Docker y Scripts)
+*.sh text eol=lf
+*.bash text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+*.js text eol=lf
+*.json text eol=lf
+*.jsx text eol=lf
+*.md text eol=lf
+*.sql text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.txt text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+Dockerfile text eol=lf
+docker-compose.yml text eol=lf
+
+# Archivos de Terraform
+*.tf text eol=lf
+*.tfvars text eol=lf

@@ -73,6 +73,15 @@ module "artifact_registry" {
   app_name   = var.app_name
 }
 
+# 2.5 STORAGE (Imágenes y Archivos)
+module "storage" {
+  source = "./modules/storage"
+
+  project_id = var.project_id
+  region     = var.region
+  app_name   = var.app_name
+}
+
 # 3. SECRETOS
 module "secrets" {
   source = "./modules/secrets"
@@ -111,18 +120,23 @@ module "cloud_run" {
   region                = var.region
   services              = var.services
   artifact_registry_url = module.artifact_registry.repository_url
+  bucket_name           = module.storage.bucket_name
   
-  vpc_connector_id      = module.networking.vpc_connector_id
+  # --- CAMBIO CRÍTICO: Direct VPC Egress ---
+  # Ya no usamos vpc_connector_id. Pasamos los nombres de red y subred.
+  vpc_name    = module.networking.vpc_name
+  subnet_name = module.networking.app_subnet_name
+  # -----------------------------------------
   
-  # AHORA SÍ: Usamos los nombres corregidos del módulo database
+  # DB Info
   cloudsql_private_ip   = module.database.cloudsql_private_ip
   cloudsql_connection   = module.database.cloudsql_connection_name
   
-  # SECRETOS: ¡Corrección Clave! Tomamos los IDs desde el módulo secrets
+  # Secretos
   db_password_secret_ids = module.secrets.service_secret_ids
   
-  gateway_sa_email       = google_service_account.gateway_sa.email
-  jwt_secret_id          = google_secret_manager_secret.jwt_secret.id
+  gateway_sa_email      = google_service_account.gateway_sa.email
+  jwt_secret_id         = google_secret_manager_secret.jwt_secret.id
 
   depends_on = [module.database, module.artifact_registry]
 }

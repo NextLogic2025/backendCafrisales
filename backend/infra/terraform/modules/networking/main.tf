@@ -1,9 +1,8 @@
 # backend/infra/terraform/modules/networking/main.tf
 
 # ============================================================
-# VPC: Red privada aislada
+# VPC
 # ============================================================
-
 resource "google_compute_network" "vpc" {
   name                    = "${var.app_name}-vpc"
   auto_create_subnetworks = false
@@ -12,9 +11,8 @@ resource "google_compute_network" "vpc" {
 }
 
 # ============================================================
-# SUBNET: Subred para Cloud Run y aplicaciones
+# SUBNET 1: APP (Cloud Run lógica de negocio)
 # ============================================================
-
 resource "google_compute_subnetwork" "app_subnet" {
   name          = "${var.app_name}-app-subnet"
   ip_cidr_range = "10.0.1.0/24"
@@ -24,35 +22,52 @@ resource "google_compute_subnetwork" "app_subnet" {
 
   log_config {
     aggregation_interval = "INTERVAL_5_SEC"
-    flow_sampling        = 0.5  
+    flow_sampling        = 0.5   
     metadata             = "INCLUDE_ALL_METADATA"
   }
 }
 
 # ============================================================
-# VPC ACCESS CONNECTOR: Cloud Run ↔ Cloud SQL
+# SUBNET 2: CONECTOR (La Solución Híbrida)
 # ============================================================
-
-resource "google_vpc_access_connector" "cloud_run_connector" {
-  name          = "${var.app_name}-vpc-conn"
-  region        = var.region
-  network       = google_compute_network.vpc.name
-  ip_cidr_range = "10.8.0.0/28"
-  min_instances = 2
-  max_instances = 10
+# Usamos Subnet explícita + Rango 192.168 para evitar conflictos previos
+resource "google_compute_subnetwork" "connector_subnet" {
+  name          = "${var.app_name}-connector-subnet"
   
-  depends_on = [google_compute_network.vpc]
+  # CAMBIO CRÍTICO: Usamos 192.168.40.0 para salir de la zona de error 10.8.x.x
+  ip_cidr_range = "192.168.40.0/28" 
+  
+  region        = var.region
+  network       = google_compute_network.vpc.id
+  description   = "Subred dedicada para Serverless VPC Access (Rango Limpio)"
 }
 
 # ============================================================
-# CLOUD NAT: Salida a internet sin IP pública
+# VPC ACCESS CONNECTOR
 # ============================================================
+resource "google_vpc_access_connector" "cloud_run_connector" {
+  name          = "cafrisales-vpc-conn-final"
+  region        = var.region
+  
+  # Referenciamos la subnet que acabamos de definir con la IP limpia
+  subnet {
+    name = google_compute_subnetwork.connector_subnet.name
+  }
 
+  min_instances = 2
+  max_instances = 10
+  machine_type  = "e2-micro"
+
+  depends_on = [google_compute_subnetwork.connector_subnet]
+}
+
+# ============================================================
+# CLOUD NAT & ROUTER
+# ============================================================
 resource "google_compute_router" "router" {
   name    = "${var.app_name}-router"
   network = google_compute_network.vpc.id
   region  = var.region
-
   bgp {
     asn = 64514
   }
@@ -64,23 +79,17 @@ resource "google_compute_router_nat" "nat" {
   region                             = var.region
   nat_ip_allocate_option             = "AUTO_ONLY"
   source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
-
+  
   log_config {
     enable = true
     filter = "ERRORS_ONLY"
   }
-
-  tcp_established_idle_timeout_sec = 1200
-  tcp_transitory_idle_timeout_sec  = 30
-  udp_idle_timeout_sec             = 30
-
   depends_on = [google_compute_router.router]
 }
 
 # ============================================================
-# PRIVATE SERVICE CONNECTION: Cloud SQL ↔ VPC
+# PRIVATE SERVICE CONNECTION (Para Cloud SQL)
 # ============================================================
-
 resource "google_compute_global_address" "private_ip_alloc" {
   name          = "${var.app_name}-private-ip"
   purpose       = "VPC_PEERING"
@@ -93,67 +102,37 @@ resource "google_service_networking_connection" "private_vpc_connection" {
   network                 = google_compute_network.vpc.id
   service                 = "servicenetworking.googleapis.com"
   reserved_peering_ranges = [google_compute_global_address.private_ip_alloc.name]
-
-  depends_on = [google_compute_global_address.private_ip_alloc]
+  depends_on              = [google_compute_global_address.private_ip_alloc]
 }
 
 # ============================================================
-# FIREWALL RULES: Controlar tráfico de red
+# FIREWALL
 # ============================================================
-
-# Permitir tráfico interno (Cloud Run ↔ Cloud SQL)
 resource "google_compute_firewall" "allow_internal" {
   name    = "${var.app_name}-allow-internal"
   network = google_compute_network.vpc.name
-
   allow {
     protocol = "tcp"
   }
-
-  source_ranges = ["10.0.0.0/8"]
+  source_ranges = ["10.0.0.0/8", "192.168.0.0/16"] # Permitimos ambos rangos internos
   target_tags   = ["${var.app_name}-internal"]
 }
 
-# Denegar todos los demás
 resource "google_compute_firewall" "deny_all" {
   name    = "${var.app_name}-deny-all"
   network = google_compute_network.vpc.name
-
   deny {
     protocol = "all"
   }
-
-  priority = 65534
-  
-  # CORRECCIÓN AQUÍ: Hay que especificar explícitamente "todo el mundo"
+  priority      = 65534
   source_ranges = ["0.0.0.0/0"]
 }
 
 # ============================================================
 # OUTPUTS
 # ============================================================
-
-output "vpc_id" {
-  value       = google_compute_network.vpc.id
-  description = "ID de la VPC"
-}
-
-output "vpc_self_link" {
-  value       = google_compute_network.vpc.self_link
-  description = "Self link de la VPC"
-}
-
-output "subnet_id" {
-  value       = google_compute_subnetwork.app_subnet.id
-  description = "ID de la subred"
-}
-
-output "vpc_connector_id" {
-  value       = google_vpc_access_connector.cloud_run_connector.id
-  description = "ID del VPC Access Connector (para Cloud Run)"
-}
-
-output "vpc_connector_name" {
-  value       = google_vpc_access_connector.cloud_run_connector.name
-  description = "Nombre del VPC Access Connector"
-}
+output "vpc_id" { value = google_compute_network.vpc.id }
+output "vpc_self_link" { value = google_compute_network.vpc.self_link }
+output "subnet_id" { value = google_compute_subnetwork.app_subnet.id }
+output "vpc_connector_id" { value = google_vpc_access_connector.cloud_run_connector.id }
+output "vpc_connector_name" { value = google_vpc_access_connector.cloud_run_connector.name }

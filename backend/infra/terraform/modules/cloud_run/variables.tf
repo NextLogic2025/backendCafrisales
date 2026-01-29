@@ -14,14 +14,22 @@ variable "services" {
 }
 
 variable "artifact_registry_url" {
-  description = "URL base del repositorio de imágenes (sin el nombre de la imagen)"
+  description = "URL base del repositorio de imágenes"
   type        = string
 }
 
-variable "vpc_connector_id" {
-  description = "ID del conector VPC para acceso a BD privada"
+# --- CAMBIO: Variables para Direct VPC Egress ---
+variable "vpc_name" {
+  description = "Nombre de la VPC"
   type        = string
 }
+
+variable "subnet_name" {
+  description = "Nombre de la Subred para salida directa"
+  type        = string
+}
+# (Se eliminó vpc_connector_id)
+# -----------------------------------------------
 
 variable "cloudsql_private_ip" {
   description = "IP privada de la instancia Cloud SQL"
@@ -29,7 +37,7 @@ variable "cloudsql_private_ip" {
 }
 
 variable "cloudsql_connection" {
-  description = "Nombre de conexión de la instancia (para referencia)"
+  description = "Nombre de conexión de la instancia"
   type        = string
 }
 
@@ -45,6 +53,11 @@ variable "jwt_secret_id" {
 }
 
 variable "gateway_sa_email" {
-  description = "Email de la cuenta de servicio del API Gateway (quien tiene permiso de invocar)"
+  description = "Email de la cuenta de servicio del API Gateway"
+  type        = string
+}
+
+variable "bucket_name" {
+  description = "Nombre del bucket de almacenamiento"
   type        = string
 }

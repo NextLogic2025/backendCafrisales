@@ -1,0 +1,2615 @@
+{
+  "version": 4,
+  "terraform_version": "1.14.3",
+  "serial": 102,
+  "lineage": "a515dfde-cdea-e464-6aca-f7d172909c2d",
+  "outputs": {
+    "api_gateway_url": {
+      "value": null,
+      "type": "string"
+    },
+    "artifact_registry_repo": {
+      "value": "us-east1-docker.pkg.dev/gen-lang-client-0059045498/cafrisales-repo",
+      "type": "string"
+    },
+    "cloud_sql_private_ip": {
+      "value": null,
+      "type": "string"
+    },
+    "vpc_connector_id": {
+      "value": "projects/gen-lang-client-0059045498/locations/us-east1/connectors/cafrisales-vpc-conn-final",
+      "type": "string"
+    }
+  },
+  "resources": [
+    {
+      "mode": "managed",
+      "type": "google_secret_manager_secret",
+      "name": "jwt_secret",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "annotations": {},
+            "create_time": "2026-01-28T04:03:19.401859Z",
+            "effective_annotations": {},
+            "effective_labels": {},
+            "expire_time": "",
+            "id": "projects/gen-lang-client-0059045498/secrets/cafrisales-jwt-secret",
+            "labels": {},
+            "name": "projects/343796426587/secrets/cafrisales-jwt-secret",
+            "project": "gen-lang-client-0059045498",
+            "replication": [
+              {
+                "auto": [],
+                "user_managed": [
+                  {
+                    "replicas": [
+                      {
+                        "customer_managed_encryption": [],
+                        "location": "us-east1"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "rotation": [],
+            "secret_id": "cafrisales-jwt-secret",
+            "terraform_labels": {},
+            "timeouts": null,
+            "topics": [],
+            "ttl": null,
+            "version_aliases": {},
+            "version_destroy_ttl": ""
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMCJ9",
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "google_secret_manager_secret_version",
+      "name": "jwt_secret_val",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "create_time": "2026-01-29T01:07:14.744756Z",
+            "deletion_policy": "DELETE",
+            "destroy_time": "",
+            "enabled": true,
+            "id": "projects/343796426587/secrets/cafrisales-jwt-secret/versions/2",
+            "is_secret_data_base64": false,
+            "name": "projects/343796426587/secrets/cafrisales-jwt-secret/versions/2",
+            "secret": "projects/gen-lang-client-0059045498/secrets/cafrisales-jwt-secret",
+            "secret_data": "BCVE@J%z58hIt5O7pnWhUs4npYz-\u003eQ-Y5=cv\u003e?s\u003e8Q+VqP(VLSxN![DZKp@i1PZ{",
+            "timeouts": null,
+            "version": "2"
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "secret_data"
+              }
+            ]
+          ],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH19",
+          "dependencies": [
+            "google_secret_manager_secret.jwt_secret",
+            "random_password.jwt_secret"
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "google_service_account",
+      "name": "gateway_sa",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "account_id": "api-gateway-sa",
+            "create_ignore_already_exists": null,
+            "description": "",
+            "disabled": false,
+            "display_name": "Service Account para API Gateway Cafrilosa",
+            "email": "api-gateway-sa@gen-lang-client-0059045498.iam.gserviceaccount.com",
+            "id": "projects/gen-lang-client-0059045498/serviceAccounts/api-gateway-sa@gen-lang-client-0059045498.iam.gserviceaccount.com",
+            "member": "serviceAccount:api-gateway-sa@gen-lang-client-0059045498.iam.gserviceaccount.com",
+            "name": "projects/gen-lang-client-0059045498/serviceAccounts/api-gateway-sa@gen-lang-client-0059045498.iam.gserviceaccount.com",
+            "project": "gen-lang-client-0059045498",
+            "timeouts": null,
+            "unique_id": "113687205290368485944"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjozMDAwMDAwMDAwMDB9LCJzY2hlbWFfdmVyc2lvbiI6IjAifQ==",
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "random_password",
+      "name": "jwt_secret",
+      "provider": "provider[\"registry.terraform.io/hashicorp/random\"]",
+      "instances": [
+        {
+          "schema_version": 3,
+          "attributes": {
+            "bcrypt_hash": "$2a$10$JiGoWy86COr3U5quXmGTc.prNxOay3DFJDXWJnuBLww0iNlrMP.XC",
+            "id": "none",
+            "keepers": null,
+            "length": 64,
+            "lower": true,
+            "min_lower": 0,
+            "min_numeric": 0,
+            "min_special": 0,
+            "min_upper": 0,
+            "number": true,
+            "numeric": true,
+            "override_special": null,
+            "result": "BCVE@J%z58hIt5O7pnWhUs4npYz-\u003eQ-Y5=cv\u003e?s\u003e8Q+VqP(VLSxN![DZKp@i1PZ{",
+            "special": true,
+            "upper": true
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "bcrypt_hash"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "result"
+              }
+            ]
+          ],
+          "identity_schema_version": 0
+        }
+      ]
+    },
+    {
+      "module": "module.artifact_registry",
+      "mode": "managed",
+      "type": "google_artifact_registry_repository",
+      "name": "repo",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "cleanup_policies": [
+              {
+                "action": "KEEP",
+                "condition": [],
+                "id": "keep-minimum-versions",
+                "most_recent_versions": [
+                  {
+                    "keep_count": 5,
+                    "package_name_prefixes": []
+                  }
+                ]
+              }
+            ],
+            "cleanup_policy_dry_run": false,
+            "create_time": "2026-01-28T04:03:26.259191Z",
+            "description": "Repositorio Docker para microservicios cafrisales",
+            "docker_config": [],
+            "effective_labels": {},
+            "format": "DOCKER",
+            "id": "projects/gen-lang-client-0059045498/locations/us-east1/repositories/cafrisales-repo",
+            "kms_key_name": "",
+            "labels": {},
+            "location": "us-east1",
+            "maven_config": [],
+            "mode": "STANDARD_REPOSITORY",
+            "name": "cafrisales-repo",
+            "project": "gen-lang-client-0059045498",
+            "remote_repository_config": [],
+            "repository_id": "cafrisales-repo",
+            "terraform_labels": {},
+            "timeouts": null,
+            "update_time": "2026-01-28T04:03:26.259191Z",
+            "virtual_repository_config": []
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMCJ9",
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "module": "module.cloud_build",
+      "mode": "managed",
+      "type": "google_cloudbuild_trigger",
+      "name": "service_triggers",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "index_key": "auth-service",
+          "schema_version": 2,
+          "attributes": {
+            "approval_config": [
+              {
+                "approval_required": false
+              }
+            ],
+            "bitbucket_server_trigger_config": [],
+            "build": [],
+            "create_time": "2026-01-28T04:53:01.303616680Z",
+            "description": "CI/CD Trigger para el servicio auth-service",
+            "disabled": false,
+            "filename": "backend/services/auth-service/cloudbuild.yaml",
+            "filter": "",
+            "git_file_source": [],
+            "github": [
+              {
+                "enterprise_config_resource_name": "",
+                "name": "backendCafrisales",
+                "owner": "NextLogic2025",
+                "pull_request": [],
+                "push": [
+                  {
+                    "branch": "^main$",
+                    "invert_regex": false,
+                    "tag": ""
+                  }
+                ]
+              }
+            ],
+            "id": "projects/gen-lang-client-0059045498/locations/us-east1/triggers/auth-service-trigger",
+            "ignored_files": [],
+            "include_build_logs": "",
+            "included_files": [
+              "backend/services/auth-service/**",
+              "backend/common/**"
+            ],
+            "location": "us-east1",
+            "name": "auth-service-trigger",
+            "project": "gen-lang-client-0059045498",
+            "pubsub_config": [],
+            "repository_event_config": [],
+            "service_account": "projects/gen-lang-client-0059045498/serviceAccounts/cloud-build-sa@gen-lang-client-0059045498.iam.gserviceaccount.com",
+            "source_to_build": [],
+            "substitutions": {
+              "_ARTIFACT_REGISTRY": "cafrisales-repo",
+              "_REGION": "us-east1",
+              "_SERVICE_NAME": "auth-service"
+            },
+            "tags": [],
+            "timeouts": null,
+            "trigger_id": "fe1f18f1-efd7-45ac-8022-eb5fb44c74f4",
+            "trigger_template": [],
+            "webhook_config": []
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMiJ9",
+          "dependencies": [
+            "module.artifact_registry.google_artifact_registry_repository.repo",
+            "module.cloud_build.google_project_iam_member.artifact_registry_writer",
+            "module.cloud_build.google_service_account.cloud_build_sa"
+          ]
+        },
+        {
+          "index_key": "catalog-service",
+          "schema_version": 2,
+          "attributes": {
+            "approval_config": [
+              {
+                "approval_required": false
+              }
+            ],
+            "bitbucket_server_trigger_config": [],
+            "build": [],
+            "create_time": "2026-01-28T04:53:01.306661332Z",
+            "description": "CI/CD Trigger para el servicio catalog-service",
+            "disabled": false,
+            "filename": "backend/services/catalog-service/cloudbuild.yaml",
+            "filter": "",
+            "git_file_source": [],
+            "github": [
+              {
+                "enterprise_config_resource_name": "",
+                "name": "backendCafrisales",
+                "owner": "NextLogic2025",
+                "pull_request": [],
+                "push": [
+                  {
+                    "branch": "^main$",
+                    "invert_regex": false,
+                    "tag": ""
+                  }
+                ]
+              }
+            ],
+            "id": "projects/gen-lang-client-0059045498/locations/us-east1/triggers/catalog-service-trigger",
+            "ignored_files": [],
+            "include_build_logs": "",
+            "included_files": [
+              "backend/services/catalog-service/**",
+              "backend/common/**"
+            ],
+            "location": "us-east1",
+            "name": "catalog-service-trigger",
+            "project": "gen-lang-client-0059045498",
+            "pubsub_config": [],
+            "repository_event_config": [],
+            "service_account": "projects/gen-lang-client-0059045498/serviceAccounts/cloud-build-sa@gen-lang-client-0059045498.iam.gserviceaccount.com",
+            "source_to_build": [],
+            "substitutions": {
+              "_ARTIFACT_REGISTRY": "cafrisales-repo",
+              "_REGION": "us-east1",
+              "_SERVICE_NAME": "catalog-service"
+            },
+            "tags": [],
+            "timeouts": null,
+            "trigger_id": "371b60e8-0e57-4c23-b84c-2b371c029bf5",
+            "trigger_template": [],
+            "webhook_config": []
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMiJ9",
+          "dependencies": [
+            "module.artifact_registry.google_artifact_registry_repository.repo",
+            "module.cloud_build.google_project_iam_member.artifact_registry_writer",
+            "module.cloud_build.google_service_account.cloud_build_sa"
+          ]
+        },
+        {
+          "index_key": "credit-service",
+          "schema_version": 2,
+          "attributes": {
+            "approval_config": [
+              {
+                "approval_required": false
+              }
+            ],
+            "bitbucket_server_trigger_config": [],
+            "build": [],
+            "create_time": "2026-01-28T04:53:01.403420320Z",
+            "description": "CI/CD Trigger para el servicio credit-service",
+            "disabled": false,
+            "filename": "backend/services/credit-service/cloudbuild.yaml",
+            "filter": "",
+            "git_file_source": [],
+            "github": [
+              {
+                "enterprise_config_resource_name": "",
+                "name": "backendCafrisales",
+                "owner": "NextLogic2025",
+                "pull_request": [],
+                "push": [
+                  {
+                    "branch": "^main$",
+                    "invert_regex": false,
+                    "tag": ""
+                  }
+                ]
+              }
+            ],
+            "id": "projects/gen-lang-client-0059045498/locations/us-east1/triggers/credit-service-trigger",
+            "ignored_files": [],
+            "include_build_logs": "",
+            "included_files": [
+              "backend/services/credit-service/**",
+              "backend/common/**"
+            ],
+            "location": "us-east1",
+            "name": "credit-service-trigger",
+            "project": "gen-lang-client-0059045498",
+            "pubsub_config": [],
+            "repository_event_config": [],
+            "service_account": "projects/gen-lang-client-0059045498/serviceAccounts/cloud-build-sa@gen-lang-client-0059045498.iam.gserviceaccount.com",
+            "source_to_build": [],
+            "substitutions": {
+              "_ARTIFACT_REGISTRY": "cafrisales-repo",
+              "_REGION": "us-east1",
+              "_SERVICE_NAME": "credit-service"
+            },
+            "tags": [],
+            "timeouts": null,
+            "trigger_id": "007ff1a3-db84-443b-82e2-301bb03a3e18",
+            "trigger_template": [],
+            "webhook_config": []
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMiJ9",
+          "dependencies": [
+            "module.artifact_registry.google_artifact_registry_repository.repo",
+            "module.cloud_build.google_project_iam_member.artifact_registry_writer",
+            "module.cloud_build.google_service_account.cloud_build_sa"
+          ]
+        },
+        {
+          "index_key": "delivery-service",
+          "schema_version": 2,
+          "attributes": {
+            "approval_config": [
+              {
+                "approval_required": false
+              }
+            ],
+            "bitbucket_server_trigger_config": [],
+            "build": [],
+            "create_time": "2026-01-28T04:53:01.308599810Z",
+            "description": "CI/CD Trigger para el servicio delivery-service",
+            "disabled": false,
+            "filename": "backend/services/delivery-service/cloudbuild.yaml",
+            "filter": "",
+            "git_file_source": [],
+            "github": [
+              {
+                "enterprise_config_resource_name": "",
+                "name": "backendCafrisales",
+                "owner": "NextLogic2025",
+                "pull_request": [],
+                "push": [
+                  {
+                    "branch": "^main$",
+                    "invert_regex": false,
+                    "tag": ""
+                  }
+                ]
+              }
+            ],
+            "id": "projects/gen-lang-client-0059045498/locations/us-east1/triggers/delivery-service-trigger",
+            "ignored_files": [],
+            "include_build_logs": "",
+            "included_files": [
+              "backend/services/delivery-service/**",
+              "backend/common/**"
+            ],
+            "location": "us-east1",
+            "name": "delivery-service-trigger",
+            "project": "gen-lang-client-0059045498",
+            "pubsub_config": [],
+            "repository_event_config": [],
+            "service_account": "projects/gen-lang-client-0059045498/serviceAccounts/cloud-build-sa@gen-lang-client-0059045498.iam.gserviceaccount.com",
+            "source_to_build": [],
+            "substitutions": {
+              "_ARTIFACT_REGISTRY": "cafrisales-repo",
+              "_REGION": "us-east1",
+              "_SERVICE_NAME": "delivery-service"
+            },
+            "tags": [],
+            "timeouts": null,
+            "trigger_id": "1515cdd5-0d77-4039-a523-0d880137b781",
+            "trigger_template": [],
+            "webhook_config": []
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMiJ9",
+          "dependencies": [
+            "module.artifact_registry.google_artifact_registry_repository.repo",
+            "module.cloud_build.google_project_iam_member.artifact_registry_writer",
+            "module.cloud_build.google_service_account.cloud_build_sa"
+          ]
+        },
+        {
+          "index_key": "notification-service",
+          "schema_version": 2,
+          "attributes": {
+            "approval_config": [
+              {
+                "approval_required": false
+              }
+            ],
+            "bitbucket_server_trigger_config": [],
+            "build": [],
+            "create_time": "2026-01-29T01:07:22.869471328Z",
+            "description": "CI/CD Trigger para el servicio notification-service",
+            "disabled": false,
+            "filename": "backend/services/notification-service/cloudbuild.yaml",
+            "filter": "",
+            "git_file_source": [],
+            "github": [
+              {
+                "enterprise_config_resource_name": "",
+                "name": "backendCafrisales",
+                "owner": "NextLogic2025",
+                "pull_request": [],
+                "push": [
+                  {
+                    "branch": "^main$",
+                    "invert_regex": false,
+                    "tag": ""
+                  }
+                ]
+              }
+            ],
+            "id": "projects/gen-lang-client-0059045498/locations/us-east1/triggers/d0af0452-fa90-43b6-94b3-e5afcbc3d859",
+            "ignored_files": [],
+            "include_build_logs": "",
+            "included_files": [
+              "backend/services/notification-service/**",
+              "backend/common/**"
+            ],
+            "location": "us-east1",
+            "name": "notification-service-trigger",
+            "project": "gen-lang-client-0059045498",
+            "pubsub_config": [],
+            "repository_event_config": [],
+            "service_account": "projects/gen-lang-client-0059045498/serviceAccounts/cloud-build-sa@gen-lang-client-0059045498.iam.gserviceaccount.com",
+            "source_to_build": [],
+            "substitutions": {
+              "_ARTIFACT_REGISTRY": "cafrisales-repo",
+              "_REGION": "us-east1",
+              "_SERVICE_NAME": "notification-service"
+            },
+            "tags": [],
+            "timeouts": null,
+            "trigger_id": "d0af0452-fa90-43b6-94b3-e5afcbc3d859",
+            "trigger_template": [],
+            "webhook_config": []
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMiJ9",
+          "dependencies": [
+            "module.artifact_registry.google_artifact_registry_repository.repo",
+            "module.cloud_build.google_project_iam_member.artifact_registry_writer",
+            "module.cloud_build.google_service_account.cloud_build_sa"
+          ]
+        },
+        {
+          "index_key": "order-service",
+          "schema_version": 2,
+          "attributes": {
+            "approval_config": [
+              {
+                "approval_required": false
+              }
+            ],
+            "bitbucket_server_trigger_config": [],
+            "build": [],
+            "create_time": "2026-01-28T04:53:01.401941208Z",
+            "description": "CI/CD Trigger para el servicio order-service",
+            "disabled": false,
+            "filename": "backend/services/order-service/cloudbuild.yaml",
+            "filter": "",
+            "git_file_source": [],
+            "github": [
+              {
+                "enterprise_config_resource_name": "",
+                "name": "backendCafrisales",
+                "owner": "NextLogic2025",
+                "pull_request": [],
+                "push": [
+                  {
+                    "branch": "^main$",
+                    "invert_regex": false,
+                    "tag": ""
+                  }
+                ]
+              }
+            ],
+            "id": "projects/gen-lang-client-0059045498/locations/us-east1/triggers/order-service-trigger",
+            "ignored_files": [],
+            "include_build_logs": "",
+            "included_files": [
+              "backend/services/order-service/**",
+              "backend/common/**"
+            ],
+            "location": "us-east1",
+            "name": "order-service-trigger",
+            "project": "gen-lang-client-0059045498",
+            "pubsub_config": [],
+            "repository_event_config": [],
+            "service_account": "projects/gen-lang-client-0059045498/serviceAccounts/cloud-build-sa@gen-lang-client-0059045498.iam.gserviceaccount.com",
+            "source_to_build": [],
+            "substitutions": {
+              "_ARTIFACT_REGISTRY": "cafrisales-repo",
+              "_REGION": "us-east1",
+              "_SERVICE_NAME": "order-service"
+            },
+            "tags": [],
+            "timeouts": null,
+            "trigger_id": "094f32e0-c24f-4d61-b2ef-cd8bb2590fab",
+            "trigger_template": [],
+            "webhook_config": []
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMiJ9",
+          "dependencies": [
+            "module.artifact_registry.google_artifact_registry_repository.repo",
+            "module.cloud_build.google_project_iam_member.artifact_registry_writer",
+            "module.cloud_build.google_service_account.cloud_build_sa"
+          ]
+        },
+        {
+          "index_key": "route-service",
+          "schema_version": 2,
+          "attributes": {
+            "approval_config": [
+              {
+                "approval_required": false
+              }
+            ],
+            "bitbucket_server_trigger_config": [],
+            "build": [],
+            "create_time": "2026-01-28T04:53:01.342685929Z",
+            "description": "CI/CD Trigger para el servicio route-service",
+            "disabled": false,
+            "filename": "backend/services/route-service/cloudbuild.yaml",
+            "filter": "",
+            "git_file_source": [],
+            "github": [
+              {
+                "enterprise_config_resource_name": "",
+                "name": "backendCafrisales",
+                "owner": "NextLogic2025",
+                "pull_request": [],
+                "push": [
+                  {
+                    "branch": "^main$",
+                    "invert_regex": false,
+                    "tag": ""
+                  }
+                ]
+              }
+            ],
+            "id": "projects/gen-lang-client-0059045498/locations/us-east1/triggers/route-service-trigger",
+            "ignored_files": [],
+            "include_build_logs": "",
+            "included_files": [
+              "backend/services/route-service/**",
+              "backend/common/**"
+            ],
+            "location": "us-east1",
+            "name": "route-service-trigger",
+            "project": "gen-lang-client-0059045498",
+            "pubsub_config": [],
+            "repository_event_config": [],
+            "service_account": "projects/gen-lang-client-0059045498/serviceAccounts/cloud-build-sa@gen-lang-client-0059045498.iam.gserviceaccount.com",
+            "source_to_build": [],
+            "substitutions": {
+              "_ARTIFACT_REGISTRY": "cafrisales-repo",
+              "_REGION": "us-east1",
+              "_SERVICE_NAME": "route-service"
+            },
+            "tags": [],
+            "timeouts": null,
+            "trigger_id": "49ca353b-1e7f-4218-b763-7904cac4ff22",
+            "trigger_template": [],
+            "webhook_config": []
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMiJ9",
+          "dependencies": [
+            "module.artifact_registry.google_artifact_registry_repository.repo",
+            "module.cloud_build.google_project_iam_member.artifact_registry_writer",
+            "module.cloud_build.google_service_account.cloud_build_sa"
+          ]
+        },
+        {
+          "index_key": "user-service",
+          "schema_version": 2,
+          "attributes": {
+            "approval_config": [
+              {
+                "approval_required": false
+              }
+            ],
+            "bitbucket_server_trigger_config": [],
+            "build": [],
+            "create_time": "2026-01-28T04:53:01.306279772Z",
+            "description": "CI/CD Trigger para el servicio user-service",
+            "disabled": false,
+            "filename": "backend/services/user-service/cloudbuild.yaml",
+            "filter": "",
+            "git_file_source": [],
+            "github": [
+              {
+                "enterprise_config_resource_name": "",
+                "name": "backendCafrisales",
+                "owner": "NextLogic2025",
+                "pull_request": [],
+                "push": [
+                  {
+                    "branch": "^main$",
+                    "invert_regex": false,
+                    "tag": ""
+                  }
+                ]
+              }
+            ],
+            "id": "projects/gen-lang-client-0059045498/locations/us-east1/triggers/user-service-trigger",
+            "ignored_files": [],
+            "include_build_logs": "",
+            "included_files": [
+              "backend/services/user-service/**",
+              "backend/common/**"
+            ],
+            "location": "us-east1",
+            "name": "user-service-trigger",
+            "project": "gen-lang-client-0059045498",
+            "pubsub_config": [],
+            "repository_event_config": [],
+            "service_account": "projects/gen-lang-client-0059045498/serviceAccounts/cloud-build-sa@gen-lang-client-0059045498.iam.gserviceaccount.com",
+            "source_to_build": [],
+            "substitutions": {
+              "_ARTIFACT_REGISTRY": "cafrisales-repo",
+              "_REGION": "us-east1",
+              "_SERVICE_NAME": "user-service"
+            },
+            "tags": [],
+            "timeouts": null,
+            "trigger_id": "5edcf8c9-0dbd-4069-a9b9-6a7c69864bfb",
+            "trigger_template": [],
+            "webhook_config": []
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMiJ9",
+          "dependencies": [
+            "module.artifact_registry.google_artifact_registry_repository.repo",
+            "module.cloud_build.google_project_iam_member.artifact_registry_writer",
+            "module.cloud_build.google_service_account.cloud_build_sa"
+          ]
+        },
+        {
+          "index_key": "zone-service",
+          "schema_version": 2,
+          "attributes": {
+            "approval_config": [
+              {
+                "approval_required": false
+              }
+            ],
+            "bitbucket_server_trigger_config": [],
+            "build": [],
+            "create_time": "2026-01-28T04:53:01.305253847Z",
+            "description": "CI/CD Trigger para el servicio zone-service",
+            "disabled": false,
+            "filename": "backend/services/zone-service/cloudbuild.yaml",
+            "filter": "",
+            "git_file_source": [],
+            "github": [
+              {
+                "enterprise_config_resource_name": "",
+                "name": "backendCafrisales",
+                "owner": "NextLogic2025",
+                "pull_request": [],
+                "push": [
+                  {
+                    "branch": "^main$",
+                    "invert_regex": false,
+                    "tag": ""
+                  }
+                ]
+              }
+            ],
+            "id": "projects/gen-lang-client-0059045498/locations/us-east1/triggers/zone-service-trigger",
+            "ignored_files": [],
+            "include_build_logs": "",
+            "included_files": [
+              "backend/services/zone-service/**",
+              "backend/common/**"
+            ],
+            "location": "us-east1",
+            "name": "zone-service-trigger",
+            "project": "gen-lang-client-0059045498",
+            "pubsub_config": [],
+            "repository_event_config": [],
+            "service_account": "projects/gen-lang-client-0059045498/serviceAccounts/cloud-build-sa@gen-lang-client-0059045498.iam.gserviceaccount.com",
+            "source_to_build": [],
+            "substitutions": {
+              "_ARTIFACT_REGISTRY": "cafrisales-repo",
+              "_REGION": "us-east1",
+              "_SERVICE_NAME": "zone-service"
+            },
+            "tags": [],
+            "timeouts": null,
+            "trigger_id": "eec8e08d-e39f-4baf-8674-8b80b6a53e17",
+            "trigger_template": [],
+            "webhook_config": []
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMiJ9",
+          "dependencies": [
+            "module.artifact_registry.google_artifact_registry_repository.repo",
+            "module.cloud_build.google_project_iam_member.artifact_registry_writer",
+            "module.cloud_build.google_service_account.cloud_build_sa"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.cloud_build",
+      "mode": "managed",
+      "type": "google_project_iam_member",
+      "name": "artifact_registry_writer",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "condition": [],
+            "etag": "BwZJfHphPLU=",
+            "id": "gen-lang-client-0059045498/roles/artifactregistry.writer/serviceAccount:cloud-build-sa@gen-lang-client-0059045498.iam.gserviceaccount.com",
+            "member": "serviceAccount:cloud-build-sa@gen-lang-client-0059045498.iam.gserviceaccount.com",
+            "project": "gen-lang-client-0059045498",
+            "role": "roles/artifactregistry.writer"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "module.cloud_build.google_service_account.cloud_build_sa"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.cloud_build",
+      "mode": "managed",
+      "type": "google_project_iam_member",
+      "name": "logging_writer",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "condition": [],
+            "etag": "BwZJfHphPLU=",
+            "id": "gen-lang-client-0059045498/roles/logging.logWriter/serviceAccount:cloud-build-sa@gen-lang-client-0059045498.iam.gserviceaccount.com",
+            "member": "serviceAccount:cloud-build-sa@gen-lang-client-0059045498.iam.gserviceaccount.com",
+            "project": "gen-lang-client-0059045498",
+            "role": "roles/logging.logWriter"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "module.cloud_build.google_service_account.cloud_build_sa"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.cloud_build",
+      "mode": "managed",
+      "type": "google_project_iam_member",
+      "name": "run_admin",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "condition": [],
+            "etag": "BwZJfHphPLU=",
+            "id": "gen-lang-client-0059045498/roles/run.admin/serviceAccount:cloud-build-sa@gen-lang-client-0059045498.iam.gserviceaccount.com",
+            "member": "serviceAccount:cloud-build-sa@gen-lang-client-0059045498.iam.gserviceaccount.com",
+            "project": "gen-lang-client-0059045498",
+            "role": "roles/run.admin"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "module.cloud_build.google_service_account.cloud_build_sa"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.cloud_build",
+      "mode": "managed",
+      "type": "google_project_iam_member",
+      "name": "sa_user",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "condition": [],
+            "etag": "BwZJfHphPLU=",
+            "id": "gen-lang-client-0059045498/roles/iam.serviceAccountUser/serviceAccount:cloud-build-sa@gen-lang-client-0059045498.iam.gserviceaccount.com",
+            "member": "serviceAccount:cloud-build-sa@gen-lang-client-0059045498.iam.gserviceaccount.com",
+            "project": "gen-lang-client-0059045498",
+            "role": "roles/iam.serviceAccountUser"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "module.cloud_build.google_service_account.cloud_build_sa"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.cloud_build",
+      "mode": "managed",
+      "type": "google_service_account",
+      "name": "cloud_build_sa",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "account_id": "cloud-build-sa",
+            "create_ignore_already_exists": null,
+            "description": "Cuenta de servicio para ejecutar los builds de CI/CD",
+            "disabled": false,
+            "display_name": "Cloud Build Service Account",
+            "email": "cloud-build-sa@gen-lang-client-0059045498.iam.gserviceaccount.com",
+            "id": "projects/gen-lang-client-0059045498/serviceAccounts/cloud-build-sa@gen-lang-client-0059045498.iam.gserviceaccount.com",
+            "member": "serviceAccount:cloud-build-sa@gen-lang-client-0059045498.iam.gserviceaccount.com",
+            "name": "projects/gen-lang-client-0059045498/serviceAccounts/cloud-build-sa@gen-lang-client-0059045498.iam.gserviceaccount.com",
+            "project": "gen-lang-client-0059045498",
+            "timeouts": null,
+            "unique_id": "109806577632320314799"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjozMDAwMDAwMDAwMDB9LCJzY2hlbWFfdmVyc2lvbiI6IjAifQ=="
+        }
+      ]
+    },
+    {
+      "module": "module.networking",
+      "mode": "managed",
+      "type": "google_compute_firewall",
+      "name": "allow_internal",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 1,
+          "attributes": {
+            "allow": [
+              {
+                "ports": [],
+                "protocol": "tcp"
+              }
+            ],
+            "creation_timestamp": "2026-01-27T23:21:57.307-08:00",
+            "deny": [],
+            "description": "",
+            "destination_ranges": [],
+            "direction": "INGRESS",
+            "disabled": false,
+            "enable_logging": null,
+            "id": "projects/gen-lang-client-0059045498/global/firewalls/cafrisales-allow-internal",
+            "log_config": [],
+            "name": "cafrisales-allow-internal",
+            "network": "https://www.googleapis.com/compute/v1/projects/gen-lang-client-0059045498/global/networks/cafrisales-vpc",
+            "priority": 1000,
+            "project": "gen-lang-client-0059045498",
+            "self_link": "https://www.googleapis.com/compute/v1/projects/gen-lang-client-0059045498/global/firewalls/cafrisales-allow-internal",
+            "source_ranges": [
+              "10.0.0.0/8",
+              "192.168.0.0/16"
+            ],
+            "source_service_accounts": [],
+            "source_tags": [],
+            "target_service_accounts": [],
+            "target_tags": [
+              "cafrisales-internal"
+            ],
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMSJ9",
+          "dependencies": [
+            "module.networking.google_compute_network.vpc"
+          ],
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "module": "module.networking",
+      "mode": "managed",
+      "type": "google_compute_firewall",
+      "name": "deny_all",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 1,
+          "attributes": {
+            "allow": [],
+            "creation_timestamp": "2026-01-27T23:21:56.912-08:00",
+            "deny": [
+              {
+                "ports": [],
+                "protocol": "all"
+              }
+            ],
+            "description": "",
+            "destination_ranges": [],
+            "direction": "INGRESS",
+            "disabled": false,
+            "enable_logging": null,
+            "id": "projects/gen-lang-client-0059045498/global/firewalls/cafrisales-deny-all",
+            "log_config": [],
+            "name": "cafrisales-deny-all",
+            "network": "https://www.googleapis.com/compute/v1/projects/gen-lang-client-0059045498/global/networks/cafrisales-vpc",
+            "priority": 65534,
+            "project": "gen-lang-client-0059045498",
+            "self_link": "https://www.googleapis.com/compute/v1/projects/gen-lang-client-0059045498/global/firewalls/cafrisales-deny-all",
+            "source_ranges": [
+              "0.0.0.0/0"
+            ],
+            "source_service_accounts": [],
+            "source_tags": [],
+            "target_service_accounts": [],
+            "target_tags": [],
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMSJ9",
+          "dependencies": [
+            "module.networking.google_compute_network.vpc"
+          ],
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "module": "module.networking",
+      "mode": "managed",
+      "type": "google_compute_global_address",
+      "name": "private_ip_alloc",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "address": "10.139.0.0",
+            "address_type": "INTERNAL",
+            "creation_timestamp": "2026-01-27T23:30:13.435-08:00",
+            "description": "",
+            "effective_labels": {},
+            "id": "projects/gen-lang-client-0059045498/global/addresses/cafrisales-private-ip",
+            "ip_version": "",
+            "label_fingerprint": "42WmSpB8rSM=",
+            "labels": {},
+            "name": "cafrisales-private-ip",
+            "network": "https://www.googleapis.com/compute/v1/projects/gen-lang-client-0059045498/global/networks/cafrisales-vpc",
+            "prefix_length": 16,
+            "project": "gen-lang-client-0059045498",
+            "purpose": "VPC_PEERING",
+            "self_link": "https://www.googleapis.com/compute/v1/projects/gen-lang-client-0059045498/global/addresses/cafrisales-private-ip",
+            "terraform_labels": {},
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMCJ9",
+          "dependencies": [
+            "module.networking.google_compute_network.vpc"
+          ],
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "module": "module.networking",
+      "mode": "managed",
+      "type": "google_compute_network",
+      "name": "vpc",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "auto_create_subnetworks": false,
+            "delete_default_routes_on_create": false,
+            "description": "VPC privada para cafrisales",
+            "enable_ula_internal_ipv6": false,
+            "gateway_ipv4": "",
+            "id": "projects/gen-lang-client-0059045498/global/networks/cafrisales-vpc",
+            "internal_ipv6_range": "",
+            "mtu": 0,
+            "name": "cafrisales-vpc",
+            "network_firewall_policy_enforcement_order": "AFTER_CLASSIC_FIREWALL",
+            "numeric_id": "4303056199971255400",
+            "project": "gen-lang-client-0059045498",
+            "routing_mode": "REGIONAL",
+            "self_link": "https://www.googleapis.com/compute/v1/projects/gen-lang-client-0059045498/global/networks/cafrisales-vpc",
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMCJ9",
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "module": "module.networking",
+      "mode": "managed",
+      "type": "google_compute_router",
+      "name": "router",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "bgp": [
+              {
+                "advertise_mode": "DEFAULT",
+                "advertised_groups": [],
+                "advertised_ip_ranges": [],
+                "asn": 64514,
+                "identifier_range": "",
+                "keepalive_interval": 20
+              }
+            ],
+            "creation_timestamp": "2026-01-27T20:03:30.579-08:00",
+            "description": "",
+            "encrypted_interconnect_router": false,
+            "id": "projects/gen-lang-client-0059045498/regions/us-east1/routers/cafrisales-router",
+            "name": "cafrisales-router",
+            "network": "https://www.googleapis.com/compute/v1/projects/gen-lang-client-0059045498/global/networks/cafrisales-vpc",
+            "project": "gen-lang-client-0059045498",
+            "region": "us-east1",
+            "self_link": "https://www.googleapis.com/compute/v1/projects/gen-lang-client-0059045498/regions/us-east1/routers/cafrisales-router",
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMCJ9",
+          "dependencies": [
+            "module.networking.google_compute_network.vpc"
+          ],
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "module": "module.networking",
+      "mode": "managed",
+      "type": "google_compute_router_nat",
+      "name": "nat",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "auto_network_tier": "PREMIUM",
+            "drain_nat_ips": [],
+            "enable_dynamic_port_allocation": false,
+            "enable_endpoint_independent_mapping": false,
+            "endpoint_types": [
+              "ENDPOINT_TYPE_VM"
+            ],
+            "icmp_idle_timeout_sec": 30,
+            "id": "gen-lang-client-0059045498/us-east1/cafrisales-router/cafrisales-nat",
+            "log_config": [
+              {
+                "enable": true,
+                "filter": "ERRORS_ONLY"
+              }
+            ],
+            "max_ports_per_vm": 0,
+            "min_ports_per_vm": 0,
+            "name": "cafrisales-nat",
+            "nat_ip_allocate_option": "AUTO_ONLY",
+            "nat_ips": [],
+            "project": "gen-lang-client-0059045498",
+            "region": "us-east1",
+            "router": "cafrisales-router",
+            "rules": [],
+            "source_subnetwork_ip_ranges_to_nat": "ALL_SUBNETWORKS_ALL_IP_RANGES",
+            "subnetwork": [],
+            "tcp_established_idle_timeout_sec": 1200,
+            "tcp_time_wait_timeout_sec": 120,
+            "tcp_transitory_idle_timeout_sec": 30,
+            "timeouts": null,
+            "udp_idle_timeout_sec": 30
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMCJ9",
+          "dependencies": [
+            "module.networking.google_compute_network.vpc",
+            "module.networking.google_compute_router.router"
+          ],
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "module": "module.networking",
+      "mode": "managed",
+      "type": "google_compute_subnetwork",
+      "name": "app_subnet",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "creation_timestamp": "2026-01-27T23:21:56.606-08:00",
+            "description": "Subred para servicios de aplicación",
+            "external_ipv6_prefix": "",
+            "fingerprint": null,
+            "gateway_address": "10.0.1.1",
+            "id": "projects/gen-lang-client-0059045498/regions/us-east1/subnetworks/cafrisales-app-subnet",
+            "internal_ipv6_prefix": "",
+            "ip_cidr_range": "10.0.1.0/24",
+            "ipv6_access_type": "",
+            "ipv6_cidr_range": "",
+            "log_config": [
+              {
+                "aggregation_interval": "INTERVAL_5_SEC",
+                "filter_expr": "true",
+                "flow_sampling": 0.5,
+                "metadata": "INCLUDE_ALL_METADATA",
+                "metadata_fields": []
+              }
+            ],
+            "name": "cafrisales-app-subnet",
+            "network": "https://www.googleapis.com/compute/v1/projects/gen-lang-client-0059045498/global/networks/cafrisales-vpc",
+            "private_ip_google_access": false,
+            "private_ipv6_google_access": "DISABLE_GOOGLE_ACCESS",
+            "project": "gen-lang-client-0059045498",
+            "purpose": "PRIVATE",
+            "region": "us-east1",
+            "role": "",
+            "secondary_ip_range": [],
+            "self_link": "https://www.googleapis.com/compute/v1/projects/gen-lang-client-0059045498/regions/us-east1/subnetworks/cafrisales-app-subnet",
+            "send_secondary_ip_range_if_empty": null,
+            "stack_type": "IPV4_ONLY",
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMCJ9",
+          "dependencies": [
+            "module.networking.google_compute_network.vpc"
+          ],
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "module": "module.networking",
+      "mode": "managed",
+      "type": "google_compute_subnetwork",
+      "name": "connector_subnet",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "creation_timestamp": "2026-01-28T00:51:32.195-08:00",
+            "description": "Subred dedicada para Serverless VPC Access (Rango Limpio)",
+            "external_ipv6_prefix": "",
+            "fingerprint": null,
+            "gateway_address": "192.168.40.1",
+            "id": "projects/gen-lang-client-0059045498/regions/us-east1/subnetworks/cafrisales-connector-subnet",
+            "internal_ipv6_prefix": "",
+            "ip_cidr_range": "192.168.40.0/28",
+            "ipv6_access_type": "",
+            "ipv6_cidr_range": "",
+            "log_config": [],
+            "name": "cafrisales-connector-subnet",
+            "network": "https://www.googleapis.com/compute/v1/projects/gen-lang-client-0059045498/global/networks/cafrisales-vpc",
+            "private_ip_google_access": false,
+            "private_ipv6_google_access": "DISABLE_GOOGLE_ACCESS",
+            "project": "gen-lang-client-0059045498",
+            "purpose": "PRIVATE",
+            "region": "us-east1",
+            "role": "",
+            "secondary_ip_range": [],
+            "self_link": "https://www.googleapis.com/compute/v1/projects/gen-lang-client-0059045498/regions/us-east1/subnetworks/cafrisales-connector-subnet",
+            "send_secondary_ip_range_if_empty": null,
+            "stack_type": "IPV4_ONLY",
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMCJ9",
+          "dependencies": [
+            "module.networking.google_compute_network.vpc"
+          ],
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "module": "module.networking",
+      "mode": "managed",
+      "type": "google_service_networking_connection",
+      "name": "private_vpc_connection",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "deletion_policy": null,
+            "id": "projects%2Fgen-lang-client-0059045498%2Fglobal%2Fnetworks%2Fcafrisales-vpc:servicenetworking.googleapis.com",
+            "network": "projects/gen-lang-client-0059045498/global/networks/cafrisales-vpc",
+            "peering": "servicenetworking-googleapis-com",
+            "reserved_peering_ranges": [
+              "cafrisales-private-ip"
+            ],
+            "service": "servicenetworking.googleapis.com",
+            "timeouts": null,
+            "update_on_creation_fail": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH19",
+          "dependencies": [
+            "module.networking.google_compute_global_address.private_ip_alloc",
+            "module.networking.google_compute_network.vpc"
+          ],
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "module": "module.secrets",
+      "mode": "managed",
+      "type": "google_secret_manager_secret",
+      "name": "db_root_pass",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "annotations": {},
+            "create_time": "2026-01-28T04:03:19.379674Z",
+            "effective_annotations": {},
+            "effective_labels": {},
+            "expire_time": "",
+            "id": "projects/gen-lang-client-0059045498/secrets/db-root-password",
+            "labels": {},
+            "name": "projects/343796426587/secrets/db-root-password",
+            "project": "gen-lang-client-0059045498",
+            "replication": [
+              {
+                "auto": [],
+                "user_managed": [
+                  {
+                    "replicas": [
+                      {
+                        "customer_managed_encryption": [],
+                        "location": "us-east1"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "rotation": [],
+            "secret_id": "db-root-password",
+            "terraform_labels": {},
+            "timeouts": null,
+            "topics": [],
+            "ttl": null,
+            "version_aliases": {},
+            "version_destroy_ttl": ""
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMCJ9"
+        }
+      ]
+    },
+    {
+      "module": "module.secrets",
+      "mode": "managed",
+      "type": "google_secret_manager_secret",
+      "name": "service_db_secrets",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "index_key": "auth-service",
+          "schema_version": 0,
+          "attributes": {
+            "annotations": {},
+            "create_time": "2026-01-28T04:03:19.337233Z",
+            "effective_annotations": {},
+            "effective_labels": {},
+            "expire_time": "",
+            "id": "projects/gen-lang-client-0059045498/secrets/auth-service-db-password",
+            "labels": {},
+            "name": "projects/343796426587/secrets/auth-service-db-password",
+            "project": "gen-lang-client-0059045498",
+            "replication": [
+              {
+                "auto": [],
+                "user_managed": [
+                  {
+                    "replicas": [
+                      {
+                        "customer_managed_encryption": [],
+                        "location": "us-east1"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "rotation": [],
+            "secret_id": "auth-service-db-password",
+            "terraform_labels": {},
+            "timeouts": null,
+            "topics": [],
+            "ttl": null,
+            "version_aliases": {},
+            "version_destroy_ttl": ""
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMCJ9",
+          "create_before_destroy": true
+        },
+        {
+          "index_key": "catalog-service",
+          "schema_version": 0,
+          "attributes": {
+            "annotations": {},
+            "create_time": "2026-01-28T04:03:19.344101Z",
+            "effective_annotations": {},
+            "effective_labels": {},
+            "expire_time": "",
+            "id": "projects/gen-lang-client-0059045498/secrets/catalog-service-db-password",
+            "labels": {},
+            "name": "projects/343796426587/secrets/catalog-service-db-password",
+            "project": "gen-lang-client-0059045498",
+            "replication": [
+              {
+                "auto": [],
+                "user_managed": [
+                  {
+                    "replicas": [
+                      {
+                        "customer_managed_encryption": [],
+                        "location": "us-east1"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "rotation": [],
+            "secret_id": "catalog-service-db-password",
+            "terraform_labels": {},
+            "timeouts": null,
+            "topics": [],
+            "ttl": null,
+            "version_aliases": {},
+            "version_destroy_ttl": ""
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMCJ9",
+          "create_before_destroy": true
+        },
+        {
+          "index_key": "credit-service",
+          "schema_version": 0,
+          "attributes": {
+            "annotations": {},
+            "create_time": "2026-01-28T04:03:19.375457Z",
+            "effective_annotations": {},
+            "effective_labels": {},
+            "expire_time": "",
+            "id": "projects/gen-lang-client-0059045498/secrets/credit-service-db-password",
+            "labels": {},
+            "name": "projects/343796426587/secrets/credit-service-db-password",
+            "project": "gen-lang-client-0059045498",
+            "replication": [
+              {
+                "auto": [],
+                "user_managed": [
+                  {
+                    "replicas": [
+                      {
+                        "customer_managed_encryption": [],
+                        "location": "us-east1"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "rotation": [],
+            "secret_id": "credit-service-db-password",
+            "terraform_labels": {},
+            "timeouts": null,
+            "topics": [],
+            "ttl": null,
+            "version_aliases": {},
+            "version_destroy_ttl": ""
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMCJ9",
+          "create_before_destroy": true
+        },
+        {
+          "index_key": "delivery-service",
+          "schema_version": 0,
+          "attributes": {
+            "annotations": {},
+            "create_time": "2026-01-28T04:03:20.532960Z",
+            "effective_annotations": {},
+            "effective_labels": {},
+            "expire_time": "",
+            "id": "projects/gen-lang-client-0059045498/secrets/delivery-service-db-password",
+            "labels": {},
+            "name": "projects/343796426587/secrets/delivery-service-db-password",
+            "project": "gen-lang-client-0059045498",
+            "replication": [
+              {
+                "auto": [],
+                "user_managed": [
+                  {
+                    "replicas": [
+                      {
+                        "customer_managed_encryption": [],
+                        "location": "us-east1"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "rotation": [],
+            "secret_id": "delivery-service-db-password",
+            "terraform_labels": {},
+            "timeouts": null,
+            "topics": [],
+            "ttl": null,
+            "version_aliases": {},
+            "version_destroy_ttl": ""
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMCJ9",
+          "create_before_destroy": true
+        },
+        {
+          "index_key": "notification-service",
+          "schema_version": 0,
+          "attributes": {
+            "annotations": {},
+            "create_time": "2026-01-28T23:34:51.483578Z",
+            "effective_annotations": {},
+            "effective_labels": {},
+            "expire_time": "",
+            "id": "projects/gen-lang-client-0059045498/secrets/notification-service-db-password",
+            "labels": {},
+            "name": "projects/343796426587/secrets/notification-service-db-password",
+            "project": "gen-lang-client-0059045498",
+            "replication": [
+              {
+                "auto": [],
+                "user_managed": [
+                  {
+                    "replicas": [
+                      {
+                        "customer_managed_encryption": [],
+                        "location": "us-east1"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "rotation": [],
+            "secret_id": "notification-service-db-password",
+            "terraform_labels": {},
+            "timeouts": null,
+            "topics": [],
+            "ttl": null,
+            "version_aliases": {},
+            "version_destroy_ttl": ""
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH19",
+          "create_before_destroy": true
+        },
+        {
+          "index_key": "order-service",
+          "schema_version": 0,
+          "attributes": {
+            "annotations": {},
+            "create_time": "2026-01-28T04:03:20.155458Z",
+            "effective_annotations": {},
+            "effective_labels": {},
+            "expire_time": "",
+            "id": "projects/gen-lang-client-0059045498/secrets/order-service-db-password",
+            "labels": {},
+            "name": "projects/343796426587/secrets/order-service-db-password",
+            "project": "gen-lang-client-0059045498",
+            "replication": [
+              {
+                "auto": [],
+                "user_managed": [
+                  {
+                    "replicas": [
+                      {
+                        "customer_managed_encryption": [],
+                        "location": "us-east1"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "rotation": [],
+            "secret_id": "order-service-db-password",
+            "terraform_labels": {},
+            "timeouts": null,
+            "topics": [],
+            "ttl": null,
+            "version_aliases": {},
+            "version_destroy_ttl": ""
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMCJ9",
+          "create_before_destroy": true
+        },
+        {
+          "index_key": "route-service",
+          "schema_version": 0,
+          "attributes": {
+            "annotations": {},
+            "create_time": "2026-01-28T04:03:20.563700Z",
+            "effective_annotations": {},
+            "effective_labels": {},
+            "expire_time": "",
+            "id": "projects/gen-lang-client-0059045498/secrets/route-service-db-password",
+            "labels": {},
+            "name": "projects/343796426587/secrets/route-service-db-password",
+            "project": "gen-lang-client-0059045498",
+            "replication": [
+              {
+                "auto": [],
+                "user_managed": [
+                  {
+                    "replicas": [
+                      {
+                        "customer_managed_encryption": [],
+                        "location": "us-east1"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "rotation": [],
+            "secret_id": "route-service-db-password",
+            "terraform_labels": {},
+            "timeouts": null,
+            "topics": [],
+            "ttl": null,
+            "version_aliases": {},
+            "version_destroy_ttl": ""
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMCJ9",
+          "create_before_destroy": true
+        },
+        {
+          "index_key": "user-service",
+          "schema_version": 0,
+          "attributes": {
+            "annotations": {},
+            "create_time": "2026-01-28T04:03:20.548465Z",
+            "effective_annotations": {},
+            "effective_labels": {},
+            "expire_time": "",
+            "id": "projects/gen-lang-client-0059045498/secrets/user-service-db-password",
+            "labels": {},
+            "name": "projects/343796426587/secrets/user-service-db-password",
+            "project": "gen-lang-client-0059045498",
+            "replication": [
+              {
+                "auto": [],
+                "user_managed": [
+                  {
+                    "replicas": [
+                      {
+                        "customer_managed_encryption": [],
+                        "location": "us-east1"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "rotation": [],
+            "secret_id": "user-service-db-password",
+            "terraform_labels": {},
+            "timeouts": null,
+            "topics": [],
+            "ttl": null,
+            "version_aliases": {},
+            "version_destroy_ttl": ""
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMCJ9",
+          "create_before_destroy": true
+        },
+        {
+          "index_key": "zone-service",
+          "schema_version": 0,
+          "attributes": {
+            "annotations": {},
+            "create_time": "2026-01-28T04:03:19.430525Z",
+            "effective_annotations": {},
+            "effective_labels": {},
+            "expire_time": "",
+            "id": "projects/gen-lang-client-0059045498/secrets/zone-service-db-password",
+            "labels": {},
+            "name": "projects/343796426587/secrets/zone-service-db-password",
+            "project": "gen-lang-client-0059045498",
+            "replication": [
+              {
+                "auto": [],
+                "user_managed": [
+                  {
+                    "replicas": [
+                      {
+                        "customer_managed_encryption": [],
+                        "location": "us-east1"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "rotation": [],
+            "secret_id": "zone-service-db-password",
+            "terraform_labels": {},
+            "timeouts": null,
+            "topics": [],
+            "ttl": null,
+            "version_aliases": {},
+            "version_destroy_ttl": ""
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMCJ9",
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "module": "module.secrets",
+      "mode": "managed",
+      "type": "google_secret_manager_secret_version",
+      "name": "db_root_pass_val",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "create_time": "2026-01-29T01:07:14.725134Z",
+            "deletion_policy": "DELETE",
+            "destroy_time": "",
+            "enabled": true,
+            "id": "projects/343796426587/secrets/db-root-password/versions/2",
+            "is_secret_data_base64": false,
+            "name": "projects/343796426587/secrets/db-root-password/versions/2",
+            "secret": "projects/gen-lang-client-0059045498/secrets/db-root-password",
+            "secret_data": "nEVGyrgXlZV7C9KT",
+            "timeouts": null,
+            "version": "2"
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "secret_data"
+              }
+            ]
+          ],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH19",
+          "dependencies": [
+            "module.secrets.google_secret_manager_secret.db_root_pass",
+            "module.secrets.random_password.db_root_password"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.secrets",
+      "mode": "managed",
+      "type": "google_secret_manager_secret_version",
+      "name": "service_db_secrets_val",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "index_key": "auth-service",
+          "schema_version": 0,
+          "attributes": {
+            "create_time": "2026-01-29T01:07:17.156196Z",
+            "deletion_policy": "DELETE",
+            "destroy_time": "",
+            "enabled": true,
+            "id": "projects/343796426587/secrets/auth-service-db-password/versions/2",
+            "is_secret_data_base64": false,
+            "name": "projects/343796426587/secrets/auth-service-db-password/versions/2",
+            "secret": "projects/gen-lang-client-0059045498/secrets/auth-service-db-password",
+            "secret_data": "UyXKuqdVwhwJ85eF",
+            "timeouts": null,
+            "version": "2"
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "secret_data"
+              }
+            ]
+          ],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH19",
+          "dependencies": [
+            "module.secrets.google_secret_manager_secret.service_db_secrets",
+            "module.secrets.random_password.service_db_passwords"
+          ]
+        },
+        {
+          "index_key": "catalog-service",
+          "schema_version": 0,
+          "attributes": {
+            "create_time": "2026-01-29T01:07:14.772807Z",
+            "deletion_policy": "DELETE",
+            "destroy_time": "",
+            "enabled": true,
+            "id": "projects/343796426587/secrets/catalog-service-db-password/versions/2",
+            "is_secret_data_base64": false,
+            "name": "projects/343796426587/secrets/catalog-service-db-password/versions/2",
+            "secret": "projects/gen-lang-client-0059045498/secrets/catalog-service-db-password",
+            "secret_data": "Ns6wDGOGwAmQmLX5",
+            "timeouts": null,
+            "version": "2"
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "secret_data"
+              }
+            ]
+          ],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH19",
+          "dependencies": [
+            "module.secrets.google_secret_manager_secret.service_db_secrets",
+            "module.secrets.random_password.service_db_passwords"
+          ]
+        },
+        {
+          "index_key": "credit-service",
+          "schema_version": 0,
+          "attributes": {
+            "create_time": "2026-01-29T01:07:15.431243Z",
+            "deletion_policy": "DELETE",
+            "destroy_time": "",
+            "enabled": true,
+            "id": "projects/343796426587/secrets/credit-service-db-password/versions/2",
+            "is_secret_data_base64": false,
+            "name": "projects/343796426587/secrets/credit-service-db-password/versions/2",
+            "secret": "projects/gen-lang-client-0059045498/secrets/credit-service-db-password",
+            "secret_data": "HOTZHbTxROvUWgiW",
+            "timeouts": null,
+            "version": "2"
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "secret_data"
+              }
+            ]
+          ],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH19",
+          "dependencies": [
+            "module.secrets.google_secret_manager_secret.service_db_secrets",
+            "module.secrets.random_password.service_db_passwords"
+          ]
+        },
+        {
+          "index_key": "delivery-service",
+          "schema_version": 0,
+          "attributes": {
+            "create_time": "2026-01-29T01:07:15.089032Z",
+            "deletion_policy": "DELETE",
+            "destroy_time": "",
+            "enabled": true,
+            "id": "projects/343796426587/secrets/delivery-service-db-password/versions/2",
+            "is_secret_data_base64": false,
+            "name": "projects/343796426587/secrets/delivery-service-db-password/versions/2",
+            "secret": "projects/gen-lang-client-0059045498/secrets/delivery-service-db-password",
+            "secret_data": "xrT3Bz5GTrpCWg2D",
+            "timeouts": null,
+            "version": "2"
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "secret_data"
+              }
+            ]
+          ],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH19",
+          "dependencies": [
+            "module.secrets.google_secret_manager_secret.service_db_secrets",
+            "module.secrets.random_password.service_db_passwords"
+          ]
+        },
+        {
+          "index_key": "notification-service",
+          "schema_version": 0,
+          "attributes": {
+            "create_time": "2026-01-29T01:07:16.466868Z",
+            "deletion_policy": "DELETE",
+            "destroy_time": "",
+            "enabled": true,
+            "id": "projects/343796426587/secrets/notification-service-db-password/versions/1",
+            "is_secret_data_base64": false,
+            "name": "projects/343796426587/secrets/notification-service-db-password/versions/1",
+            "secret": "projects/gen-lang-client-0059045498/secrets/notification-service-db-password",
+            "secret_data": "s8jHfZFVMFqYNaPc",
+            "timeouts": null,
+            "version": "1"
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "secret_data"
+              }
+            ]
+          ],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH19",
+          "dependencies": [
+            "module.secrets.google_secret_manager_secret.service_db_secrets",
+            "module.secrets.random_password.service_db_passwords"
+          ]
+        },
+        {
+          "index_key": "order-service",
+          "schema_version": 0,
+          "attributes": {
+            "create_time": "2026-01-29T01:07:16.626736Z",
+            "deletion_policy": "DELETE",
+            "destroy_time": "",
+            "enabled": true,
+            "id": "projects/343796426587/secrets/order-service-db-password/versions/2",
+            "is_secret_data_base64": false,
+            "name": "projects/343796426587/secrets/order-service-db-password/versions/2",
+            "secret": "projects/gen-lang-client-0059045498/secrets/order-service-db-password",
+            "secret_data": "LSrT9iFnjxORzSCy",
+            "timeouts": null,
+            "version": "2"
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "secret_data"
+              }
+            ]
+          ],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH19",
+          "dependencies": [
+            "module.secrets.google_secret_manager_secret.service_db_secrets",
+            "module.secrets.random_password.service_db_passwords"
+          ]
+        },
+        {
+          "index_key": "route-service",
+          "schema_version": 0,
+          "attributes": {
+            "create_time": "2026-01-29T01:07:18.213356Z",
+            "deletion_policy": "DELETE",
+            "destroy_time": "",
+            "enabled": true,
+            "id": "projects/343796426587/secrets/route-service-db-password/versions/2",
+            "is_secret_data_base64": false,
+            "name": "projects/343796426587/secrets/route-service-db-password/versions/2",
+            "secret": "projects/gen-lang-client-0059045498/secrets/route-service-db-password",
+            "secret_data": "VI6TV8FLFwbHACkA",
+            "timeouts": null,
+            "version": "2"
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "secret_data"
+              }
+            ]
+          ],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH19",
+          "dependencies": [
+            "module.secrets.google_secret_manager_secret.service_db_secrets",
+            "module.secrets.random_password.service_db_passwords"
+          ]
+        },
+        {
+          "index_key": "user-service",
+          "schema_version": 0,
+          "attributes": {
+            "create_time": "2026-01-29T01:07:16.537805Z",
+            "deletion_policy": "DELETE",
+            "destroy_time": "",
+            "enabled": true,
+            "id": "projects/343796426587/secrets/user-service-db-password/versions/2",
+            "is_secret_data_base64": false,
+            "name": "projects/343796426587/secrets/user-service-db-password/versions/2",
+            "secret": "projects/gen-lang-client-0059045498/secrets/user-service-db-password",
+            "secret_data": "ygbNVlFjJHAaTo8B",
+            "timeouts": null,
+            "version": "2"
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "secret_data"
+              }
+            ]
+          ],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH19",
+          "dependencies": [
+            "module.secrets.google_secret_manager_secret.service_db_secrets",
+            "module.secrets.random_password.service_db_passwords"
+          ]
+        },
+        {
+          "index_key": "zone-service",
+          "schema_version": 0,
+          "attributes": {
+            "create_time": "2026-01-29T01:07:16.506700Z",
+            "deletion_policy": "DELETE",
+            "destroy_time": "",
+            "enabled": true,
+            "id": "projects/343796426587/secrets/zone-service-db-password/versions/2",
+            "is_secret_data_base64": false,
+            "name": "projects/343796426587/secrets/zone-service-db-password/versions/2",
+            "secret": "projects/gen-lang-client-0059045498/secrets/zone-service-db-password",
+            "secret_data": "aIGVp2yZYBojSA2M",
+            "timeouts": null,
+            "version": "2"
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "secret_data"
+              }
+            ]
+          ],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH19",
+          "dependencies": [
+            "module.secrets.google_secret_manager_secret.service_db_secrets",
+            "module.secrets.random_password.service_db_passwords"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.secrets",
+      "mode": "managed",
+      "type": "random_password",
+      "name": "db_root_password",
+      "provider": "provider[\"registry.terraform.io/hashicorp/random\"]",
+      "instances": [
+        {
+          "schema_version": 3,
+          "attributes": {
+            "bcrypt_hash": "$2a$10$/.gBDNpOoL9jD5QC0xqJF.tu5TsOX1bFKpi.fnOQJIh6h.FJL1OUu",
+            "id": "none",
+            "keepers": null,
+            "length": 16,
+            "lower": true,
+            "min_lower": 0,
+            "min_numeric": 0,
+            "min_special": 0,
+            "min_upper": 0,
+            "number": true,
+            "numeric": true,
+            "override_special": null,
+            "result": "nEVGyrgXlZV7C9KT",
+            "special": false,
+            "upper": true
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "bcrypt_hash"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "result"
+              }
+            ]
+          ],
+          "identity_schema_version": 0,
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "module": "module.secrets",
+      "mode": "managed",
+      "type": "random_password",
+      "name": "service_db_passwords",
+      "provider": "provider[\"registry.terraform.io/hashicorp/random\"]",
+      "instances": [
+        {
+          "index_key": "auth-service",
+          "schema_version": 3,
+          "attributes": {
+            "bcrypt_hash": "$2a$10$K.8ktVAiKFoE/tXltJ1mk.n.erJxrWCTaabanuhmShO3wApMr.9xy",
+            "id": "none",
+            "keepers": null,
+            "length": 16,
+            "lower": true,
+            "min_lower": 0,
+            "min_numeric": 0,
+            "min_special": 0,
+            "min_upper": 0,
+            "number": true,
+            "numeric": true,
+            "override_special": null,
+            "result": "UyXKuqdVwhwJ85eF",
+            "special": false,
+            "upper": true
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "bcrypt_hash"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "result"
+              }
+            ]
+          ],
+          "identity_schema_version": 0,
+          "create_before_destroy": true
+        },
+        {
+          "index_key": "catalog-service",
+          "schema_version": 3,
+          "attributes": {
+            "bcrypt_hash": "$2a$10$MhhdThjEGDD./f6Qa6mvh./ftORaOyj5KNMQIxaHp9/iX1ds5C/7K",
+            "id": "none",
+            "keepers": null,
+            "length": 16,
+            "lower": true,
+            "min_lower": 0,
+            "min_numeric": 0,
+            "min_special": 0,
+            "min_upper": 0,
+            "number": true,
+            "numeric": true,
+            "override_special": null,
+            "result": "Ns6wDGOGwAmQmLX5",
+            "special": false,
+            "upper": true
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "bcrypt_hash"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "result"
+              }
+            ]
+          ],
+          "identity_schema_version": 0,
+          "create_before_destroy": true
+        },
+        {
+          "index_key": "credit-service",
+          "schema_version": 3,
+          "attributes": {
+            "bcrypt_hash": "$2a$10$B/1Q/cU6Iw9dg4M3f7Ha4uCjvqRoI.p92HR2UmYFPdeaudXUpnbFO",
+            "id": "none",
+            "keepers": null,
+            "length": 16,
+            "lower": true,
+            "min_lower": 0,
+            "min_numeric": 0,
+            "min_special": 0,
+            "min_upper": 0,
+            "number": true,
+            "numeric": true,
+            "override_special": null,
+            "result": "HOTZHbTxROvUWgiW",
+            "special": false,
+            "upper": true
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "bcrypt_hash"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "result"
+              }
+            ]
+          ],
+          "identity_schema_version": 0,
+          "create_before_destroy": true
+        },
+        {
+          "index_key": "delivery-service",
+          "schema_version": 3,
+          "attributes": {
+            "bcrypt_hash": "$2a$10$KyBKFaev7l6K/BRrzrBwbOOfhjd1ZuAhLysG7urM7eepzDBKJBq42",
+            "id": "none",
+            "keepers": null,
+            "length": 16,
+            "lower": true,
+            "min_lower": 0,
+            "min_numeric": 0,
+            "min_special": 0,
+            "min_upper": 0,
+            "number": true,
+            "numeric": true,
+            "override_special": null,
+            "result": "xrT3Bz5GTrpCWg2D",
+            "special": false,
+            "upper": true
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "bcrypt_hash"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "result"
+              }
+            ]
+          ],
+          "identity_schema_version": 0,
+          "create_before_destroy": true
+        },
+        {
+          "index_key": "notification-service",
+          "schema_version": 3,
+          "attributes": {
+            "bcrypt_hash": "$2a$10$R3WQlqCexikYVAW5sAGThuBLnty.um9Q3ZC25CmrFRoREDSxQltMK",
+            "id": "none",
+            "keepers": null,
+            "length": 16,
+            "lower": true,
+            "min_lower": 0,
+            "min_numeric": 0,
+            "min_special": 0,
+            "min_upper": 0,
+            "number": true,
+            "numeric": true,
+            "override_special": null,
+            "result": "s8jHfZFVMFqYNaPc",
+            "special": false,
+            "upper": true
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "bcrypt_hash"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "result"
+              }
+            ]
+          ],
+          "identity_schema_version": 0,
+          "create_before_destroy": true
+        },
+        {
+          "index_key": "order-service",
+          "schema_version": 3,
+          "attributes": {
+            "bcrypt_hash": "$2a$10$kpac67YWCgVcEchX6ULJs.5r8PTMtm3YHveSPWL7EFMeECU4QqQSy",
+            "id": "none",
+            "keepers": null,
+            "length": 16,
+            "lower": true,
+            "min_lower": 0,
+            "min_numeric": 0,
+            "min_special": 0,
+            "min_upper": 0,
+            "number": true,
+            "numeric": true,
+            "override_special": null,
+            "result": "LSrT9iFnjxORzSCy",
+            "special": false,
+            "upper": true
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "bcrypt_hash"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "result"
+              }
+            ]
+          ],
+          "identity_schema_version": 0,
+          "create_before_destroy": true
+        },
+        {
+          "index_key": "route-service",
+          "schema_version": 3,
+          "attributes": {
+            "bcrypt_hash": "$2a$10$LzDEnHWs.wjbHMBFZSdBJ.SsWfQ2iCqoKBiaU4s6pd7Xe0aQep46y",
+            "id": "none",
+            "keepers": null,
+            "length": 16,
+            "lower": true,
+            "min_lower": 0,
+            "min_numeric": 0,
+            "min_special": 0,
+            "min_upper": 0,
+            "number": true,
+            "numeric": true,
+            "override_special": null,
+            "result": "VI6TV8FLFwbHACkA",
+            "special": false,
+            "upper": true
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "bcrypt_hash"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "result"
+              }
+            ]
+          ],
+          "identity_schema_version": 0,
+          "create_before_destroy": true
+        },
+        {
+          "index_key": "user-service",
+          "schema_version": 3,
+          "attributes": {
+            "bcrypt_hash": "$2a$10$HkqxkbpJWpxAxpuAzb9nwO0PNCkZ6AaQZtJTutSfcaXxjevxTFWUy",
+            "id": "none",
+            "keepers": null,
+            "length": 16,
+            "lower": true,
+            "min_lower": 0,
+            "min_numeric": 0,
+            "min_special": 0,
+            "min_upper": 0,
+            "number": true,
+            "numeric": true,
+            "override_special": null,
+            "result": "ygbNVlFjJHAaTo8B",
+            "special": false,
+            "upper": true
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "bcrypt_hash"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "result"
+              }
+            ]
+          ],
+          "identity_schema_version": 0,
+          "create_before_destroy": true
+        },
+        {
+          "index_key": "zone-service",
+          "schema_version": 3,
+          "attributes": {
+            "bcrypt_hash": "$2a$10$IiQJpQvgpKjprMpnmy9nJO9kiKt.wVxVKroAOCWEyYFKLrWm4AWvm",
+            "id": "none",
+            "keepers": null,
+            "length": 16,
+            "lower": true,
+            "min_lower": 0,
+            "min_numeric": 0,
+            "min_special": 0,
+            "min_upper": 0,
+            "number": true,
+            "numeric": true,
+            "override_special": null,
+            "result": "aIGVp2yZYBojSA2M",
+            "special": false,
+            "upper": true
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "bcrypt_hash"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "result"
+              }
+            ]
+          ],
+          "identity_schema_version": 0,
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "module": "module.storage",
+      "mode": "managed",
+      "type": "google_storage_bucket",
+      "name": "assets",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 2,
+          "attributes": {
+            "autoclass": [],
+            "cors": [
+              {
+                "max_age_seconds": 3600,
+                "method": [
+                  "GET",
+                  "HEAD",
+                  "PUT",
+                  "POST",
+                  "DELETE",
+                  "OPTIONS"
+                ],
+                "origin": [
+                  "*"
+                ],
+                "response_header": [
+                  "*"
+                ]
+              }
+            ],
+            "custom_placement_config": [],
+            "default_event_based_hold": false,
+            "effective_labels": {},
+            "enable_object_retention": false,
+            "encryption": [],
+            "force_destroy": false,
+            "id": "gen-lang-client-0059045498-cafrisales-assets",
+            "labels": {},
+            "lifecycle_rule": [],
+            "location": "US-EAST1",
+            "logging": [],
+            "name": "gen-lang-client-0059045498-cafrisales-assets",
+            "project": "gen-lang-client-0059045498",
+            "project_number": 199042907,
+            "public_access_prevention": "inherited",
+            "requester_pays": false,
+            "retention_policy": [],
+            "rpo": null,
+            "self_link": "https://www.googleapis.com/storage/v1/b/gen-lang-client-0059045498-cafrisales-assets",
+            "soft_delete_policy": [
+              {
+                "effective_time": "2026-01-28T05:18:13.267Z",
+                "retention_duration_seconds": 604800
+              }
+            ],
+            "storage_class": "STANDARD",
+            "terraform_labels": {},
+            "timeouts": null,
+            "uniform_bucket_level_access": true,
+            "url": "gs://gen-lang-client-0059045498-cafrisales-assets",
+            "versioning": [],
+            "website": []
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsInJlYWQiOjI0MDAwMDAwMDAwMCwidXBkYXRlIjoyNDAwMDAwMDAwMDB9LCJzY2hlbWFfdmVyc2lvbiI6IjIifQ==",
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "module": "module.storage",
+      "mode": "managed",
+      "type": "google_storage_bucket_iam_member",
+      "name": "public_rule",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "bucket": "b/gen-lang-client-0059045498-cafrisales-assets",
+            "condition": [],
+            "etag": "CAM=",
+            "id": "b/gen-lang-client-0059045498-cafrisales-assets/roles/storage.objectViewer/allUsers",
+            "member": "allUsers",
+            "role": "roles/storage.objectViewer"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "module.storage.google_storage_bucket.assets"
+          ]
+        }
+      ]
+    }
+  ],
+  "check_results": null
+}
