@@ -6,14 +6,14 @@ steps:
       - '-c'
       - |
         docker build \
+          -f backend/services/${_SERVICE_NAME}/Dockerfile \
           -t ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REGISTRY}/${_SERVICE_NAME}:${SHORT_SHA} \
           -t ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REGISTRY}/${_SERVICE_NAME}:latest \
           backend/services/${_SERVICE_NAME}
-    # ^^^ CORRECCIÓN: Quitamos 'dir' y pusimos la ruta aquí arriba ^^^
 
-  # 2. Subir imagen
+  # 2. Subir imagen (con --all-tags para push de ambas etiquetas)
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REGISTRY}/${_SERVICE_NAME}']
+    args: ['push', '--all-tags', '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REGISTRY}/${_SERVICE_NAME}']
 
   # 3. Desplegar en Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
