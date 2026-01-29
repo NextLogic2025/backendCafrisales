@@ -35,6 +35,12 @@ export class CommercialController {
         return this.commercialService.findOne(id);
     }
 
+    @Get(':id/historial')
+    @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR, RolUsuario.VENDEDOR)
+    getHistory(@Param('id', ParseUUIDPipe) id: string) {
+        return this.commercialService.getHistory(id);
+    }
+
     @Put(':id/publicar')
     @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR)
     publish(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: AuthUser) {

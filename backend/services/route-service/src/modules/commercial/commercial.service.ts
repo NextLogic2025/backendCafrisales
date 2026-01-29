@@ -168,11 +168,12 @@ export class CommercialService {
     async publish(id: string, userId: string): Promise<RuteroComercial> {
         return this.dataSource.transaction(async (manager) => {
             const routeRepo = manager.getRepository(RuteroComercial);
+            const stopRepo = manager.getRepository(ParadaRuteroComercial);
             const historyRepo = manager.getRepository(HistorialEstadoRutero);
 
+            // Obtener el rutero con lock SIN relaciones (evita error de FOR UPDATE con LEFT JOIN)
             const route = await routeRepo.findOne({
                 where: { id },
-                relations: ['paradas'],
                 lock: { mode: 'pessimistic_write' },
             });
             if (!route) {
@@ -181,7 +182,10 @@ export class CommercialService {
             if (route.estado !== EstadoRutero.BORRADOR) {
                 throw new BadRequestException('Solo se pueden publicar ruteros en borrador');
             }
-            if (!route.paradas || route.paradas.length === 0) {
+
+            // Contar paradas por separado
+            const paradasCount = await stopRepo.count({ where: { rutero_id: id } });
+            if (paradasCount === 0) {
                 throw new BadRequestException('No se puede publicar un rutero sin paradas');
             }
 
@@ -349,6 +353,19 @@ export class CommercialService {
             );
 
             return saved;
+        });
+    }
+
+    async getHistory(routeId: string): Promise<HistorialEstadoRutero[]> {
+        const route = await this.routeRepo.findOne({ where: { id: routeId } });
+        if (!route) {
+            throw new NotFoundException(`Rutero comercial ${routeId} no encontrado`);
+        }
+
+        const historyRepo = this.dataSource.getRepository(HistorialEstadoRutero);
+        return historyRepo.find({
+            where: { tipo: TipoRutero.COMERCIAL, rutero_id: routeId },
+            order: { creado_en: 'DESC' },
         });
     }
 

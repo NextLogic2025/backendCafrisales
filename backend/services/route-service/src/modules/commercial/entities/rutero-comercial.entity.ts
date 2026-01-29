@@ -21,8 +21,9 @@ export class RuteroComercial {
     creado_por_supervisor_id: string;
 
     @Column({
-        type: 'varchar',
-        length: 20,
+        type: 'enum',
+        enum: EstadoRutero,
+        enumName: 'estado_rutero',
         default: EstadoRutero.BORRADOR,
     })
     estado: EstadoRutero;
