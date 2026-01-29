@@ -19,7 +19,7 @@ const dbConfig = {
       : {
           url: process.env.DATABASE_URL,
         }),
-    schema: 'app',
+    // schema: 'app',
     logging: false,
     ssl: isProduction ? { rejectUnauthorized: false } : false,
 };
@@ -35,7 +35,7 @@ export const dataSourceOptions: DataSourceOptions = {
     entities: [__dirname + '/../**/*.entity{.ts,.js}'],
     migrations: [__dirname + '/../migrations/*{.ts,.js}'],
     synchronize: true, // Activado
-    schema: 'app',
+    // schema: 'app',
 };
 
 const dataSource = new DataSource(dataSourceOptions);

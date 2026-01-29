@@ -18,7 +18,7 @@ const dbConfig = {
       : {
           url: process.env.DATABASE_URL,
         }),
-    schema: 'app',
+    // schema: 'app',
     logging: false,
     ssl: isProduction ? { rejectUnauthorized: false } : false,
 };

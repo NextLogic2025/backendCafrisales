@@ -23,7 +23,7 @@ export const typeOrmConfig = (): TypeOrmModuleOptions => {
       path.join(__dirname, '..', '..', '**', 'modules', '**', 'entities', '*.entity.ts'),
     ],
     synchronize: true, // Activado para creación de tablas
-    schema: 'app',
+    // schema: 'app',
     logging: false,
     ssl: isProduction ? { rejectUnauthorized: false } : false,
   };
