@@ -36,12 +36,12 @@ $$;
 -- ENUMs estables (roles/estado suelen ser estables)
 DO $$
 BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'rol_usuario') THEN
-    CREATE TYPE rol_usuario AS ENUM ('cliente','vendedor','bodeguero','supervisor','transportista','admin');
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'rol_usuario' AND typnamespace = 'app'::regnamespace) THEN
+    CREATE TYPE app.rol_usuario AS ENUM ('cliente','vendedor','bodeguero','supervisor','transportista','admin','staff');
   END IF;
 
-  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'estado_usuario') THEN
-    CREATE TYPE estado_usuario AS ENUM ('activo','inactivo','suspendido');
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'estado_usuario' AND typnamespace = 'app'::regnamespace) THEN
+    CREATE TYPE app.estado_usuario AS ENUM ('activo','inactivo','suspendido');
   END IF;
 END$$;
 
@@ -50,8 +50,8 @@ CREATE TABLE app.usuarios (
   id               uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   email            citext NOT NULL UNIQUE,
 
-  rol              rol_usuario NOT NULL,
-  estado           estado_usuario NOT NULL DEFAULT 'activo',
+  rol              app.rol_usuario NOT NULL,
+  estado           app.estado_usuario NOT NULL DEFAULT 'activo',
 
   creado_en         timestamptz NOT NULL DEFAULT transaction_timestamp(),
   actualizado_en    timestamptz NOT NULL DEFAULT transaction_timestamp(),

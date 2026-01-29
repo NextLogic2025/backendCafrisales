@@ -18,8 +18,9 @@ export class AprobacionCredito {
     aprobado_por_vendedor_id: string;
 
     @Column({
-        type: 'varchar',
-        length: 20,
+        type: 'enum',
+        enum: OrigenCredito,
+        enumName: 'origen_credito',
         default: OrigenCredito.VENDEDOR,
     })
     origen: OrigenCredito;
@@ -40,8 +41,9 @@ export class AprobacionCredito {
     fecha_vencimiento: Date;
 
     @Column({
-        type: 'varchar',
-        length: 20,
+        type: 'enum',
+        enum: EstadoCredito,
+        enumName: 'estado_credito',
         default: EstadoCredito.ACTIVO,
     })
     estado: EstadoCredito;

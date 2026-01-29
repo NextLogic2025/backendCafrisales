@@ -46,13 +46,12 @@ $$;
 -- =========================
 DO $$
 BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'estado_credito') THEN
-    CREATE TYPE estado_credito AS ENUM ('activo','vencido','pagado','cancelado');
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'estado_credito' AND typnamespace = 'app'::regnamespace) THEN
+    CREATE TYPE app.estado_credito AS ENUM ('activo','vencido','pagado','cancelado');
   END IF;
 
-  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'origen_credito') THEN
-    -- útil si en el futuro hay aprobaciones por políticas especiales
-    CREATE TYPE origen_credito AS ENUM ('vendedor','excepcion');
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'origen_credito' AND typnamespace = 'app'::regnamespace) THEN
+    CREATE TYPE app.origen_credito AS ENUM ('vendedor','excepcion');
   END IF;
 END$$;
 
@@ -69,7 +68,7 @@ CREATE TABLE app.aprobaciones_credito (
   cliente_id              uuid NOT NULL,        -- referencia lógica a user-service
 
   aprobado_por_vendedor_id uuid NOT NULL,       -- referencia lógica (vendedor)
-  origen                  origen_credito NOT NULL DEFAULT 'vendedor',
+  origen                  app.origen_credito NOT NULL DEFAULT 'vendedor',
 
   monto_aprobado          numeric(12,2) NOT NULL CHECK (monto_aprobado > 0),
   moneda                  char(3) NOT NULL DEFAULT 'USD',
@@ -78,7 +77,7 @@ CREATE TABLE app.aprobaciones_credito (
   fecha_aprobacion        date NOT NULL DEFAULT (current_date),
   fecha_vencimiento       date NOT NULL,
 
-  estado                  estado_credito NOT NULL DEFAULT 'activo',
+  estado                  app.estado_credito NOT NULL DEFAULT 'activo',
 
   notas                   text,
 
@@ -139,7 +138,7 @@ CREATE INDEX idx_pagos_credito_aprobacion_fecha
 CREATE TABLE app.historial_estado_credito (
   id                    bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   aprobacion_credito_id uuid NOT NULL REFERENCES app.aprobaciones_credito(id) ON DELETE CASCADE,
-  estado                estado_credito NOT NULL,
+  estado                app.estado_credito NOT NULL,
   cambiado_por_id       uuid NOT NULL,
   motivo                text,
   creado_en             timestamptz NOT NULL DEFAULT transaction_timestamp()
