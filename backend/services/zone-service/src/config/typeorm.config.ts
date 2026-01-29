@@ -1,25 +1,42 @@
 import { DataSource, DataSourceOptions } from 'typeorm';
-import { ConfigService, registerAs } from '@nestjs/config';
+import { registerAs } from '@nestjs/config';
 import { config as dotenvConfig } from 'dotenv';
 
 dotenvConfig({ path: '.env' });
 
-export const typeormConfig = registerAs('typeorm', () => ({
-    type: 'postgres',
-    url: process.env.DATABASE_URL,
-    autoLoadEntities: true,
-    synchronize: false, // En producción debe ser false
-    //logging: process.env.NODE_ENV === 'development',
+const isProduction = process.env.NODE_ENV === 'production';
+
+// Configuración Base
+const dbConfig = {
+    type: 'postgres' as const,
+    // Lógica Híbrida
+    ...(process.env.DB_HOST
+      ? {
+          host: process.env.DB_HOST,
+          port: parseInt(process.env.DB_PORT, 10) || 5432,
+          username: process.env.DB_USER,
+          password: process.env.DB_PASSWORD,
+          database: process.env.DB_NAME,
+        }
+      : {
+          url: process.env.DATABASE_URL,
+        }),
     logging: false,
-    migrations: ['dist/migrations/*{.ts,.js}'],
+    ssl: isProduction ? { rejectUnauthorized: false } : false,
+};
+
+export const typeormConfig = registerAs('typeorm', () => ({
+    ...dbConfig,
+    autoLoadEntities: true,
+    entities: [__dirname + '/../**/*.entity{.ts,.js}'], // Ajustado a standard
+    migrations: [__dirname + '/../migrations/*{.ts,.js}'],
+    synchronize: true, // Activado para crear tablas
     migrationsRun: false,
 }));
 
 export const connectionSource = new DataSource({
-    type: 'postgres',
-    url: process.env.DATABASE_URL,
-    entities: ['dist/**/*.entity{.ts,.js}'],
-    migrations: ['dist/migrations/*{.ts,.js}'],
-    synchronize: false,
-    logging: false,
+    ...dbConfig,
+    entities: [__dirname + '/../**/*.entity{.ts,.js}'],
+    migrations: [__dirname + '/../migrations/*{.ts,.js}'],
+    synchronize: true, // Activado
 } as DataSourceOptions);

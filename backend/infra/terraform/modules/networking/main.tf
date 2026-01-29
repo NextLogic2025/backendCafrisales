@@ -31,35 +31,35 @@ resource "google_compute_subnetwork" "app_subnet" {
 # SUBNET 2: CONECTOR (La Solución Híbrida)
 # ============================================================
 # Usamos Subnet explícita + Rango 192.168 para evitar conflictos previos
-resource "google_compute_subnetwork" "connector_subnet" {
-  name          = "${var.app_name}-connector-subnet"
+# resource "google_compute_subnetwork" "connector_subnet" {
+#   name          = "${var.app_name}-connector-subnet"
   
-  # CAMBIO CRÍTICO: Usamos 192.168.40.0 para salir de la zona de error 10.8.x.x
-  ip_cidr_range = "192.168.40.0/28" 
+#   # CAMBIO CRÍTICO: Usamos 192.168.40.0 para salir de la zona de error 10.8.x.x
+#   ip_cidr_range = "192.168.40.0/28" 
   
-  region        = var.region
-  network       = google_compute_network.vpc.id
-  description   = "Subred dedicada para Serverless VPC Access (Rango Limpio)"
-}
+#   region        = var.region
+#   network       = google_compute_network.vpc.id
+#   description   = "Subred dedicada para Serverless VPC Access (Rango Limpio)"
+# }
 
 # ============================================================
 # VPC ACCESS CONNECTOR
 # ============================================================
-resource "google_vpc_access_connector" "cloud_run_connector" {
-  name          = "cafrisales-vpc-conn-final"
-  region        = var.region
+# resource "google_vpc_access_connector" "cloud_run_connector" {
+#  name          = "cafrisales-vpc-conn-final"
+#  region        = var.region
   
   # Referenciamos la subnet que acabamos de definir con la IP limpia
-  subnet {
-    name = google_compute_subnetwork.connector_subnet.name
-  }
+#  subnet {
+#    name = google_compute_subnetwork.connector_subnet.name
+#  }
 
-  min_instances = 2
-  max_instances = 10
-  machine_type  = "e2-micro"
+#  min_instances = 2
+#  max_instances = 10
+#  machine_type  = "e2-micro"
 
-  depends_on = [google_compute_subnetwork.connector_subnet]
-}
+#  depends_on = [google_compute_subnetwork.connector_subnet]
+#}
 
 # ============================================================
 # CLOUD NAT & ROUTER
@@ -127,12 +127,3 @@ resource "google_compute_firewall" "deny_all" {
   priority      = 65534
   source_ranges = ["0.0.0.0/0"]
 }
-
-# ============================================================
-# OUTPUTS
-# ============================================================
-output "vpc_id" { value = google_compute_network.vpc.id }
-output "vpc_self_link" { value = google_compute_network.vpc.self_link }
-output "subnet_id" { value = google_compute_subnetwork.app_subnet.id }
-output "vpc_connector_id" { value = google_vpc_access_connector.cloud_run_connector.id }
-output "vpc_connector_name" { value = google_vpc_access_connector.cloud_run_connector.name }

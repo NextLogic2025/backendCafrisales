@@ -24,5 +24,5 @@ services = [
 database_version      = "POSTGRES_17"
 db_tier               = "db-f1-micro"
 deletion_protection   = false
-backup_retention_days = 30
+backup_retention_days = 7
 db_admin_user         = "postgres"

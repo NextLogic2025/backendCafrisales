@@ -69,10 +69,6 @@ resource "google_cloud_run_v2_service" "default" {
         value = "production"
       }
       env {
-        name  = "PORT"
-        value = "3000"
-      }
-      env {
         name  = "DB_HOST"
         value = var.cloudsql_private_ip
       }
