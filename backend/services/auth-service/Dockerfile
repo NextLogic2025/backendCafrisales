@@ -6,8 +6,8 @@ WORKDIR /app
 # Copiamos solo lo necesario para dependencias → mejor uso de cache
 COPY package*.json ./
 
-# npm ci es más rápido, limpio y reproducible que npm install
-RUN npm ci
+# npm install para proyectos sin package-lock.json
+RUN npm install
 
 # Copiamos el código fuente
 COPY . .
@@ -26,8 +26,8 @@ WORKDIR /app
 # Copiamos solo package.json para instalar solo dependencias de producción
 COPY --chown=node:node package*.json ./
 
-# Instalamos solo lo necesario en runtime + limpieza de cache
-RUN npm ci --omit=dev --ignore-scripts && npm cache clean --force
+# Instalamos solo dependencias de producción + limpieza de cache
+RUN npm install --omit=dev --ignore-scripts && npm cache clean --force
 
 # Copiamos solo el resultado del build (dist/)
 COPY --chown=node:node --from=builder /app/dist ./dist
