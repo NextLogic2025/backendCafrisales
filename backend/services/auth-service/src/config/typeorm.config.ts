@@ -8,19 +8,19 @@ export const typeOrmConfig = (): TypeOrmModuleOptions => {
     // Lógica Híbrida: Usa variables separadas si existen (Cloud), sino URL (Local)
     ...(process.env.DB_HOST
       ? {
-          host: process.env.DB_HOST,
-          port: parseInt(process.env.DB_PORT, 10) || 5432,
-          username: process.env.DB_USER,
-          password: process.env.DB_PASSWORD,
-          database: process.env.DB_NAME,
-        }
+        host: process.env.DB_HOST,
+        port: parseInt(process.env.DB_PORT, 10) || 5432,
+        username: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_NAME,
+      }
       : {
-          url: process.env.DATABASE_URL,
-        }),
+        url: process.env.DATABASE_URL,
+      }),
     entities: [__dirname + '/../**/*.entity{.ts,.js}'],
     migrations: [__dirname + '/../database/migrations/*{.ts,.js}'],
     // IMPORTANTE: True para crear tablas automáticamente ahora
-    synchronize: true, 
+    synchronize: true,
     logging: false,
     ssl: isProduction ? { rejectUnauthorized: false } : false,
   };
