@@ -1,6 +1,9 @@
 # ── Etapa 1: Build ───────────────────────────────────────────────────────────
 FROM node:24-alpine AS builder
 
+# Instalar git (requerido para dependencias de GitHub)
+RUN apk add --no-cache git
+
 WORKDIR /app
 
 # Copiamos solo lo necesario para dependencias → mejor uso de cache
@@ -17,6 +20,9 @@ RUN npm run build
 
 # ── Etapa 2: Imagen final (lo más liviana posible) ───────────────────────────
 FROM node:24-alpine
+
+# Instalar git (requerido para dependencias de GitHub)
+RUN apk add --no-cache git
 
 # Por seguridad: no correr como root
 USER node

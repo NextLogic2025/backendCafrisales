@@ -46,5 +46,5 @@ COPY --chown=node:node --from=builder /app/dist ./dist
 # Puerto (solo informativo)
 EXPOSE 3000
 
-# Intentamos ejecutar main.js, pero si está dentro de src, también funcionará
+# Comando de arranque → ¡ESTE es el punto clave para tu proyecto!
 CMD ["node", "dist/main"]

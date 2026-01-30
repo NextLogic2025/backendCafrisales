@@ -9,17 +9,17 @@ const dbConfig = {
     type: 'postgres' as const,
     // Lógica Híbrida
     ...(process.env.DB_HOST
-      ? {
-          host: process.env.DB_HOST,
-          port: parseInt(process.env.DB_PORT, 10) || 5432,
-          username: process.env.DB_USER,
-          password: process.env.DB_PASSWORD,
-          database: process.env.DB_NAME, // Terraform enviará 'cafrilosa_order'
+        ? {
+            host: process.env.DB_HOST,
+            port: parseInt(process.env.DB_PORT, 10) || 5432,
+            username: process.env.DB_USER,
+            password: process.env.DB_PASSWORD,
+            database: process.env.DB_NAME, // Terraform enviará 'cafrilosa_order'
         }
-      : {
-          url: process.env.DATABASE_URL,
+        : {
+            url: process.env.DATABASE_URL,
         }),
-    // schema: 'app',
+    schema: 'app',
     logging: false,
     ssl: isProduction ? { rejectUnauthorized: false } : false,
 };
@@ -35,7 +35,7 @@ export const dataSourceOptions: DataSourceOptions = {
     entities: [__dirname + '/../**/*.entity{.ts,.js}'],
     migrations: [__dirname + '/../migrations/*{.ts,.js}'],
     synchronize: true, // Activado
-    // schema: 'app',
+    schema: 'app',
 };
 
 const dataSource = new DataSource(dataSourceOptions);
