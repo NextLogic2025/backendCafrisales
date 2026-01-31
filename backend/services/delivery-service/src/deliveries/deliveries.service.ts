@@ -21,6 +21,7 @@ import { validateCoordinates } from '../common/utils/coordinate-validator';
 import { EvidenciaEntrega } from '../evidence/entities/evidencia-entrega.entity';
 import { HistorialEstadoEntrega } from '../history/entities/historial-estado-entrega.entity';
 import { OutboxService } from '../outbox/outbox.service';
+import { OrderExternalService } from '../services/order-external.service';
 
 @Injectable()
 export class DeliveriesService {
@@ -34,6 +35,7 @@ export class DeliveriesService {
         @InjectRepository(HistorialEstadoEntrega)
         private readonly historyRepository: Repository<HistorialEstadoEntrega>,
         private readonly outboxService: OutboxService,
+        private readonly orderExternalService: OrderExternalService,
         private readonly dataSource: DataSource,
     ) { }
 
@@ -122,7 +124,7 @@ export class DeliveriesService {
     }
 
     async completeDelivery(id: string, dto: CompleteDeliveryDto, transportistaId: string) {
-        return this.dataSource.transaction(async (manager) => {
+        const saved = await this.dataSource.transaction(async (manager) => {
             const entregaRepo = manager.getRepository(Entrega);
             const historyRepo = manager.getRepository(HistorialEstadoEntrega);
             const evidenciaRepo = manager.getRepository(EvidenciaEntrega);
@@ -184,6 +186,12 @@ export class DeliveriesService {
 
             return saved;
         });
+
+        const updated = await this.orderExternalService.updateOrderStatus(saved.pedido_id, 'entregado');
+        if (!updated) {
+            this.logger.warn(`Order ${saved.pedido_id} was not updated to entregado`);
+        }
+        return saved;
     }
 
     async completePartialDelivery(id: string, dto: CompletePartialDeliveryDto, transportistaId: string) {

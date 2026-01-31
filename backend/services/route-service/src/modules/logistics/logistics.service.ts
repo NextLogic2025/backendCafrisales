@@ -347,14 +347,17 @@ export class LogisticsService {
 
             // Crear entregas en delivery-service
             if (paradas && paradas.length > 0) {
-                await this.deliveryExternalService.createDeliveriesBatch({
+                const deliveriesResult = await this.deliveryExternalService.createDeliveriesBatch({
                     rutero_logistico_id: id,
                     transportista_id: transportistaId,
                     paradas: paradas.map((p) => ({
                         pedido_id: p.pedido_id,
-                        orden_entrega: p.orden_entrega,
+                        orden: p.orden_entrega,
                     })),
                 });
+                if (!deliveriesResult || deliveriesResult.entregas_creadas < 1) {
+                    throw new BadRequestException('No se pudieron crear las entregas en delivery-service');
+                }
             }
 
             await historyRepo.save({

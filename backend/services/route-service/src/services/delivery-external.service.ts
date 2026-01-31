@@ -5,7 +5,7 @@ import { IS2SClient, S2S_CLIENT } from '../common/interfaces/s2s-client.interfac
 export interface CreateDeliveriesBatchDto {
     rutero_logistico_id: string;
     transportista_id: string;
-    paradas: Array<{ pedido_id: string; orden_entrega: number }>;
+    paradas: Array<{ pedido_id: string; orden: number }>;
 }
 
 export interface CreateDeliveriesBatchResponse {
@@ -36,6 +36,7 @@ export class DeliveryExternalService {
     async createDeliveriesBatch(dto: CreateDeliveriesBatchDto): Promise<CreateDeliveriesBatchResponse | null> {
         try {
             this.logger.log(`Creating ${dto.paradas.length} deliveries for rutero ${dto.rutero_logistico_id}`);
+            this.logger.debug(`Deliveries batch payload: ${JSON.stringify(dto)}`);
             const result = await this.s2sClient.post<CreateDeliveriesBatchResponse>(
                 this.deliveryServiceUrl,
                 '/api/entregas/batch',

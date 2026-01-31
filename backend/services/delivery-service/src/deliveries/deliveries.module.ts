@@ -9,6 +9,9 @@ import { HistorialEstadoEntrega } from '../history/entities/historial-estado-ent
 import { OutboxModule } from '../outbox/outbox.module';
 import { HistoryModule } from '../history/history.module';
 import { IncidentsModule } from '../incidents/incidents.module';
+import { OrderExternalService } from '../services/order-external.service';
+import { S2S_CLIENT } from '../common/interfaces/s2s-client.interface';
+import { HttpS2SAdapter } from '../common/adapters/http-s2s.adapter';
 
 @Module({
     imports: [
@@ -18,7 +21,14 @@ import { IncidentsModule } from '../incidents/incidents.module';
         IncidentsModule,
     ],
     controllers: [DeliveriesController, DeliveriesInternalController],
-    providers: [DeliveriesService],
+    providers: [
+        DeliveriesService,
+        OrderExternalService,
+        {
+            provide: S2S_CLIENT,
+            useClass: HttpS2SAdapter,
+        },
+    ],
     exports: [DeliveriesService],
 })
 export class DeliveriesModule { }

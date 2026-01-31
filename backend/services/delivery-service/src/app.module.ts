@@ -6,11 +6,14 @@ import { JwtModule } from '@nestjs/jwt';
 import { envValidationSchema } from './config/env.validation';
 import { typeormConfig } from './config/typeorm.config';
 import { JwtStrategy } from './common/strategies/jwt.strategy';
+import { S2S_CLIENT } from './common/interfaces/s2s-client.interface';
+import { HttpS2SAdapter } from './common/adapters/http-s2s.adapter';
 import { DeliveriesModule } from './deliveries/deliveries.module';
 import { EvidenceModule } from './evidence/evidence.module';
 import { IncidentsModule } from './incidents/incidents.module';
 import { HistoryModule } from './history/history.module';
 import { HealthModule } from './health/health.module';
+import { OrderExternalService } from './services/order-external.service';
 
 @Module({
     imports: [
@@ -36,6 +39,13 @@ import { HealthModule } from './health/health.module';
         HistoryModule,
         HealthModule,
     ],
-    providers: [JwtStrategy],
+    providers: [
+        JwtStrategy,
+        OrderExternalService,
+        {
+            provide: S2S_CLIENT,
+            useClass: HttpS2SAdapter,
+        },
+    ],
 })
 export class AppModule { }
