@@ -10,10 +10,13 @@ import {
     UseInterceptors,
     UploadedFile,
     BadRequestException,
+    HttpCode,
+    HttpStatus,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
+import { ApiTags, ApiOperation, ApiConsumes, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 import { EvidenceService } from './evidence.service';
 import { UploadEvidenceDto } from './dto/upload-evidence.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -22,13 +25,33 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { RolUsuario } from '../common/constants/rol-usuario.enum';
 import { AuthUser, CurrentUser } from '../common/decorators/current-user.decorator';
 
-@Controller('evidencias')
+@ApiTags('evidence')
+@ApiBearerAuth()
+@Controller({ path: 'deliveries/:deliveryId/evidence', version: '1' })
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class EvidenceController {
     constructor(private readonly evidenceService: EvidenceService) { }
 
-    @Post('upload/:entregaId')
+    @Post()
     @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR, RolUsuario.TRANSPORTISTA)
+    @ApiOperation({ summary: 'Subir evidencia' })
+    @ApiConsumes('multipart/form-data')
+    @ApiBody({
+        schema: {
+            type: 'object',
+            properties: {
+                file: {
+                    type: 'string',
+                    format: 'binary',
+                },
+                tipo: { type: 'string' },
+                descripcion: { type: 'string' },
+                latitud: { type: 'number' },
+                longitud: { type: 'number' },
+            },
+        },
+    })
+    @HttpCode(HttpStatus.CREATED)
     @UseInterceptors(
         FileInterceptor('file', {
             storage: diskStorage({
@@ -64,7 +87,7 @@ export class EvidenceController {
         }),
     )
     uploadEvidence(
-        @Param('entregaId', ParseUUIDPipe) entregaId: string,
+        @Param('deliveryId', ParseUUIDPipe) deliveryId: string,
         @UploadedFile() file: Express.Multer.File,
         @Body() uploadDto: UploadEvidenceDto,
         @CurrentUser() user?: AuthUser,
@@ -73,14 +96,13 @@ export class EvidenceController {
             throw new BadRequestException('No file provided');
         }
 
-        // Extrae coordenadas del body si están presentes
         const coordinates = {
             lat: uploadDto['latitud'] ? parseFloat(uploadDto['latitud']) : undefined,
             lng: uploadDto['longitud'] ? parseFloat(uploadDto['longitud']) : undefined,
         };
 
         return this.evidenceService.uploadEvidence(
-            entregaId,
+            deliveryId,
             file,
             uploadDto,
             user?.userId,
@@ -88,20 +110,24 @@ export class EvidenceController {
         );
     }
 
-    @Get('entrega/:entregaId')
+    @Get()
     @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR, RolUsuario.TRANSPORTISTA)
-    findByDelivery(@Param('entregaId', ParseUUIDPipe) entregaId: string) {
-        return this.evidenceService.findByDelivery(entregaId);
+    @ApiOperation({ summary: 'Listar evidencias de una entrega' })
+    findByDelivery(@Param('deliveryId', ParseUUIDPipe) deliveryId: string) {
+        return this.evidenceService.findByDelivery(deliveryId);
     }
 
     @Get(':id')
     @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR, RolUsuario.TRANSPORTISTA)
+    @ApiOperation({ summary: 'Obtener evidencia por ID' })
     findOne(@Param('id', ParseUUIDPipe) id: string) {
         return this.evidenceService.findOne(id);
     }
 
     @Delete(':id')
     @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR)
+    @ApiOperation({ summary: 'Eliminar evidencia' })
+    @HttpCode(HttpStatus.NO_CONTENT)
     remove(@Param('id', ParseUUIDPipe) id: string) {
         return this.evidenceService.remove(id);
     }

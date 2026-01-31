@@ -7,6 +7,9 @@ import { OrigenCredito } from '../../common/constants/credit-origin.enum';
 import { OrderExternalService } from '../../services/order-external.service';
 import { OutboxService } from '../outbox/outbox.service';
 import { HistoryService } from '../history/history.service';
+import { PaginationQueryDto } from '../../common/dto/pagination.dto';
+import { CreditFilterDto } from './dto/credit-filter.dto';
+import { PaginatedResponse, createPaginatedResponse } from '../../common/interfaces/paginated-response.interface';
 import { AprobarCreditoDto } from './dto/aprobar-credito.dto';
 
 @Injectable()
@@ -18,7 +21,7 @@ export class CreditsService {
         private readonly orderExternalService: OrderExternalService,
         private readonly outboxService: OutboxService,
         private readonly historyService: HistoryService,
-    ) {}
+    ) { }
 
     private calculateDueDate(approvalDate: Date, termDays: number): Date {
         const dueDate = new Date(approvalDate);
@@ -102,6 +105,78 @@ export class CreditsService {
         });
     }
 
+    async findAllPaginated(
+        pagination: PaginationQueryDto,
+        filters: CreditFilterDto,
+    ): Promise<PaginatedResponse<any>> {
+        const conditions: string[] = [];
+        const values: any[] = [];
+        let paramIndex = 1;
+
+        if (filters.customerId) {
+            conditions.push(`ac.cliente_id = $${paramIndex++}`);
+            values.push(filters.customerId);
+        }
+
+        if (filters.sellerId) {
+            conditions.push(`ac.aprobado_por_vendedor_id = $${paramIndex++}`);
+            values.push(filters.sellerId);
+        }
+
+        if (filters.status) {
+            conditions.push(`ac.estado = $${paramIndex++}`);
+            values.push(filters.status);
+        }
+
+        if (filters.orderId) {
+            conditions.push(`ac.pedido_id = $${paramIndex++}`);
+            values.push(filters.orderId);
+        }
+
+        if (filters.minAmount !== undefined) {
+            conditions.push(`ac.monto_aprobado >= $${paramIndex++}`);
+            values.push(filters.minAmount);
+        }
+
+        if (filters.maxAmount !== undefined) {
+            conditions.push(`ac.monto_aprobado <= $${paramIndex++}`);
+            values.push(filters.maxAmount);
+        }
+
+        const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+
+        // Sorting
+        const sortField = ['monto_aprobado', 'fecha_aprobacion', 'fecha_vencimiento'].includes(pagination.sortBy)
+            ? `ac.${pagination.sortBy}`
+            : 'ac.creado_en';
+        const sortOrder = pagination.sortOrder;
+
+        // Count Query
+        const countQuery = `
+            SELECT COUNT(*) 
+            FROM app.aprobaciones_credito ac 
+            ${whereClause}
+        `;
+        const countResult = await this.creditRepo.query(countQuery, values);
+        const total = parseInt(countResult[0].count, 10);
+
+        // Data Query
+        const dataQuery = `
+            SELECT ac.*, vct.total_pagado, vct.saldo
+            FROM app.aprobaciones_credito ac
+            JOIN app.v_credito_totales vct
+              ON vct.aprobacion_credito_id = ac.id
+            ${whereClause}
+            ORDER BY ${sortField} ${sortOrder}
+            LIMIT $${paramIndex++} OFFSET $${paramIndex++}
+        `;
+
+        values.push(pagination.take, pagination.skip);
+        const data = await this.creditRepo.query(dataQuery, values);
+
+        return createPaginatedResponse(data, total, pagination.page, pagination.limit);
+    }
+
     async findAll(): Promise<any[]> {
         return this.fetchCreditsWithTotals();
     }
@@ -182,8 +257,8 @@ export class CreditsService {
             estado === EstadoCredito.CANCELADO
                 ? 'CreditoCancelado'
                 : estado === EstadoCredito.VENCIDO
-                  ? 'CreditoVencido'
-                  : 'CreditoEstadoActualizado';
+                    ? 'CreditoVencido'
+                    : 'CreditoEstadoActualizado';
 
         await this.outboxService.createEvent(
             eventType,

@@ -1,7 +1,8 @@
 import 'reflect-metadata';
 
-import { ValidationPipe, Logger } from '@nestjs/common';
+import { ValidationPipe, Logger, VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import helmet from 'helmet';
 
 import { AppModule } from './app.module';
@@ -31,6 +32,25 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
+
+  // ✅ Versionado de API
+  app.enableVersioning({
+    type: VersioningType.URI,
+    defaultVersion: '1',
+  });
+
+  // ✅ Swagger
+  const config = new DocumentBuilder()
+    .setTitle('Catalog Service API')
+    .setDescription('API de catálogo de productos')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .addTag('products')
+    .addTag('categories')
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/docs', app, document);
 
   app.enableShutdownHooks();
 

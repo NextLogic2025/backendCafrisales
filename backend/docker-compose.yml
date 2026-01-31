@@ -79,7 +79,7 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: [ "CMD-SHELL", "wget -q -T 2 -O /dev/null http://127.0.0.1:3000/api/health || exit 1" ]
+      test: [ "CMD-SHELL", "wget -q -T 2 -O /dev/null http://127.0.0.1:3000/api/v1/health || exit 1" ]
       interval: 15s
       timeout: 5s
       retries: 10
@@ -103,7 +103,7 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: [ "CMD-SHELL", "wget -q -T 2 -O /dev/null http://127.0.0.1:3000/api/health || exit 1" ]
+      test: [ "CMD-SHELL", "wget -q -T 2 -O /dev/null http://127.0.0.1:3000/api/v1/health || exit 1" ]
       interval: 15s
       timeout: 5s
       retries: 10
@@ -127,7 +127,7 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: [ "CMD-SHELL", "wget -q -T 2 -O /dev/null http://127.0.0.1:3000/api/health || exit 1" ]
+      test: [ "CMD-SHELL", "wget -q -T 2 -O /dev/null http://127.0.0.1:3000/api/v1/health || exit 1" ]
       interval: 15s
       timeout: 5s
       retries: 10
@@ -153,7 +153,7 @@ services:
       - app-network
     healthcheck:
       # Asumiendo que usarás Global Prefix 'api' como en los otros (salvo catalogo que usó v1)
-      test: [ "CMD-SHELL", "wget -q -T 2 -O /dev/null http://127.0.0.1:3000/api/health || exit 1" ]
+      test: [ "CMD-SHELL", "wget -q -T 2 -O /dev/null http://127.0.0.1:3000/api/v1/health || exit 1" ]
       interval: 15s
       timeout: 5s
       retries: 10
@@ -176,7 +176,7 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: [ "CMD-SHELL", "wget -q -T 2 -O /dev/null http://127.0.0.1:3000/api/health || exit 1" ]
+      test: [ "CMD-SHELL", "wget -q -T 2 -O /dev/null http://127.0.0.1:3000/api/v1/health || exit 1" ]
       interval: 15s
       timeout: 5s
       retries: 10
@@ -199,7 +199,7 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: [ "CMD-SHELL", "wget -q -T 2 -O /dev/null http://127.0.0.1:3000/api/health || exit 1" ]
+      test: [ "CMD-SHELL", "wget -q -T 2 -O /dev/null http://127.0.0.1:3000/api/v1/health || exit 1" ]
       interval: 15s
       timeout: 5s
       retries: 10
@@ -222,7 +222,7 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: [ "CMD-SHELL", "wget -q -T 2 -O /dev/null http://127.0.0.1:3000/api/health || exit 1" ]
+      test: [ "CMD-SHELL", "wget -q -T 2 -O /dev/null http://127.0.0.1:3000/api/v1/health || exit 1" ]
       interval: 15s
       timeout: 5s
       retries: 10
@@ -248,7 +248,7 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: [ "CMD-SHELL", "wget -q -T 2 -O /dev/null http://127.0.0.1:3000/api/health || exit 1" ]
+      test: [ "CMD-SHELL", "wget -q -T 2 -O /dev/null http://127.0.0.1:3000/api/v1/health || exit 1" ]
       interval: 15s
       timeout: 5s
       retries: 10
@@ -284,7 +284,7 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: [ "CMD-SHELL", "wget -q -T 2 -O /dev/null http://127.0.0.1:3000/api/health || exit 1" ]
+      test: [ "CMD-SHELL", "wget -q -T 2 -O /dev/null http://127.0.0.1:3000/api/v1/health || exit 1" ]
       interval: 15s
       timeout: 5s
       retries: 10

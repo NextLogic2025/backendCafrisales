@@ -5,6 +5,7 @@ import {
     CreateDateColumn,
     UpdateDateColumn,
     Index,
+    DeleteDateColumn,
 } from 'typeorm';
 
 @Entity('zonas', { schema: 'app' })
@@ -48,4 +49,7 @@ export class Zone {
 
     @Column({ default: 1 })
     version: number;
+
+    @DeleteDateColumn({ name: 'eliminado_en', type: 'timestamptz', nullable: true })
+    deletedAt?: Date;
 }

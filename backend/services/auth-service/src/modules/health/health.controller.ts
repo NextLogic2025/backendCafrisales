@@ -3,19 +3,19 @@ import { HealthCheck, HealthCheckService, TypeOrmHealthIndicator } from '@nestjs
 import { ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Health')
-@Controller('health')
+@Controller({ path: 'health', version: '1' })
 export class HealthController {
   constructor(
-    private health: HealthCheckService, 
+    private health: HealthCheckService,
     private db: TypeOrmHealthIndicator,
-  ) {}
+  ) { }
 
   @Get()
   @HealthCheck()
   check() {
     return this.health.check([
       // Verifica que la conexión a PostgreSQL 'cafrilosa_auth' esté activa
-      () => this.db.pingCheck('database'), 
+      () => this.db.pingCheck('database'),
     ]);
   }
 }

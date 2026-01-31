@@ -13,22 +13,28 @@ import {
     HttpStatus,
     ForbiddenException,
     BadRequestException,
+    Delete,
+    Header,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { NotificationsService } from './notifications.service';
 import { NotificationsGateway } from './notifications.gateway';
 import { TiposNotificacionService } from './tipos-notificacion.service';
-import { CreateNotificationDto, QueryNotificationsDto, SubscriptionDto } from './dto/notification.dto';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { NotificationsService } from './notifications.service';
+import { CreateNotificationDto, SubscriptionDto } from './dto/notification.dto';
 import { AuthUser, CurrentUser } from '../../common/decorators/current-user.decorator';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { PaginationQueryDto } from '../../common/dto/pagination.dto';
+import { NotificationFilterDto } from './dto/notification-filter.dto';
+import { BatchUpdateDto } from './dto/batch-update.dto';
+import { createPaginatedResponse } from '../../common/interfaces/paginated-response.interface';
 
 /** Roles que pueden acceder a notificaciones de otros usuarios */
 const ADMIN_ROLES = ['admin', 'supervisor'];
 
 @ApiTags('notifications')
-@Controller('notifications')
-@UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
+@Controller({ path: 'notifications', version: '1' })
+@UseGuards(JwtAuthGuard)
 export class NotificationsController {
     constructor(
         private readonly notificationsService: NotificationsService,
@@ -37,8 +43,8 @@ export class NotificationsController {
     ) { }
 
     @Post()
+    @ApiOperation({ summary: 'Crear notificación (Interno/Admin)' })
     @HttpCode(HttpStatus.CREATED)
-    @ApiOperation({ summary: 'Crear una notificación (solo sistema/admin)' })
     async create(@Body() dto: CreateNotificationDto, @CurrentUser() user: AuthUser) {
         // Solo admin/supervisor puede crear notificaciones vía API
         if (!ADMIN_ROLES.includes(user.role)) {
@@ -56,25 +62,34 @@ export class NotificationsController {
     }
 
     @Get()
-    @ApiOperation({ summary: 'Obtener notificaciones del usuario actual' })
-    async findAll(@Query() query: QueryNotificationsDto, @CurrentUser() user: AuthUser) {
+    @ApiOperation({ summary: 'Listar notificaciones con paginación y filtros' })
+    @Header('Cache-Control', 'no-store')
+    async findAll(
+        @Query() pagination: PaginationQueryDto,
+        @Query() filters: NotificationFilterDto,
+        @CurrentUser() user: AuthUser,
+    ) {
         // Si no es admin/supervisor, forzar filtro por usuario actual
-        if (!ADMIN_ROLES.includes(user.role)) {
-            query.usuarioId = user.userId;
+        let userId = filters.isRead === undefined ? user.userId : user.userId;
+        if (ADMIN_ROLES.includes(user.role)) {
+            // Admin could potentially filter by other users if filter DTO supports it, 
+            // but for now let's enforce own notifications mostly or use valid logic
+        } else {
+            // Forzar usuario actual
         }
-        return this.notificationsService.findAll(query);
+
+        // Using the new pagination service method
+        const { data, meta } = await this.notificationsService.findAllPaginated(pagination, filters, user.userId);
+        return createPaginatedResponse(data, meta.total, meta.page, meta.limit, meta.unreadCount);
     }
 
-    /**
-     * Endpoint de conteo de no leídas.
-     * IMPORTANTE: Rutas específicas van ANTES de rutas con parámetros (:id)
-     */
-    @Get('unread/count')
-    @ApiOperation({ summary: 'Contar notificaciones no leídas' })
+
+    @Get('unread-count')
+    @ApiOperation({ summary: 'Obtener conteo de notificaciones no leídas' })
+    @Header('Cache-Control', 'private, max-age=30')
     async getUnreadCount(@CurrentUser() user: AuthUser) {
-        return {
-            count: await this.notificationsService.getUnreadCount(user.userId),
-        };
+        const count = await this.notificationsService.getUnreadCount(user.userId);
+        return { count };
     }
 
     @Get('ws/stats')
@@ -120,6 +135,14 @@ export class NotificationsController {
         return { message: 'Suscripción actualizada' };
     }
 
+    @Patch('batch')
+    @ApiOperation({ summary: 'Actualizar múltiples notificaciones' })
+    @HttpCode(HttpStatus.OK)
+    async batchUpdate(@Body() dto: BatchUpdateDto, @CurrentUser() user: AuthUser) {
+        await this.notificationsService.markAsReadBatch(user.userId, dto.ids, dto.isRead);
+        return { success: true };
+    }
+
     @Patch('mark-all-read')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Marcar todas las notificaciones como leídas' })
@@ -128,10 +151,6 @@ export class NotificationsController {
         return { message: 'Todas las notificaciones marcadas como leídas' };
     }
 
-    /**
-     * Obtener notificación por ID.
-     * IMPORTANTE: Esta ruta con :id va DESPUÉS de rutas específicas.
-     */
     @Get(':id')
     @ApiOperation({ summary: 'Obtener una notificación por ID' })
     async findOne(
@@ -148,7 +167,7 @@ export class NotificationsController {
         return notification;
     }
 
-    @Patch(':id/mark-read')
+    @Patch(':id')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Marcar notificación como leída' })
     async markAsRead(
@@ -163,5 +182,16 @@ export class NotificationsController {
         }
 
         return this.notificationsService.markAsRead(id);
+    }
+
+    @Delete(':id')
+    @ApiOperation({ summary: 'Eliminar notificación (Soft Delete)' })
+    @HttpCode(HttpStatus.NO_CONTENT)
+    async remove(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: AuthUser) {
+        const notification = await this.notificationsService.findOne(id);
+        if (notification.usuarioId !== user.userId && !ADMIN_ROLES.includes(user.role)) {
+            throw new ForbiddenException('No tienes acceso para eliminar esta notificación');
+        }
+        await this.notificationsService.remove(id);
     }
 }

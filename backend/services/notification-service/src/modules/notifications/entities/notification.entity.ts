@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryGeneratedColumn, Index, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn, Index, ManyToOne, JoinColumn, OneToMany, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from 'typeorm';
 import { TipoNotificacion } from './tipo-notificacion.entity';
 import { HistorialEnvio } from './historial-envio.entity';
 
@@ -23,8 +23,8 @@ export enum PrioridadNotificacion {
  * - expira_en > creado_en
  */
 @Entity({ schema: 'app', name: 'notificaciones' })
-@Index('idx_notif_usuario_fecha', ['usuarioId', 'creadoEn'])
-@Index('idx_notif_usuario_no_leidas', ['usuarioId', 'creadoEn'], { where: '"leida" = false' })
+@Index('idx_notif_usuario_fecha', ['usuarioId', 'createdAt'])
+@Index('idx_notif_usuario_no_leidas', ['usuarioId', 'createdAt'], { where: '"leida" = false' })
 export class Notification {
     @PrimaryGeneratedColumn('uuid')
     id: string;
@@ -84,11 +84,14 @@ export class Notification {
     @Column({ name: 'expira_en', type: 'timestamptz', nullable: true })
     expiraEn: Date | null;
 
-    @Column({ name: 'creado_en', type: 'timestamptz', default: () => 'transaction_timestamp()' })
-    creadoEn: Date;
+    @CreateDateColumn({ name: 'creado_en' })
+    createdAt: Date;
 
-    @Column({ name: 'actualizado_en', type: 'timestamptz', default: () => 'transaction_timestamp()' })
-    actualizadoEn: Date;
+    @UpdateDateColumn({ name: 'actualizado_en' })
+    updatedAt: Date;
+
+    @DeleteDateColumn({ name: 'eliminado_en' })
+    deletedAt: Date | null;
 
     @Column({ name: 'creado_por', type: 'uuid', nullable: true })
     creadoPor: string | null;

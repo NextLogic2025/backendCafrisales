@@ -7,7 +7,9 @@ import { PreferenciaNotificacion } from './entities/preferencia-notificacion.ent
 import { SuscripcionNotificacion } from './entities/suscripcion-notificacion.entity';
 import { HistorialEnvio, CanalNotificacion } from './entities/historial-envio.entity';
 import { Outbox } from './entities/outbox.entity';
-
+import { PaginationQueryDto } from '../../common/dto/pagination.dto';
+import { PaginatedResponse, createPaginatedResponse } from '../../common/interfaces/paginated-response.interface';
+import { NotificationFilterDto } from './dto/notification-filter.dto';
 @Injectable()
 export class NotificationsService {
     private readonly logger = new Logger(NotificationsService.name);
@@ -150,7 +152,47 @@ export class NotificationsService {
         return saved;
     }
 
+    async findAllPaginated(pagination: PaginationQueryDto, filters: NotificationFilterDto, usuarioId: string): Promise<PaginatedResponse<Notification>> {
+        const qb = this.notificationRepo.createQueryBuilder('n');
+
+        qb.where('n.usuario_id = :usuarioId', { usuarioId });
+
+        if (filters.isRead !== undefined) {
+            console.log('Applying isRead filter:', filters.isRead); // DEBUG
+            qb.andWhere('n.leida = :isRead', { isRead: filters.isRead });
+        }
+
+        if (filters.typeId) {
+            qb.andWhere('n.tipo_id = :typeId', { typeId: filters.typeId });
+        }
+
+        if (filters.priority) {
+            qb.andWhere('n.prioridad = :priority', { priority: filters.priority });
+        }
+
+        if (filters.fromDate) {
+            qb.andWhere('n.creado_en >= :fromDate', { fromDate: filters.fromDate });
+        }
+
+        if (filters.toDate) {
+            qb.andWhere('n.creado_en <= :toDate', { toDate: filters.toDate });
+        }
+
+        const sortField = ['creado_en', 'prioridad'].includes(pagination.sortBy)
+            ? `n.${pagination.sortBy}`
+            : 'n.creado_en';
+        qb.orderBy(sortField, pagination.sortOrder);
+
+        qb.skip(pagination.skip).take(pagination.take);
+
+        const [data, total] = await qb.getManyAndCount();
+        const unreadCount = await this.getUnreadCount(usuarioId);
+
+        return createPaginatedResponse(data, total, pagination.page, pagination.limit, unreadCount);
+    }
+
     async findAll(query: QueryNotificationsDto): Promise<Notification[]> {
+        // Keeping for backward compatibility if needed, but implementation updated to use new logic if possible or just basics
         const qb = this.notificationRepo.createQueryBuilder('n');
 
         if (query.usuarioId) {
@@ -158,7 +200,7 @@ export class NotificationsService {
         }
 
         if (query.tipoId) {
-            qb.andWhere('n.tipo_id = :tipoId', { tipoId: query.tipoId });
+            qb.andWhere('n.tipo_id = :tipoId', { typeId: query.tipoId });
         }
 
         if (query.soloNoLeidas) {
@@ -190,6 +232,20 @@ export class NotificationsService {
         return this.notificationRepo.count({
             where: { usuarioId, leida: false },
         });
+    }
+
+    async markAsReadBatch(usuarioId: string, ids: string[], isRead: boolean): Promise<void> {
+        if (!ids.length) return;
+
+        await this.notificationRepo.createQueryBuilder()
+            .update(Notification)
+            .set({
+                leida: isRead,
+                leidaEn: isRead ? new Date() : null
+            })
+            .where('id IN (:...ids)', { ids })
+            .andWhere('usuario_id = :usuarioId', { usuarioId })
+            .execute();
     }
 
     async markAllAsRead(usuarioId: string): Promise<void> {
@@ -237,16 +293,7 @@ export class NotificationsService {
         await this.subsRepo.save(entity);
     }
 
-    async deleteExpired(): Promise<number> {
-        const result = await this.notificationRepo
-            .createQueryBuilder()
-            .delete()
-            .where('expira_en IS NOT NULL AND expira_en < NOW()')
-            .execute();
-
-        if (result.affected && result.affected > 0) {
-            this.logger.log(`Eliminadas ${result.affected} notificaciones expiradas`);
-        }
-        return result.affected ?? 0;
+    async remove(id: string): Promise<void> {
+        await this.notificationRepo.softDelete(id);
     }
 }

@@ -8,6 +8,9 @@ import { Sku } from '../skus/entities/sku.entity';
 import { PrecioSku } from '../prices/entities/precio-sku.entity';
 import { slugify, ensureUniqueSlug } from '../../common/utils/slug.utils';
 import { OutboxService } from '../outbox/outbox.service';
+import { PaginationQueryDto } from '../../common/dto/pagination.dto';
+import { ProductFilterDto } from './dto/product-filter.dto';
+import { Like, Between, MoreThanOrEqual, LessThanOrEqual } from 'typeorm';
 
 @Injectable()
 export class ProductsService {
@@ -16,7 +19,75 @@ export class ProductsService {
     @InjectRepository(Category) private categoriesRepo: Repository<Category>,
     private dataSource: DataSource,
     private outbox: OutboxService,
-  ) {}
+  ) { }
+
+  async findAllPaginated(
+    pagination: PaginationQueryDto,
+    filters: ProductFilterDto,
+  ): Promise<{ data: Product[]; total: number }> {
+    const queryBuilder = this.repo.createQueryBuilder('product');
+
+    // ✅ Aplicar filtros
+    if (filters.search) {
+      queryBuilder.andWhere(
+        '(product.nombre ILIKE :search OR product.descripcion ILIKE :search)',
+        { search: `%${filters.search}%` },
+      );
+    }
+
+    if (filters.categoryId) {
+      queryBuilder.andWhere('product.categoria_id = :categoryId', {
+        categoryId: filters.categoryId,
+      });
+    }
+
+    if (filters.isActive !== undefined) {
+      queryBuilder.andWhere('product.activo = :isActive', {
+        isActive: filters.isActive,
+      });
+    }
+
+    // TODO: Implement price filtering. Requires joining SKUs and Prices.
+    /*
+    if (filters.minPrice !== undefined) {
+       // logic for price
+    }
+    */
+
+    // ✅ Ordenamiento
+    let sortField = 'creado_en';
+    if (pagination.sortBy === 'name') sortField = 'nombre';
+    else if (pagination.sortBy === 'createdAt') sortField = 'creado_en';
+
+    queryBuilder.orderBy(`product.${sortField}`, pagination.sortOrder);
+
+    // ✅ Paginación
+    queryBuilder.skip(pagination.skip).take(pagination.take);
+
+    // ✅ Incluir relaciones
+    queryBuilder.leftJoinAndSelect('product.categoria', 'category');
+
+    const [data, total] = await queryBuilder.getManyAndCount();
+
+    return { data, total };
+  }
+
+  async autocomplete(query: string): Promise<{ id: string; name: string }[]> {
+    if (!query || query.length < 2) {
+      return [];
+    }
+
+    const products = await this.repo.find({
+      where: {
+        nombre: Like(`%${query}%`),
+        activo: true,
+      },
+      select: ['id', 'nombre'],
+      take: 10,
+    });
+
+    return products.map(p => ({ id: p.id, name: p.nombre }));
+  }
 
   /**
    * Creates a complete sellable product in a single transaction:
@@ -176,7 +247,7 @@ export class ProductsService {
     return saved;
   }
 
-  findAll() {
+  async findAll() {
     return this.repo.find({
       where: { activo: true },
       relations: ['categoria', 'skus', 'skus.precios'],
@@ -184,7 +255,7 @@ export class ProductsService {
     });
   }
 
-  findByCategory(categoriaId: string) {
+  async findByCategory(categoriaId: string) {
     return this.repo.find({
       where: { categoria_id: categoriaId, activo: true },
       order: { nombre: 'ASC' },

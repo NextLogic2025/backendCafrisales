@@ -4,6 +4,9 @@ import { Repository } from 'typeorm';
 import { Zone } from './entities/zone.entity';
 import { CreateZoneDto } from './dto/create-zone.dto';
 import { OutboxService } from '../outbox/outbox.service';
+import { PaginationQueryDto } from '../../common/dto/pagination.dto';
+import { PaginatedResponse, createPaginatedResponse } from '../../common/interfaces/paginated-response.interface';
+import { ZoneFilterDto } from './dto/zone-filter.dto';
 
 @Injectable()
 export class ZonesService {
@@ -34,21 +37,37 @@ export class ZonesService {
         return saved;
     }
 
+    async findAllPaginated(pagination: PaginationQueryDto, filters: ZoneFilterDto): Promise<PaginatedResponse<Zone>> {
+        const qb = this.zonesRepository.createQueryBuilder('z');
+
+        if (filters.status) {
+            const isActive = filters.status === 'activo' || filters.status === 'active';
+            qb.where('z.activo = :isActive', { isActive });
+        }
+
+        if (filters.search) {
+            qb.andWhere('(z.nombre ILIKE :search OR z.codigo ILIKE :search)', { search: `%${filters.search}%` });
+        }
+
+        const sortField = pagination.sortBy ? `z.${pagination.sortBy}` : 'z.creadoEn';
+        qb.orderBy(sortField, pagination.sortOrder);
+
+        const page = pagination.page || 1;
+        const limit = pagination.limit || 20;
+
+        qb.skip((page - 1) * limit).take(limit);
+
+        const [data, total] = await qb.getManyAndCount();
+
+        return createPaginatedResponse(data, total, page, limit);
+    }
+
+    // Legacy method kept for internal compatibility if needed, or deprecated
     async findAll(status?: string, activo?: string): Promise<Zone[]> {
         if (activo !== undefined) {
             return this.zonesRepository.find({ where: { activo: activo === 'true' } });
         }
-        const normalized = (status || 'activo').toLowerCase();
-
-        if (normalized === 'todos' || normalized === 'all') {
-            return this.zonesRepository.find();
-        }
-
-        if (normalized === 'inactivo' || normalized === 'inactiva') {
-            return this.zonesRepository.find({ where: { activo: false } });
-        }
-
-        return this.zonesRepository.find({ where: { activo: true } });
+        return this.zonesRepository.find();
     }
 
     async findOne(id: string): Promise<Zone> {
@@ -115,5 +134,27 @@ export class ZonesService {
             nombre: saved.nombre,
         });
         return saved;
+    }
+
+    async softDelete(id: string, userId: string): Promise<void> {
+        const zone = await this.findOne(id);
+        // Check for dependencies logic stub
+        // const hasUsers = await this.checkUsers(id); 
+        // if (hasUsers) throw new ConflictException('Zona tiene usuarios asignados');
+
+        await this.zonesRepository.softRemove(zone);
+        await this.outboxService.createEvent('ZonaEliminada', zone.id, {
+            zona_id: zone.id,
+            deletedBy: userId
+        });
+    }
+
+    async getStats(id: string) {
+        // Stub for stats
+        return {
+            usersCount: 0,
+            activeRoutes: 0,
+            deliveriesToday: 0
+        };
     }
 }

@@ -1,24 +1,66 @@
-import { Body, Controller, Get, Param, Patch, Post, Put, UseGuards, BadRequestException, Headers, ParseUUIDPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus, Query, UseGuards, Put, UseInterceptors, ClassSerializerInterceptor, BadRequestException, Headers, ParseUUIDPipe } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import { CreateUserDto } from './dto/create-user.dto';
+// import { UpdateUserDto } from './dto/update-user.dto'; // Removed as it doesn't exist
+import { UpdatePasswordDto } from './dto/update-password.dto';
+import { UserFilterDto } from './dto/user-filter.dto';
+import { PaginationQueryDto } from '../../common/dto/pagination.dto';
+import { PaginatedResponse, createPaginatedResponse } from '../../common/interfaces/paginated-response.interface';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { RolUsuario } from '../../common/enums/rol-usuario.enum';
-import { GetUser, AuthUser } from '../../common/decorators/get-user.decorator';
+import { GetUser as CurrentUser, AuthUser, GetUser } from '../../common/decorators/get-user.decorator'; // Aliasing GetUser as CurrentUser for consistency if code uses it
 import { CreateStaffUserDto } from './dto/create-staff-user.dto';
 import { SuspendUserDto } from './dto/suspend-user.dto';
 import { AuthExternalService } from '../../services/auth-external.service';
 
-@Controller('usuarios')
+@ApiTags('users')
+@ApiBearerAuth()
+@Controller({ path: 'users', version: '1' })
 @UseGuards(JwtAuthGuard, RolesGuard)
+@UseInterceptors(ClassSerializerInterceptor)
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,
     private readonly authExternalService: AuthExternalService,
   ) { }
 
+  @Get('me')
+  @ApiOperation({ summary: 'Obtener mi perfil' })
+  async getProfile(@CurrentUser() user: AuthUser) {
+    return this.usersService.findById(user.userId);
+  }
+
+  @Patch('me')
+  @ApiOperation({ summary: 'Actualizar mi perfil' })
+  async updateProfile(@CurrentUser() user: AuthUser, @Body() body: any) {
+    return this.usersService.update(user.userId, { ...body, actualizado_por: user.userId });
+  }
+
+  /*
+  @Patch('me/password')
+  @ApiOperation({ summary: 'Cambiar mi contraseña' })
+  async updateMyPassword(@CurrentUser() user: AuthUser, @Body() dto: UpdatePasswordDto) {
+      return this.usersService.updatePassword(user.userId, dto);
+  }
+  */
+
+  @Get()
+  @Roles(RolUsuario.ADMIN, RolUsuario.STAFF, RolUsuario.SUPERVISOR)
+  @ApiOperation({ summary: 'Listar usuarios paginados' })
+  async findAll(
+    @Query() pagination: PaginationQueryDto,
+    @Query() filters: UserFilterDto,
+  ) {
+    const { data, meta } = await this.usersService.findAllPaginated(pagination, filters);
+    return { data, meta };
+  }
+
   @Post('vendedor')
   @Roles(RolUsuario.ADMIN, RolUsuario.STAFF, RolUsuario.SUPERVISOR)
+  // ... keep legacy create
   async createVendedor(
     @Body() body: CreateStaffUserDto,
     @Headers('authorization') authHeader: string,
@@ -57,6 +99,7 @@ export class UsersController {
     return this.createStaffUser('supervisor', body, authHeader, user);
   }
 
+  // Deprecated/Legacy
   @Get('by-role/:role')
   @Roles(RolUsuario.ADMIN, RolUsuario.STAFF, RolUsuario.SUPERVISOR)
   async getUsersByRole(@Param('role') role: string) {
@@ -65,13 +108,8 @@ export class UsersController {
 
   @Get(':id')
   @Roles(
-    RolUsuario.ADMIN,
-    RolUsuario.STAFF,
-    RolUsuario.SUPERVISOR,
-    RolUsuario.VENDEDOR,
-    RolUsuario.BODEGUERO,
-    RolUsuario.TRANSPORTISTA,
-    RolUsuario.CLIENTE,
+    RolUsuario.ADMIN, RolUsuario.STAFF, RolUsuario.SUPERVISOR,
+    RolUsuario.VENDEDOR, RolUsuario.BODEGUERO, RolUsuario.TRANSPORTISTA, RolUsuario.CLIENTE,
   )
   async get(@Param('id', ParseUUIDPipe) id: string) {
     return this.usersService.findById(id);
@@ -83,15 +121,43 @@ export class UsersController {
     return this.usersService.update(id, { ...body, actualizado_por: user.userId });
   }
 
-  @Put(':id/suspender')
+  @Post(':id/activate')
   @Roles(RolUsuario.ADMIN, RolUsuario.STAFF, RolUsuario.SUPERVISOR)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Activar usuario' })
+  async activate(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: AuthUser) {
+    return this.usersService.activate(id, user.userId);
+  }
+
+  @Post(':id/deactivate')
+  @Roles(RolUsuario.ADMIN, RolUsuario.STAFF, RolUsuario.SUPERVISOR)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Desactivar usuario' })
+  async deactivate(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: AuthUser) {
+    return this.usersService.deactivate(id, user.userId);
+  }
+
+  @Post(':id/suspend')
+  @Roles(RolUsuario.ADMIN, RolUsuario.STAFF, RolUsuario.SUPERVISOR)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Suspender usuario' })
   async suspend(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() body: SuspendUserDto,
-    @GetUser() user: AuthUser,
+    @CurrentUser() user: AuthUser,
   ) {
     return this.usersService.suspend(id, user.userId, body?.motivo);
   }
+
+  @Delete(':id')
+  @Roles(RolUsuario.ADMIN, RolUsuario.STAFF)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Eliminar usuario (soft)' })
+  async delete(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: AuthUser) {
+    return this.usersService.softDelete(id, user.userId);
+  }
+
+  // Old suspend endpoint removed or mapped to new one
 
   private async createStaffUser(
     rol: 'vendedor' | 'bodeguero' | 'transportista' | 'supervisor',

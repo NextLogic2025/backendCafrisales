@@ -117,3 +117,15 @@ export class CancelDeliveryDto {
     @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
     motivo: string;
 }
+
+export class LocationUpdateDto {
+    @IsNumber({}, { message: 'latitud debe ser un número' })
+    @Min(-90, { message: 'latitud debe estar entre -90 y 90' })
+    @Max(90, { message: 'latitud debe estar entre -90 y 90' })
+    latitud: number;
+
+    @IsNumber({}, { message: 'longitud debe ser un número' })
+    @Min(-180, { message: 'longitud debe estar entre -180 y 180' })
+    @Max(180, { message: 'longitud debe estar entre -180 y 180' })
+    longitud: number;
+}

@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe, Logger } from '@nestjs/common';
+import { ValidationPipe, Logger, VersioningType } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
@@ -35,12 +35,19 @@ async function bootstrap() {
     // API prefix
     app.setGlobalPrefix('api');
 
-    // Swagger documentation
+    // ✅ Versionado de API
+    app.enableVersioning({
+        type: VersioningType.URI,
+        defaultVersion: '1',
+    });
+
+    // ✅ Swagger
     const config = new DocumentBuilder()
         .setTitle('Notification Service API')
-        .setDescription('Sistema híbrido de notificaciones en tiempo real')
+        .setDescription('API de gestión de notificaciones')
         .setVersion('1.0')
         .addBearerAuth()
+        .addTag('notifications')
         .build();
 
     const document = SwaggerModule.createDocument(app, config);

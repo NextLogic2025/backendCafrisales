@@ -19,8 +19,7 @@ export const typeOrmConfig = (): TypeOrmModuleOptions => {
         url: process.env.DATABASE_URL || process.env.DB_URL,
       }),
     entities: [
-      path.join(__dirname, '..', '..', '**', 'modules', '**', 'entities', '*.entity.js'),
-      path.join(__dirname, '..', '..', '**', 'modules', '**', 'entities', '*.entity.ts'),
+      path.join(__dirname, '..', 'modules', '**', 'entities', '*.entity.{ts,js}'),
     ],
     synchronize: true, // Activado para creación de tablas
     schema: 'app',

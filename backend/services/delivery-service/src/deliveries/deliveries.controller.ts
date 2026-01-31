@@ -4,17 +4,22 @@ import {
     Get,
     Param,
     ParseUUIDPipe,
+    UseGuards,
+    Header,
+    HttpCode,
+    HttpStatus,
+    Patch,
     Post,
     Put,
     Query,
-    UseGuards,
 } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { DeliveriesService } from './deliveries.service';
 import {
     CancelDeliveryDto,
     CompleteDeliveryDto,
     CompletePartialDeliveryDto,
-    EvidenceInputDto,
+    LocationUpdateDto,
     NoDeliveryDto,
 } from './dto/create-delivery.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -22,49 +27,48 @@ import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { RolUsuario } from '../common/constants/rol-usuario.enum';
 import { AuthUser, CurrentUser } from '../common/decorators/current-user.decorator';
-import { IncidentsService } from '../incidents/incidents.service';
-import { ReportIncidentDto } from '../incidents/dto/report-incident.dto';
+import { PaginationQueryDto } from '../common/dto/pagination.dto';
+import { DeliveryFilterDto } from './dto/delivery-filter.dto';
+import { createPaginatedResponse } from '../common/interfaces/paginated-response.interface';
 
-@Controller('entregas')
+@ApiTags('deliveries')
+@ApiBearerAuth()
+@Controller({ path: 'deliveries', version: '1' })
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class DeliveriesController {
     constructor(
         private readonly deliveriesService: DeliveriesService,
-        private readonly incidentsService: IncidentsService,
     ) { }
 
     @Get()
     @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR, RolUsuario.TRANSPORTISTA, RolUsuario.BODEGUERO)
-    findAll(
-        @Query('transportista_id') transportista_id?: string,
-        @Query('rutero_logistico_id') rutero_logistico_id?: string,
-        @Query('pedido_id') pedido_id?: string,
-        @Query('estado') estado?: string,
-        @Query('fecha') fecha?: string,
+    @ApiOperation({ summary: 'Listar entregas con paginación y filtros' })
+    @Header('Cache-Control', 'no-store')
+    async findAll(
+        @Query() pagination: PaginationQueryDto,
+        @Query() filters: DeliveryFilterDto,
     ) {
-        return this.deliveriesService.findAll({
-            transportista_id,
-            rutero_logistico_id,
-            pedido_id,
-            estado,
-            fecha,
-        });
+        return this.deliveriesService.findAllPaginated(pagination, filters);
     }
 
     @Get(':id')
     @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR, RolUsuario.TRANSPORTISTA)
+    @ApiOperation({ summary: 'Obtener entrega por ID' })
     findOne(@Param('id', ParseUUIDPipe) id: string) {
         return this.deliveriesService.findOne(id);
     }
 
-    @Get(':id/historial')
+    @Get(':id/history')
     @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR, RolUsuario.TRANSPORTISTA)
+    @ApiOperation({ summary: 'Obtener historial de entrega' })
     findHistory(@Param('id', ParseUUIDPipe) id: string) {
         return this.deliveriesService.findHistory(id);
     }
 
-    @Put(':id/en-ruta')
+    @Put(':id/start')
     @Roles(RolUsuario.TRANSPORTISTA)
+    @ApiOperation({ summary: 'Marcar entrega en ruta' })
+    @HttpCode(HttpStatus.OK)
     markEnRuta(
         @Param('id', ParseUUIDPipe) id: string,
         @CurrentUser() user?: AuthUser,
@@ -72,8 +76,23 @@ export class DeliveriesController {
         return this.deliveriesService.markEnRuta(id, user?.userId);
     }
 
-    @Post(':id/completar')
+    @Patch(':id/location')
     @Roles(RolUsuario.TRANSPORTISTA)
+    @ApiOperation({ summary: 'Actualizar ubicación GPS' })
+    @HttpCode(HttpStatus.OK)
+    @Header('Cache-Control', 'no-store')
+    updateLocation(
+        @Param('id', ParseUUIDPipe) id: string,
+        @Body() dto: LocationUpdateDto,
+        @CurrentUser() user?: AuthUser,
+    ) {
+        return this.deliveriesService.updateLocation(id, dto.latitud, dto.longitud, user?.userId);
+    }
+
+    @Post(':id/complete')
+    @Roles(RolUsuario.TRANSPORTISTA)
+    @ApiOperation({ summary: 'Completar entrega' })
+    @HttpCode(HttpStatus.OK)
     completeDelivery(
         @Param('id', ParseUUIDPipe) id: string,
         @Body() dto: CompleteDeliveryDto,
@@ -82,8 +101,10 @@ export class DeliveriesController {
         return this.deliveriesService.completeDelivery(id, dto, user?.userId);
     }
 
-    @Post(':id/completar-parcial')
+    @Post(':id/complete-partial')
     @Roles(RolUsuario.TRANSPORTISTA)
+    @ApiOperation({ summary: 'Completar entrega parcialmente' })
+    @HttpCode(HttpStatus.OK)
     completePartialDelivery(
         @Param('id', ParseUUIDPipe) id: string,
         @Body() dto: CompletePartialDeliveryDto,
@@ -92,8 +113,10 @@ export class DeliveriesController {
         return this.deliveriesService.completePartialDelivery(id, dto, user?.userId);
     }
 
-    @Post(':id/no-entregado')
+    @Post(':id/fail')
     @Roles(RolUsuario.TRANSPORTISTA)
+    @ApiOperation({ summary: 'Marcar como no entregado' })
+    @HttpCode(HttpStatus.OK)
     markNoDelivery(
         @Param('id', ParseUUIDPipe) id: string,
         @Body() dto: NoDeliveryDto,
@@ -102,33 +125,15 @@ export class DeliveriesController {
         return this.deliveriesService.markNoDelivery(id, dto, user?.userId);
     }
 
-    @Post(':id/evidencias')
-    @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR, RolUsuario.TRANSPORTISTA)
-    addEvidence(
-        @Param('id', ParseUUIDPipe) id: string,
-        @Body() evidence: EvidenceInputDto,
-        @CurrentUser() user?: AuthUser,
-    ) {
-        return this.deliveriesService.addEvidence(id, evidence, user?.userId);
-    }
-
-    @Put(':id/cancelar')
+    @Put(':id/cancel')
     @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR)
+    @ApiOperation({ summary: 'Cancelar entrega' })
+    @HttpCode(HttpStatus.OK)
     cancel(
         @Param('id', ParseUUIDPipe) id: string,
         @Body() dto: CancelDeliveryDto,
         @CurrentUser() user?: AuthUser,
     ) {
         return this.deliveriesService.cancelDelivery(id, dto, user?.userId);
-    }
-
-    @Post(':id/incidencias')
-    @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR, RolUsuario.TRANSPORTISTA)
-    reportIncident(
-        @Param('id', ParseUUIDPipe) id: string,
-        @Body() dto: ReportIncidentDto,
-        @CurrentUser() user?: AuthUser,
-    ) {
-        return this.incidentsService.reportIncident(id, dto, user?.userId);
     }
 }

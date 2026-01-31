@@ -132,7 +132,7 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
             prioridad: notification.prioridad,
             requiereAccion: notification.requiereAccion,
             urlAccion: notification.urlAccion,
-            creadoEn: notification.creadoEn,
+            creadoEn: notification.createdAt,
         });
 
         this.logger.log(`Notificación ${notification.id} enviada a usuario ${userId}`);

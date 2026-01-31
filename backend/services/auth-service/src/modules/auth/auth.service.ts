@@ -333,6 +333,18 @@ export class AuthService {
     return;
   }
 
+  async invalidateToken(jti: string) {
+    // In a real implementation with Redis, we would add the JTI to a blacklist with TTL.
+    // For now, if we depend only on refresh tokens for long-lived sessions, simply ensuring the session is revoked (which logout does) is often sufficient.
+    // However, to strictly invalidate the *access token* before it expires (15m), we need a blacklist.
+    // Since no Redis is mentioned/guaranteed, we will log this action.
+    // If you have a DB table for invalid tokens, insert here.
+    this.logger.log(`Invalidating token JTI: ${jti}`);
+
+    // Future implementation:
+    // await this.cacheManager.set(`blacklist:${jti}`, true, { ttl: 900 });
+  }
+
   async getSessions(usuarioId: string | null) {
     if (!usuarioId) return [];
     const sessions = await this.sessionRepo.find({ where: { usuario_id: usuarioId } });

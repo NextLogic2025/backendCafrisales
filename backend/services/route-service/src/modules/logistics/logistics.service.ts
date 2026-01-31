@@ -17,6 +17,9 @@ import { UserExternalService } from '../../services/user-external.service';
 import { ZoneExternalService } from '../../services/zone-external.service';
 import { OrderExternalService } from '../../services/order-external.service';
 import { DeliveryExternalService } from '../../services/delivery-external.service';
+import { PaginationQueryDto } from '../../common/dto/pagination.dto';
+import { RouteFilterDto } from './dto/route-filter.dto';
+import { PaginatedResponse, createPaginatedResponse } from '../../common/interfaces/paginated-response.interface';
 import { Vehiculo } from '../fleet/entities/vehiculo.entity';
 
 @Injectable()
@@ -266,7 +269,62 @@ export class LogisticsService {
         };
     }
 
+    async findAllPaginated(
+        pagination: PaginationQueryDto,
+        filters: RouteFilterDto,
+        visibleToUserId?: string, // If transportista, show only theirs
+    ): Promise<PaginatedResponse<RuteroLogistico>> {
+        const qb = this.routeRepo.createQueryBuilder('r')
+            .leftJoinAndSelect('r.paradas', 'paradas')
+            .leftJoinAndSelect('paradas.pedido', 'pedido') // Assuming relation exists
+            .leftJoinAndSelect('r.vehiculo', 'vehiculo');
+
+        // Filters
+        if (filters.status) {
+            qb.andWhere('r.estado = :status', { status: filters.status });
+        }
+        if (filters.driverId) {
+            qb.andWhere('r.transportista_id = :driverId', { driverId: filters.driverId });
+        }
+        if (filters.zoneId) {
+            qb.andWhere('r.zona_id = :zoneId', { zoneId: filters.zoneId });
+        }
+        if (filters.date) {
+            // Assuming date string match or range
+            qb.andWhere('DATE(r.fecha_rutero) = :date', { date: filters.date });
+        }
+        if (filters.fromDate) {
+            qb.andWhere('r.fecha_rutero >= :fromDate', { fromDate: filters.fromDate });
+        }
+        if (filters.toDate) {
+            qb.andWhere('r.fecha_rutero <= :toDate', { toDate: filters.toDate });
+        }
+
+        // Visibility
+        if (visibleToUserId) {
+            // If user is transportista, they only see their routes
+            qb.andWhere('r.transportista_id = :userId', { userId: visibleToUserId });
+        }
+
+        // Sorting
+        const allowedSortFields = ['fecha_rutero', 'estado', 'creado_en'];
+        const sortField = allowedSortFields.includes(pagination.sortBy) ? `r.${pagination.sortBy}` : 'r.fecha_rutero';
+        qb.orderBy(sortField, pagination.sortOrder);
+
+        // Pagination
+        const page = pagination.page || 1;
+        const limit = pagination.limit || 10;
+        const skip = (page - 1) * limit;
+
+        qb.skip(skip).take(limit);
+
+        const [data, total] = await qb.getManyAndCount();
+
+        return createPaginatedResponse(data, total, page, limit);
+    }
+
     async findAll(transportistaId?: string, estados?: string[]): Promise<RuteroLogistico[]> {
+        // Legacy compatibility
         const qb = this.routeRepo.createQueryBuilder('r').orderBy('r.fecha_rutero', 'DESC');
         if (transportistaId) {
             qb.where('r.transportista_id = :transportistaId', { transportistaId });
@@ -527,5 +585,51 @@ export class LogisticsService {
 
             return saved;
         });
+    }
+
+    async getStats(driverId?: string) {
+        const qb = this.routeRepo.createQueryBuilder('r')
+            .select('r.estado', 'estado')
+            .addSelect('COUNT(r.id)', 'count');
+
+        if (driverId) {
+            qb.where('r.transportista_id = :driverId', { driverId });
+        }
+
+        qb.groupBy('r.estado');
+        const statusCounts = await qb.getRawMany();
+
+        return statusCounts;
+    }
+
+    async assignDriver(routeId: string, driverId: string, assignerId: string): Promise<RuteroLogistico> {
+        const route = await this.findOne(routeId);
+        // Verify driver validity
+        const isTransporter = await this.userExternalService.isTransporter(driverId);
+        if (!isTransporter) {
+            throw new BadRequestException('El transportista asignado no es válido.');
+        }
+
+        route.transportista_id = driverId;
+        return this.routeRepo.save(route);
+    }
+
+    async optimizeRoute(routeId: string): Promise<RuteroLogistico> {
+        // Placeholder for optimization logic
+        return this.findOne(routeId);
+    }
+
+    async cloneRoute(routeId: string, targetDate: Date, userId: string): Promise<RuteroLogistico> {
+        const original = await this.findOne(routeId);
+
+        const dto: CreateLogisticRouteDto = {
+            fecha_rutero: targetDate.toISOString(),
+            zona_id: original.zona_id,
+            vehiculo_id: original.vehiculo_id,
+            transportista_id: original.transportista_id,
+            paradas: original.paradas.map(p => ({ pedido_id: p.pedido_id, orden_entrega: p.orden_entrega })),
+        };
+
+        return this.create(dto, userId);
     }
 }

@@ -11,6 +11,9 @@ import { ItemPedido } from './entities/item-pedido.entity';
 import { HistorialEstadoPedido } from '../history/entities/historial-estado-pedido.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { AddItemDto } from './dto/add-item.dto';
+import { PaginationQueryDto } from '../../common/dto/pagination.dto';
+import { OrderFilterDto } from './dto/order-filter.dto';
+import { PaginatedResponse, createPaginatedResponse } from '../../common/interfaces/paginated-response.interface';
 import { CatalogExternalService } from '../../services/catalog-external.service';
 import { UserExternalService } from '../../services/user-external.service';
 import { ZoneExternalService } from '../../services/zone-external.service';
@@ -143,20 +146,78 @@ export class OrdersService {
         });
     }
 
-    async findAll(): Promise<Pedido[]> {
-        return this.pedidoRepo.find({
-            relations: ['items', 'validaciones', 'validaciones.items', 'historial'],
-            order: { creado_en: 'DESC' },
-        });
+    async findAllPaginated(
+        pagination: PaginationQueryDto,
+        filters: OrderFilterDto,
+        visibleToUserId?: string, // If provided, filters by this user/client/seller
+    ): Promise<PaginatedResponse<Pedido>> {
+        const qb = this.pedidoRepo.createQueryBuilder('p')
+            .leftJoinAndSelect('p.items', 'items')
+            .leftJoinAndSelect('p.validaciones', 'validaciones')
+            .leftJoinAndSelect('p.validaciones.items', 'validacionItems')
+            .leftJoinAndSelect('p.historial', 'historial');
+
+        // Apply Filters
+        if (filters.status) {
+            qb.andWhere('p.estado = :status', { status: filters.status });
+        }
+        if (filters.customerId) {
+            qb.andWhere('p.cliente_id = :customerId', { customerId: filters.customerId });
+        }
+        if (filters.sellerId) {
+            // Assuming we have seller_id or created_by_id logic.
+            // If created_by is the seller, or if we join user to check role.
+            // For now assuming creado_por_id is the seller if origin is VENDEDOR,
+            // or we might need a specific column if it exists.
+            // Let's assume creado_por_id for now as implied by creation logic.
+            qb.andWhere('p.creado_por_id = :sellerId', { sellerId: filters.sellerId });
+        }
+        if (filters.fromDate) {
+            qb.andWhere('p.creado_en >= :fromDate', { fromDate: filters.fromDate });
+        }
+        if (filters.toDate) {
+            qb.andWhere('p.creado_en <= :toDate', { toDate: filters.toDate });
+        }
+        if (filters.minTotal) {
+            qb.andWhere('p.total >= :minTotal', { minTotal: filters.minTotal });
+        }
+        if (filters.maxTotal) {
+            qb.andWhere('p.total <= :maxTotal', { maxTotal: filters.maxTotal });
+        }
+
+        // Apply visibility scope
+        if (visibleToUserId) {
+            // Logic depends on role, typically passed by controller.
+            // Or here, we can simple say: where client_id = user OR created_by = user
+            qb.andWhere('(p.cliente_id = :userId OR p.creado_por_id = :userId)', { userId: visibleToUserId });
+        }
+
+        // Sorting
+        const allowedSortFields = ['creado_en', 'total', 'estado', 'fecha_entrega_sugerida'];
+        const sortField = allowedSortFields.includes(pagination.sortBy) ? `p.${pagination.sortBy}` : 'p.creado_en';
+        qb.orderBy(sortField, pagination.sortOrder);
+
+        // Pagination
+        const page = pagination.page || 1;
+        const limit = pagination.limit || 10;
+        const skip = (page - 1) * limit;
+
+        qb.skip(skip).take(limit);
+
+        const [data, total] = await qb.getManyAndCount();
+
+        return createPaginatedResponse(data, total, page, limit);
     }
 
-    async findByClient(clienteId: string, estado?: EstadoPedido): Promise<Pedido[]> {
-        const where: any = { cliente_id: clienteId };
-        if (estado) {
-            where.estado = estado;
-        }
+    // Kept for backward compatibility if needed, but redirects to paginated
+    async findAll(): Promise<Pedido[]> {
+        const result = await this.findAllPaginated({ page: 1, limit: 100, sortBy: 'creado_en', sortOrder: 'DESC' }, {});
+        return result.data;
+    }
+
+    async findByClient(clienteId: string): Promise<Pedido[]> {
         return this.pedidoRepo.find({
-            where,
+            where: { cliente_id: clienteId },
             relations: ['items'],
             order: { creado_en: 'DESC' },
         });
@@ -833,5 +894,20 @@ export class OrdersService {
             .split('_')
             .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
             .join('');
+    }
+
+    async getStats(sellerId?: string) {
+        const qb = this.pedidoRepo.createQueryBuilder('p')
+            .select('p.estado', 'estado')
+            .addSelect('COUNT(p.id)', 'count')
+            .addSelect('SUM(p.total)', 'totalAmount');
+
+        if (sellerId) {
+            qb.where('p.creado_por_id = :sellerId', { sellerId });
+        }
+
+        qb.groupBy('p.estado');
+
+        return await qb.getRawMany();
     }
 }

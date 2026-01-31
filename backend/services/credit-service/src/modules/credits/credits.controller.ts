@@ -11,7 +11,18 @@ import {
     ParseUUIDPipe,
     ParseIntPipe,
     DefaultValuePipe,
+    HttpCode,
+    HttpStatus,
+    Header,
 } from '@nestjs/common';
+import {
+    ApiTags,
+    ApiOperation,
+    ApiResponse,
+    ApiBearerAuth,
+    ApiQuery,
+    ApiParam,
+} from '@nestjs/swagger';
 import { CreditsService } from './credits.service';
 import { AprobarCreditoDto } from './dto/aprobar-credito.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -20,16 +31,21 @@ import { ServiceTokenGuard } from '../../common/guards/service-token.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser, AuthUser } from '../../common/decorators/current-user.decorator';
 import { RolUsuario } from '../../common/constants/rol-usuario.enum';
-import { EstadoCredito } from '../../common/constants/credit-status.enum';
 import { OrigenCredito } from '../../common/constants/credit-origin.enum';
+import { PaginationQueryDto } from '../../common/dto/pagination.dto';
+import { CreditFilterDto } from './dto/credit-filter.dto';
+import { createPaginatedResponse } from '../../common/interfaces/paginated-response.interface';
 
-@Controller('creditos')
+@ApiTags('credits')
+@Controller({ path: 'credits', version: '1' })
 export class CreditsController {
-    constructor(private readonly creditsService: CreditsService) {}
+    constructor(private readonly creditsService: CreditsService) { }
 
-    @Post('aprobar')
+    @Post('approve')
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(RolUsuario.VENDEDOR, RolUsuario.ADMIN, RolUsuario.SUPERVISOR)
+    @ApiOperation({ summary: 'Aprobar crédito' })
+    @HttpCode(HttpStatus.OK)
     aprobarCredito(@Body() dto: AprobarCreditoDto, @CurrentUser() user: AuthUser) {
         const actorId = user?.userId || user?.id;
         return this.creditsService.approve(
@@ -41,9 +57,11 @@ export class CreditsController {
         );
     }
 
-    @Post('aprobar-excepcion')
+    @Post('approve/exception')
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(RolUsuario.SUPERVISOR, RolUsuario.ADMIN)
+    @ApiOperation({ summary: 'Aprobar crédito por excepción' })
+    @HttpCode(HttpStatus.OK)
     aprobarCreditoExcepcion(@Body() dto: AprobarCreditoDto, @CurrentUser() user: AuthUser) {
         const actorId = user?.userId || user?.id;
         return this.creditsService.approve(
@@ -55,21 +73,26 @@ export class CreditsController {
         );
     }
 
-    @Post('procesar-vencidos')
+    @Post('process-overdue')
     @UseGuards(ServiceTokenGuard)
+    @ApiOperation({ summary: 'Procesar créditos vencidos (Sistema)' })
+    @HttpCode(HttpStatus.OK)
     procesarVencidos() {
         return this.creditsService.processOverdues('sistema');
     }
 
-    @Get('internal/pedido/:pedidoId')
+    @Get('internal/order/:orderId')
     @UseGuards(ServiceTokenGuard)
-    getByPedidoInternal(@Param('pedidoId', ParseUUIDPipe) pedidoId: string) {
+    @ApiOperation({ summary: 'Obtener crédito por pedido (Interno)' })
+    getByPedidoInternal(@Param('orderId', ParseUUIDPipe) pedidoId: string) {
         return this.creditsService.getCreditByOrderInternal(pedidoId);
     }
 
-    @Put(':id/cancelar')
+    @Put(':id/cancel')
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR)
+    @ApiOperation({ summary: 'Cancelar crédito' })
+    @HttpCode(HttpStatus.OK)
     cancelar(
         @Param('id', ParseUUIDPipe) id: string,
         @Body('motivo') motivo: string,
@@ -79,9 +102,11 @@ export class CreditsController {
         return this.creditsService.cancel(id, actorId, motivo);
     }
 
-    @Put(':id/rechazar')
+    @Put(':id/reject')
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(RolUsuario.VENDEDOR, RolUsuario.ADMIN, RolUsuario.SUPERVISOR)
+    @ApiOperation({ summary: 'Rechazar crédito' })
+    @HttpCode(HttpStatus.OK)
     rechazar(
         @Param('id', ParseUUIDPipe) id: string,
         @Body('motivo') motivo: string,
@@ -94,65 +119,59 @@ export class CreditsController {
     @Get()
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR, RolUsuario.VENDEDOR, RolUsuario.CLIENTE)
+    @ApiOperation({ summary: 'Listar créditos con paginación y filtros' })
+    @Header('Cache-Control', 'no-store')
     async listar(
-        @Query('cliente_id') clienteId?: string,
-        @Query('vendedor_id') vendedorId?: string,
-        @Query('estado') estado?: string,
-        @Query('pedido_id') pedidoId?: string,
-        @CurrentUser() user?: AuthUser,
+        @Query() pagination: PaginationQueryDto,
+        @Query() filters: CreditFilterDto,
+        @CurrentUser() user: AuthUser,
     ) {
-        if (pedidoId) {
-            const credit = await this.creditsService.getCreditDetailByOrder(pedidoId);
-            const isClient = user?.role === RolUsuario.CLIENTE;
-            const userId = user?.userId || user?.id;
-            if (isClient && credit?.credito?.cliente_id !== userId) {
-                throw new ForbiddenException('No tienes permisos para ver este credito');
-            }
-            return credit;
-        }
+        const paginatedFilters = { ...filters };
+
         if (user?.role === RolUsuario.CLIENTE) {
-            const userId = user?.userId || user?.id;
-            if (!clienteId || clienteId !== userId) {
-                throw new ForbiddenException('No tienes permisos para ver estos creditos');
-            }
+            paginatedFilters.customerId = user.userId || user.id;
         }
-        if (clienteId) {
-            return this.creditsService.findByClient(clienteId, estado as EstadoCredito);
-        }
-        if (vendedorId) {
-            const estados = estado ? estado.split(',').map((item) => item.trim() as EstadoCredito) : undefined;
-            return this.creditsService.findBySeller(vendedorId, estados);
-        }
-        return this.creditsService.findAll();
+
+        const response = await this.creditsService.findAllPaginated(
+            pagination,
+            paginatedFilters,
+        );
+
+        // Response is already formatted by service
+        return response;
     }
 
-    @Get('mis')
+    @Get('me')
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(RolUsuario.CLIENTE)
-    listarMisCreditos(@CurrentUser() user: AuthUser, @Query('estado') estado?: string) {
+    @ApiOperation({ summary: 'Listar mis créditos' })
+    listarMisCreditos(
+        @CurrentUser() user: AuthUser,
+        @Query() pagination: PaginationQueryDto,
+        @Query() filters: CreditFilterDto
+    ) {
         const clienteId = user?.userId || user?.id;
         if (!clienteId) {
             throw new ForbiddenException('Cliente no identificado');
         }
-        if (estado && estado.includes(',')) {
-            const estados = estado.split(',').map((item) => item.trim() as EstadoCredito);
-            return this.creditsService.findByClientStates(clienteId, estados);
-        }
-        return this.creditsService.findByClient(clienteId, estado as EstadoCredito);
+        filters.customerId = clienteId;
+        return this.creditsService.findAllPaginated(pagination, filters); // Reuse paginated logic
     }
 
-    @Get('proximos-vencer')
+    @Get('upcoming-due')
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR)
+    @ApiOperation({ summary: 'Listar próximos a vencer' })
     proximosVencer(
-        @Query('dias', new DefaultValuePipe(7), ParseIntPipe) dias: number,
+        @Query('days', new DefaultValuePipe(7), ParseIntPipe) dias: number,
     ) {
         return this.creditsService.listUpcomingDue(dias);
     }
 
-    @Get('reporte-vencidos')
+    @Get('overdue-report')
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR)
+    @ApiOperation({ summary: 'Reporte de vencidos' })
     reporteVencidos() {
         return this.creditsService.listOverdueReport();
     }
@@ -160,6 +179,7 @@ export class CreditsController {
     @Get(':id')
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR, RolUsuario.VENDEDOR, RolUsuario.CLIENTE)
+    @ApiOperation({ summary: 'Obtener detalle de crédito' })
     async detalle(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: AuthUser) {
         const credit = await this.creditsService.getCreditDetail(id);
         const isClient = user?.role === RolUsuario.CLIENTE;
@@ -170,9 +190,10 @@ export class CreditsController {
         return credit;
     }
 
-    @Get(':id/pagos')
+    @Get(':id/payments')
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR, RolUsuario.VENDEDOR, RolUsuario.CLIENTE)
+    @ApiOperation({ summary: 'Listar pagos de un crédito' })
     async pagos(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: AuthUser) {
         const credit = await this.creditsService.findOne(id);
         const isClient = user?.role === RolUsuario.CLIENTE;

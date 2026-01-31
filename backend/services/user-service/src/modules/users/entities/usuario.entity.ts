@@ -1,4 +1,4 @@
-import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToOne, PrimaryGeneratedColumn, DeleteDateColumn } from 'typeorm';
 import { PerfilUsuario } from './perfil-usuario.entity';
 import { RolUsuario } from '../../../common/enums/rol-usuario.enum';
 
@@ -38,6 +38,9 @@ export class Usuario {
 
   @Column({ type: 'int', default: 1 })
   version: number;
+
+  @DeleteDateColumn({ name: 'eliminado_en', type: 'timestamptz', nullable: true })
+  deletedAt?: Date;
 
   @OneToOne(() => PerfilUsuario, (perfil) => perfil.usuario)
   perfil: PerfilUsuario;

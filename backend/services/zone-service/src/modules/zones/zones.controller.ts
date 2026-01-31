@@ -1,5 +1,5 @@
-import { Controller, Get, Post, Body, Param, UseGuards, Patch, Put, Query, ParseUUIDPipe, ParseIntPipe } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Post, Body, Param, UseGuards, Patch, Put, Query, ParseUUIDPipe, ParseIntPipe, Header, HttpCode, HttpStatus, Delete, ClassSerializerInterceptor, UseInterceptors } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ZonesService } from './zones.service';
 import { SchedulesService } from '../schedules/schedules.service';
 import { CoverageService } from '../coverage/coverage.service';
@@ -11,11 +11,14 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { RolUsuario } from '../../common/enums/rol-usuario.enum';
 import { GetUser, AuthUser } from '../../common/decorators/get-user.decorator';
+import { PaginationQueryDto } from '../../common/dto/pagination.dto';
+import { ZoneFilterDto } from './dto/zone-filter.dto';
 
 @ApiTags('Zones')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Controller('zonas')
+@Controller({ path: 'zones', version: '1' })
+@UseInterceptors(ClassSerializerInterceptor)
 export class ZonesController {
     constructor(
         private readonly zonesService: ZonesService,
@@ -25,13 +28,21 @@ export class ZonesController {
 
     @Post()
     @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR)
+    @HttpCode(HttpStatus.CREATED)
+    @ApiOperation({ summary: 'Crear zona' })
     create(@Body() createZoneDto: CreateZoneDto, @GetUser() user: AuthUser): Promise<Zone> {
         return this.zonesService.create(createZoneDto, user?.userId);
     }
 
     @Get()
-    findAll(@Query('estado') estado?: string, @Query('activo') activo?: string): Promise<Zone[]> {
-        return this.zonesService.findAll(estado, activo);
+    @Header('Cache-Control', 'public, max-age=60')
+    @ApiOperation({ summary: 'Listar zonas con paginación' })
+    async findAll(
+        @Query() pagination: PaginationQueryDto,
+        @Query() filters: ZoneFilterDto,
+    ) {
+        const { data, meta } = await this.zonesService.findAllPaginated(pagination, filters);
+        return { data, meta };
     }
 
     @Get('disponibles-entregas')
@@ -51,6 +62,7 @@ export class ZonesController {
     }
 
     @Get(':id')
+    @Header('Cache-Control', 'public, max-age=60')
     findOne(@Param('id', ParseUUIDPipe) id: string): Promise<Zone> {
         return this.zonesService.findOne(id);
     }
@@ -80,6 +92,48 @@ export class ZonesController {
     deactivate(@Param('id', ParseUUIDPipe) id: string, @GetUser() user: AuthUser) {
         return this.zonesService.deactivate(id, user?.userId);
     }
+
+    @Delete(':id')
+    @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR)
+    @HttpCode(HttpStatus.NO_CONTENT)
+    delete(@Param('id', ParseUUIDPipe) id: string, @GetUser() user: AuthUser) {
+        return this.zonesService.softDelete(id, user?.userId);
+    }
+
+    @Get(':id/stats')
+    @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR)
+    getStats(@Param('id', ParseUUIDPipe) id: string) {
+        return this.zonesService.getStats(id);
+    }
+
+    @Get(':id/users')
+    @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR)
+    getAssignedUsers(@Param('id', ParseUUIDPipe) id: string) {
+        // Mock response until User Service integration
+        return { message: 'Not Implemented - Check User Service', data: [] };
+    }
+
+    @Post(':id/users')
+    @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR)
+    assignUser(@Param('id', ParseUUIDPipe) id: string, @Body() body: { userId: string }) {
+        return { message: 'Not Implemented - Check User Service' };
+    }
+
+    @Delete(':id/users/:userId')
+    @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR)
+    unassignUser(@Param('id', ParseUUIDPipe) id: string, @Param('userId') userId: string) {
+        return { message: 'Not Implemented - Check User Service' };
+    }
+
+    @Post('validate-point')
+    @HttpCode(HttpStatus.OK)
+    async validatePoint(@Body() body: CheckPointDto) {
+        const zone = await this.coverageService.findZoneByPoint(body.lat, body.lon);
+        return zone;
+    }
+
+
+    /* ... Keep existing Schedule endpoints ... */
 
     @Get(':id/horarios')
     getSchedules(@Param('id', ParseUUIDPipe) id: string) {
