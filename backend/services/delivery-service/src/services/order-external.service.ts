@@ -27,7 +27,7 @@ export class OrderExternalService {
         try {
             await this.s2sClient.post(
                 this.orderServiceUrl,
-                `/api/internal/pedidos/${pedidoId}/estado`,
+                `/api/v1/internal/pedidos/${pedidoId}/estado`,
                 { estado, cambiado_por_id: actorId },
                 this.serviceToken,
             );

@@ -86,7 +86,7 @@ export class OrderConsumerService {
         this.logger.log(`Fetching users for role ${role} from user-service...`);
         try {
             const userServiceUrl = process.env.USER_SERVICE_URL || 'http://user-service:3000';
-            const url = `${userServiceUrl}/api/usuarios/by-role/${role}`;
+            const url = `${userServiceUrl}/api/v1/users/by-role/${role}`;
             this.logger.debug(`Requesting: ${url}`);
 
             // Timeout de 3 segundos

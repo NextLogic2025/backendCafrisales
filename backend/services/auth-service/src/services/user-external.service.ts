@@ -32,7 +32,7 @@ export class UserExternalService {
         try {
             const user = await this.s2sClient.get<any>(
                 this.userServiceUrl,
-                `/api/internal/usuarios/${userId}`,
+                `/api/v1/internal/usuarios/${userId}`,
                 this.serviceToken,
             );
             return user;
@@ -60,7 +60,7 @@ export class UserExternalService {
         try {
             return await this.s2sClient.post<any>(
                 this.userServiceUrl,
-                '/api/internal/usuarios/sync',
+                '/api/v1/internal/usuarios/sync',
                 payload,
                 this.serviceToken,
             );

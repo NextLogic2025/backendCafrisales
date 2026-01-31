@@ -28,7 +28,7 @@ export class AuthExternalService {
     };
 
     try {
-      const url = `${this.authServiceUrl}/api/auth/register`;
+      const url = `${this.authServiceUrl}/api/v1/auth/register`;
       const res = await axios.post(url, payload, { headers, timeout: 5000 });
       return res.data;
     } catch (err: any) {

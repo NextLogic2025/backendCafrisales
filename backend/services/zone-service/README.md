@@ -42,7 +42,7 @@ Gestión general de horarios.
 | :--- | :--- | :--- | :--- |
 | `GET` | `/` | *Autenticado* | Listar todos los horarios globales. |
 
-### Internal Controller (`/api/internal/zones`)
+### Internal Controller (`/api/v1/internal/zones`)
 
 Endpoints para comunicación entre servicios (Service-to-Service). Requiere `x-service-token`.
 

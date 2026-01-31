@@ -32,7 +32,7 @@ export class ZoneExternalService {
         try {
             const zone = await this.s2sClient.get<any>(
                 this.zoneServiceUrl,
-                `/api/internal/zones/${zoneId}`,
+                `/api/v1/internal/zones/${zoneId}`,
                 this.serviceToken,
             );
             return zone;

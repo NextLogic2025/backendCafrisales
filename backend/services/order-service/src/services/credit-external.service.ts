@@ -28,7 +28,7 @@ export class CreditExternalService {
         try {
             const credit = await this.s2sClient.get<any>(
                 this.creditServiceUrl,
-                `/api/creditos/internal/pedido/${pedidoId}`,
+                `/api/v1/credits/internal/order/${pedidoId}`,
                 this.serviceToken,
             );
             return credit;

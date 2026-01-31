@@ -31,7 +31,7 @@ export class UserExternalService {
         try {
             const user = await this.s2sClient.get<any>(
                 this.userServiceUrl,
-                `/api/internal/usuarios/${userId}`,
+                `/api/v1/internal/usuarios/${userId}`,
                 this.serviceToken,
             );
             return user;

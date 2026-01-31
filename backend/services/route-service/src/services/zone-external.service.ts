@@ -27,7 +27,7 @@ export class ZoneExternalService {
         try {
             return await this.s2sClient.get<any>(
                 this.zoneServiceUrl,
-                `/api/internal/zones/${zoneId}`,
+                `/api/v1/internal/zones/${zoneId}`,
                 this.serviceToken,
             );
         } catch (error) {

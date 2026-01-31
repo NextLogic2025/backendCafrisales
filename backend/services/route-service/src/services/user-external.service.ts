@@ -27,7 +27,7 @@ export class UserExternalService {
         try {
             return await this.s2sClient.get<any>(
                 this.userServiceUrl,
-                `/api/internal/usuarios/${userId}`,
+                `/api/v1/internal/usuarios/${userId}`,
                 this.serviceToken,
             );
         } catch (error) {
@@ -40,7 +40,7 @@ export class UserExternalService {
         try {
             return await this.s2sClient.get<any>(
                 this.userServiceUrl,
-                `/api/internal/clientes/${clientId}`,
+                `/api/v1/internal/clientes/${clientId}`,
                 this.serviceToken,
             );
         } catch (error) {

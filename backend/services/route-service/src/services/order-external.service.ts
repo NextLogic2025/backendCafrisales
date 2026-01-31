@@ -27,7 +27,7 @@ export class OrderExternalService {
         try {
             return await this.s2sClient.get<any>(
                 this.orderServiceUrl,
-                `/api/internal/pedidos/${orderId}`,
+                `/api/v1/internal/pedidos/${orderId}`,
                 this.serviceToken,
             );
         } catch (error) {
@@ -55,7 +55,7 @@ export class OrderExternalService {
         try {
             return await this.s2sClient.post<{ actualizados: number }>(
                 this.orderServiceUrl,
-                `/api/internal/pedidos/batch/estado`,
+                `/api/v1/internal/pedidos/batch/estado`,
                 { pedido_ids: pedidoIds, estado, cambiado_por_id: actorId },
                 this.serviceToken,
             );

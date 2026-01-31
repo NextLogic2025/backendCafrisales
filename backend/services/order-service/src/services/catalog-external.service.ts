@@ -31,7 +31,7 @@ export class CatalogExternalService {
         try {
             const sku = await this.s2sClient.get<any>(
                 this.catalogServiceUrl,
-                `/api/internal/skus/${skuId}`,
+                `/api/v1/internal/skus/${skuId}`,
                 this.serviceToken,
             );
             return sku;
