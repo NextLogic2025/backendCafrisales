@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { IncidenciaEntrega } from './entities/incidencia-entrega.entity';
 import { ReportIncidentDto } from './dto/report-incident.dto';
 import { ResolveIncidentDto } from './dto/resolve-incident.dto';
@@ -59,7 +59,9 @@ export class IncidentsService {
 
     async findUnresolved(severidad?: string[]): Promise<IncidenciaEntrega[]> {
         const where: any = { resuelto_en: null };
-        if (severidad && severidad.length > 0) where.severidad = severidad as any;
+        if (severidad && severidad.length > 0) {
+            where.severidad = In(severidad);
+        }
         return await this.incidenciaRepository.find({
             where,
             order: { reportado_en: 'DESC' },
