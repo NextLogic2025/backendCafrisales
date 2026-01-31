@@ -5,7 +5,7 @@ import {
     ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource, EntityManager, SelectQueryBuilder } from 'typeorm';
+import { Repository, DataSource, EntityManager, SelectQueryBuilder, In } from 'typeorm';
 import { Pedido } from './entities/pedido.entity';
 import { ItemPedido } from './entities/item-pedido.entity';
 import { HistorialEstadoPedido } from '../history/entities/historial-estado-pedido.entity';
@@ -28,6 +28,7 @@ import type { AuthUser } from '../../common/decorators/current-user.decorator';
 
 const TAX_RATE = 0.12;
 const DEFAULT_LIST_LIMIT = 100;
+const SYSTEM_ACTOR_ID = '00000000-0000-0000-0000-000000000000';
 
 interface PreparedItem {
     sku_id: string;
@@ -594,7 +595,7 @@ export class OrdersService {
     }
 
     async updateStatus(id: string, estado: EstadoPedido, actor?: AuthUser): Promise<Pedido> {
-        const actorId = actor?.userId ?? 'system';
+        const actorId = actor?.userId ?? SYSTEM_ACTOR_ID;
         return this.dataSource.transaction(async (manager) => {
             const pedido = await manager.findOne(Pedido, { where: { id } });
             if (!pedido) {
@@ -620,6 +621,84 @@ export class OrdersService {
             );
 
             return this.findOne(pedido.id);
+        });
+    }
+
+    async updateStatusInternal(id: string, estado: EstadoPedido, actorId?: string): Promise<Pedido> {
+        const resolvedActor = actorId || SYSTEM_ACTOR_ID;
+        return this.dataSource.transaction(async (manager) => {
+            const pedido = await manager.findOne(Pedido, { where: { id } });
+            if (!pedido) {
+                throw new NotFoundException(`Pedido ${id} no encontrado`);
+            }
+
+            if ([EstadoPedido.ENTREGADO, EstadoPedido.CANCELADO].includes(pedido.estado)) {
+                throw new BadRequestException('No se puede cambiar el estado de un pedido finalizado');
+            }
+
+            pedido.estado = estado;
+            pedido.actualizado_por = resolvedActor;
+            await manager.save(Pedido, pedido);
+
+            await this.recordHistory(manager, pedido.id, estado, resolvedActor, `Estado actualizado (S2S)`);
+
+            await this.outboxService.createEvent(
+                `Pedido${this.capitalizeEstado(estado)}`,
+                { pedido_id: pedido.id, estado, cliente_id: pedido.cliente_id, numero_pedido: (pedido as any).numero_pedido },
+                'order',
+                pedido.id,
+                manager,
+            );
+
+            return this.findOne(pedido.id);
+        });
+    }
+
+    async updateStatuses(
+        pedidoIds: string[],
+        estado: EstadoPedido,
+        actorId?: string,
+    ): Promise<{ actualizados: number }> {
+        if (!pedidoIds || pedidoIds.length === 0) {
+            throw new BadRequestException('pedido_ids es requerido');
+        }
+        const resolvedActor = actorId || SYSTEM_ACTOR_ID;
+
+        return this.dataSource.transaction(async (manager) => {
+            const pedidos = await manager.find(Pedido, { where: { id: In(pedidoIds) } });
+            if (!pedidos || pedidos.length === 0) {
+                throw new NotFoundException('No se encontraron pedidos para actualizar');
+            }
+
+            for (const pedido of pedidos) {
+                if ([EstadoPedido.ENTREGADO, EstadoPedido.CANCELADO].includes(pedido.estado)) {
+                    throw new BadRequestException('No se puede cambiar el estado de un pedido finalizado');
+                }
+            }
+
+            for (const pedido of pedidos) {
+                pedido.estado = estado;
+                pedido.actualizado_por = resolvedActor;
+                await manager.save(Pedido, pedido);
+
+                await this.recordHistory(
+                    manager,
+                    pedido.id,
+                    estado,
+                    resolvedActor,
+                    'Estado actualizado (S2S batch)',
+                );
+            }
+
+            await this.outboxService.createEvent(
+                `Pedidos${this.capitalizeEstado(estado)}`,
+                { pedido_ids: pedidoIds, estado },
+                'order',
+                pedidoIds[0],
+                manager,
+            );
+
+            return { actualizados: pedidos.length };
         });
     }
 

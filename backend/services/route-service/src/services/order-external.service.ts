@@ -46,4 +46,24 @@ export class OrderExternalService {
         }
         return results;
     }
+
+    async updateOrdersStatus(
+        pedidoIds: string[],
+        estado: string,
+        actorId?: string,
+    ): Promise<{ actualizados: number } | null> {
+        try {
+            return await this.s2sClient.post<{ actualizados: number }>(
+                this.orderServiceUrl,
+                `/api/internal/pedidos/batch/estado`,
+                { pedido_ids: pedidoIds, estado, cambiado_por_id: actorId },
+                this.serviceToken,
+            );
+        } catch (error: any) {
+            this.logger.warn(
+                `Failed to update orders batch: ${error.message} (status=${error?.response?.status}) data=${JSON.stringify(error?.response?.data)}`,
+            );
+            return null;
+        }
+    }
 }

@@ -34,7 +34,7 @@ export class DeliveriesController {
     ) { }
 
     @Get()
-    @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR, RolUsuario.TRANSPORTISTA)
+    @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR, RolUsuario.TRANSPORTISTA, RolUsuario.BODEGUERO)
     findAll(
         @Query('transportista_id') transportista_id?: string,
         @Query('rutero_logistico_id') rutero_logistico_id?: string,

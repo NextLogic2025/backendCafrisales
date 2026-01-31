@@ -217,6 +217,25 @@ export class LogisticsService {
         return saved;
     }
 
+    async prepareStop(routeId: string, pedidoId: string, bodegueroId: string): Promise<ParadaRuteroLogistico> {
+        const route = await this.routeRepo.findOne({ where: { id: routeId } });
+        if (!route) {
+            throw new NotFoundException(`Rutero logistico ${routeId} no encontrado`);
+        }
+        if (![EstadoRutero.PUBLICADO, EstadoRutero.EN_CURSO].includes(route.estado)) {
+            throw new BadRequestException('Solo se pueden preparar pedidos de ruteros publicados o en curso');
+        }
+
+        const stop = await this.stopRepo.findOne({ where: { rutero_id: routeId, pedido_id: pedidoId } });
+        if (!stop) {
+            throw new NotFoundException('El pedido no esta en este rutero');
+        }
+
+        stop.preparado_en = new Date();
+        stop.preparado_por = bodegueroId;
+        return this.stopRepo.save(stop);
+    }
+
     async getHistory(routeId: string): Promise<HistorialEstadoRutero[]> {
         const route = await this.routeRepo.findOne({ where: { id: routeId } });
         if (!route) {
@@ -297,6 +316,16 @@ export class LogisticsService {
             const saved = await routeRepo.save(route);
             await vehicleRepo.save(vehicle);
 
+            const pedidoIds = paradas.map((p) => p.pedido_id);
+            const updated = await this.orderExternalService.updateOrdersStatus(
+                pedidoIds,
+                'asignado_ruta',
+                userId,
+            );
+            if (!updated || updated.actualizados < 1) {
+                throw new BadRequestException('No se pudo actualizar el estado de los pedidos a asignado_ruta');
+            }
+
             await historyRepo.save({
                 tipo: TipoRutero.LOGISTICO,
                 rutero_id: id,
@@ -344,6 +373,16 @@ export class LogisticsService {
             const saved = await routeRepo.save(route);
 
             const paradas = await stopRepo.find({ where: { rutero_id: id } });
+            const pedidoIds = paradas.map((p) => p.pedido_id);
+
+            const updated = await this.orderExternalService.updateOrdersStatus(
+                pedidoIds,
+                'en_ruta',
+                transportistaId,
+            );
+            if (!updated || updated.actualizados < 1) {
+                throw new BadRequestException('No se pudo actualizar el estado de los pedidos a en_ruta');
+            }
 
             // Crear entregas en delivery-service
             if (paradas && paradas.length > 0) {

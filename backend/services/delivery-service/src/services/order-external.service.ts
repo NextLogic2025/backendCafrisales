@@ -23,12 +23,12 @@ export class OrderExternalService {
             '';
     }
 
-    async updateOrderStatus(pedidoId: string, estado: string): Promise<boolean> {
+    async updateOrderStatus(pedidoId: string, estado: string, actorId?: string): Promise<boolean> {
         try {
             await this.s2sClient.post(
                 this.orderServiceUrl,
                 `/api/internal/pedidos/${pedidoId}/estado`,
-                { estado },
+                { estado, cambiado_por_id: actorId },
                 this.serviceToken,
             );
             return true;

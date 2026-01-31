@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, UseGuards, ParseUUIDPipe } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, UseGuards, ParseUUIDPipe } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { ServiceTokenGuard } from '../../common/guards/service-token.guard';
 import { EstadoPedido } from '../../common/constants/order-status.enum';
@@ -17,11 +17,30 @@ export class OrdersInternalController {
         return this.ordersService.findOne(id);
     }
 
+    @Post('batch/estado')
+    updateEstadosBatch(
+        @Body('pedido_ids') pedidoIds: string[],
+        @Body('estado') estado: EstadoPedido,
+        @Body('cambiado_por_id') cambiadoPorId?: string,
+    ) {
+        return this.ordersService.updateStatuses(pedidoIds, estado, cambiadoPorId);
+    }
+
     @Patch(':id/estado')
     updateEstado(
         @Param('id', ParseUUIDPipe) id: string,
         @Body('estado') estado: EstadoPedido,
+        @Body('cambiado_por_id') cambiadoPorId?: string,
     ) {
-        return this.ordersService.updateStatus(id, estado);
+        return this.ordersService.updateStatusInternal(id, estado, cambiadoPorId);
+    }
+
+    @Post(':id/estado')
+    updateEstadoPost(
+        @Param('id', ParseUUIDPipe) id: string,
+        @Body('estado') estado: EstadoPedido,
+        @Body('cambiado_por_id') cambiadoPorId?: string,
+    ) {
+        return this.ordersService.updateStatusInternal(id, estado, cambiadoPorId);
     }
 }

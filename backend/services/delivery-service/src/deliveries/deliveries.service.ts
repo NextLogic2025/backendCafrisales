@@ -187,7 +187,7 @@ export class DeliveriesService {
             return saved;
         });
 
-        const updated = await this.orderExternalService.updateOrderStatus(saved.pedido_id, 'entregado');
+        const updated = await this.orderExternalService.updateOrderStatus(saved.pedido_id, 'entregado', transportistaId);
         if (!updated) {
             this.logger.warn(`Order ${saved.pedido_id} was not updated to entregado`);
         }

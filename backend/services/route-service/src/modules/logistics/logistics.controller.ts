@@ -19,7 +19,7 @@ export class LogisticsController {
     }
 
     @Get()
-    @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR, RolUsuario.TRANSPORTISTA)
+    @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR, RolUsuario.TRANSPORTISTA, RolUsuario.BODEGUERO)
     findAll(
         @Query('transportista_id') transportistaId?: string,
         @Query('estado') estado?: string,
@@ -94,5 +94,15 @@ export class LogisticsController {
         @CurrentUser() user: AuthUser,
     ) {
         return this.logisticsService.updateVehicle(id, dto, user.userId);
+    }
+
+    @Put(':id/paradas/:pedidoId/preparar')
+    @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR, RolUsuario.BODEGUERO)
+    prepareStop(
+        @Param('id', ParseUUIDPipe) id: string,
+        @Param('pedidoId', ParseUUIDPipe) pedidoId: string,
+        @CurrentUser() user: AuthUser,
+    ) {
+        return this.logisticsService.prepareStop(id, pedidoId, user.userId);
     }
 }
