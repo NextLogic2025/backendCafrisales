@@ -262,6 +262,7 @@ services:
     restart: on-failure
     environment:
       <<: *common-env
+      USER_SERVICE_URL: ${USUARIOS_URL}
       # Main notification database
       DB_HOST: ${DB_HOST}
       DB_PORT: ${DB_PORT}
