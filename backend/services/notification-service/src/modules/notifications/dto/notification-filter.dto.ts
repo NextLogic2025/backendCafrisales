@@ -2,8 +2,9 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsOptional, IsEnum, IsBoolean, IsDateString } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { PrioridadNotificacion } from '../entities/notification.entity';
+import { PaginationQueryDto } from '../../../common/dto/pagination.dto';
 
-export class NotificationFilterDto {
+export class NotificationFilterDto extends PaginationQueryDto {
     @ApiPropertyOptional({ description: 'Filtrar por estado de lectura' })
     @IsOptional()
     @IsBoolean()

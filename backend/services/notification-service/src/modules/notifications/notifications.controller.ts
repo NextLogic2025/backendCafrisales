@@ -65,12 +65,11 @@ export class NotificationsController {
     @ApiOperation({ summary: 'Listar notificaciones con paginación y filtros' })
     @Header('Cache-Control', 'no-store')
     async findAll(
-        @Query() pagination: PaginationQueryDto,
-        @Query() filters: NotificationFilterDto,
+        @Query() query: NotificationFilterDto,
         @CurrentUser() user: AuthUser,
     ) {
         // Si no es admin/supervisor, forzar filtro por usuario actual
-        let userId = filters.isRead === undefined ? user.userId : user.userId;
+        let userId = query.isRead === undefined ? user.userId : user.userId;
         if (ADMIN_ROLES.includes(user.role)) {
             // Admin could potentially filter by other users if filter DTO supports it, 
             // but for now let's enforce own notifications mostly or use valid logic
@@ -79,7 +78,7 @@ export class NotificationsController {
         }
 
         // Using the new pagination service method
-        const { data, meta } = await this.notificationsService.findAllPaginated(pagination, filters, user.userId);
+        const { data, meta } = await this.notificationsService.findAllPaginated(query, query, user.userId);
         return createPaginatedResponse(data, meta.total, meta.page, meta.limit, meta.unreadCount);
     }
 
