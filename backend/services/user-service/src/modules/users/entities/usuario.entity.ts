@@ -1,6 +1,7 @@
 import { Column, Entity, OneToOne, PrimaryGeneratedColumn, DeleteDateColumn } from 'typeorm';
 import { PerfilUsuario } from './perfil-usuario.entity';
 import { RolUsuario } from '../../../common/enums/rol-usuario.enum';
+import { Expose } from 'class-transformer';
 
 @Entity({ name: 'usuarios', schema: 'app' })
 export class Usuario {
@@ -44,4 +45,12 @@ export class Usuario {
 
   @OneToOne(() => PerfilUsuario, (perfil) => perfil.usuario)
   perfil: PerfilUsuario;
+
+  @Expose()
+  get nombre(): string {
+    if (this.perfil) {
+      return `${this.perfil.nombres} ${this.perfil.apellidos}`.trim();
+    }
+    return this.email;
+  }
 }

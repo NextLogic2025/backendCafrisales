@@ -209,7 +209,10 @@ export class UsersService {
   }
 
   async findById(id: string) {
-    return this.dataSource.getRepository(Usuario).findOneBy({ id } as any);
+    return this.dataSource.getRepository(Usuario).findOne({
+      where: { id } as any,
+      relations: ['perfil'],
+    });
   }
 
   async findAllPaginated(pagination: PaginationQueryDto, filters: UserFilterDto): Promise<PaginatedResponse<Usuario>> {
