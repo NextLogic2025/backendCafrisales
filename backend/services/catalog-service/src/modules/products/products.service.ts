@@ -66,6 +66,8 @@ export class ProductsService {
 
     // ✅ Incluir relaciones
     queryBuilder.leftJoinAndSelect('product.categoria', 'category');
+    queryBuilder.leftJoinAndSelect('product.skus', 'skus');
+    queryBuilder.leftJoinAndSelect('skus.precios', 'precios');
 
     const [data, total] = await queryBuilder.getManyAndCount();
 
