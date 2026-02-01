@@ -154,7 +154,7 @@ export class OrdersService {
         const qb = this.pedidoRepo.createQueryBuilder('p')
             .leftJoinAndSelect('p.items', 'items')
             .leftJoinAndSelect('p.validaciones', 'validaciones')
-            .leftJoinAndSelect('p.validaciones.items', 'validacionItems')
+            .leftJoinAndSelect('validaciones.items', 'validacionItems')
             .leftJoinAndSelect('p.historial', 'historial');
 
         // Apply Filters

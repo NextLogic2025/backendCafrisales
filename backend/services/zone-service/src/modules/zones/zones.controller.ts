@@ -11,7 +11,6 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { RolUsuario } from '../../common/enums/rol-usuario.enum';
 import { GetUser, AuthUser } from '../../common/decorators/get-user.decorator';
-import { PaginationQueryDto } from '../../common/dto/pagination.dto';
 import { ZoneFilterDto } from './dto/zone-filter.dto';
 
 @ApiTags('Zones')
@@ -38,11 +37,19 @@ export class ZonesController {
     @Header('Cache-Control', 'public, max-age=60')
     @ApiOperation({ summary: 'Listar zonas con paginación' })
     async findAll(
-        @Query() pagination: PaginationQueryDto,
-        @Query() filters: ZoneFilterDto,
+        @Query() query: ZoneFilterDto,
     ) {
-        const { data, meta } = await this.zonesService.findAllPaginated(pagination, filters);
+        const { data, meta } = await this.zonesService.findAllPaginated(query, query);
         return { data, meta };
+    }
+
+    @Get('map')
+    @Header('Cache-Control', 'public, max-age=60')
+    @ApiOperation({ summary: 'Listar zonas con geometría para mapa' })
+    async findAllForMap(
+        @Query() query: ZoneFilterDto,
+    ) {
+        return this.zonesService.findAllForMap(query);
     }
 
     @Get('disponibles-entregas')

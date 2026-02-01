@@ -32,7 +32,6 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser, AuthUser } from '../../common/decorators/current-user.decorator';
 import { RolUsuario } from '../../common/constants/rol-usuario.enum';
 import { OrigenCredito } from '../../common/constants/credit-origin.enum';
-import { PaginationQueryDto } from '../../common/dto/pagination.dto';
 import { CreditFilterDto } from './dto/credit-filter.dto';
 import { createPaginatedResponse } from '../../common/interfaces/paginated-response.interface';
 
@@ -122,18 +121,17 @@ export class CreditsController {
     @ApiOperation({ summary: 'Listar créditos con paginación y filtros' })
     @Header('Cache-Control', 'no-store')
     async listar(
-        @Query() pagination: PaginationQueryDto,
-        @Query() filters: CreditFilterDto,
+        @Query() query: CreditFilterDto,
         @CurrentUser() user: AuthUser,
     ) {
-        const paginatedFilters = { ...filters };
+        const paginatedFilters = query;
 
         if (user?.role === RolUsuario.CLIENTE) {
             paginatedFilters.customerId = user.userId || user.id;
         }
 
         const response = await this.creditsService.findAllPaginated(
-            pagination,
+            query,
             paginatedFilters,
         );
 
@@ -147,15 +145,14 @@ export class CreditsController {
     @ApiOperation({ summary: 'Listar mis créditos' })
     listarMisCreditos(
         @CurrentUser() user: AuthUser,
-        @Query() pagination: PaginationQueryDto,
-        @Query() filters: CreditFilterDto
+        @Query() query: CreditFilterDto
     ) {
         const clienteId = user?.userId || user?.id;
         if (!clienteId) {
             throw new ForbiddenException('Cliente no identificado');
         }
-        filters.customerId = clienteId;
-        return this.creditsService.findAllPaginated(pagination, filters); // Reuse paginated logic
+        query.customerId = clienteId;
+        return this.creditsService.findAllPaginated(query, query); // Reuse paginated logic
     }
 
     @Get('upcoming-due')

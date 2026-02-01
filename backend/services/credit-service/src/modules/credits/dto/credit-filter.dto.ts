@@ -1,9 +1,10 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsUUID, IsNumber, IsString, IsEnum, Min } from 'class-validator';
+import { IsOptional, IsUUID, IsNumber, IsEnum, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 import { EstadoCredito } from '../../../common/constants/credit-status.enum';
+import { PaginationQueryDto } from '../../../common/dto/pagination.dto';
 
-export class CreditFilterDto {
+export class CreditFilterDto extends PaginationQueryDto {
     @ApiPropertyOptional({ description: 'ID del cliente' })
     @IsOptional()
     @IsUUID()

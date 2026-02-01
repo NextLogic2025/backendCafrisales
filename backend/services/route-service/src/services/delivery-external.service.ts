@@ -39,7 +39,7 @@ export class DeliveryExternalService {
             this.logger.debug(`Deliveries batch payload: ${JSON.stringify(dto)}`);
             const result = await this.s2sClient.post<CreateDeliveriesBatchResponse>(
                 this.deliveryServiceUrl,
-                '/api/entregas/batch',
+                '/api/v1/entregas/batch',
                 dto,
                 this.serviceToken,
             );

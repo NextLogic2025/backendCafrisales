@@ -275,13 +275,11 @@ export class LogisticsService {
         visibleToUserId?: string, // If transportista, show only theirs
     ): Promise<PaginatedResponse<RuteroLogistico>> {
         const qb = this.routeRepo.createQueryBuilder('r')
-            .leftJoinAndSelect('r.paradas', 'paradas')
-            .leftJoinAndSelect('paradas.pedido', 'pedido') // Assuming relation exists
-            .leftJoinAndSelect('r.vehiculo', 'vehiculo');
+            .leftJoinAndSelect('r.paradas', 'paradas');
 
         // Filters
-        if (filters.status) {
-            qb.andWhere('r.estado = :status', { status: filters.status });
+        if (filters.status && filters.status.length > 0) {
+            qb.andWhere('r.estado IN (:...status)', { status: filters.status });
         }
         if (filters.driverId) {
             qb.andWhere('r.transportista_id = :driverId', { driverId: filters.driverId });

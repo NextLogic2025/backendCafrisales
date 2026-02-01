@@ -2,8 +2,9 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsOptional, IsUUID, IsEnum, IsDateString, IsBoolean } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { EstadoEntrega as DeliveryStatus } from '../../common/constants/delivery-enums';
+import { PaginationQueryDto } from '../../common/dto/pagination.dto';
 
-export class DeliveryFilterDto {
+export class DeliveryFilterDto extends PaginationQueryDto {
     @ApiPropertyOptional({ enum: DeliveryStatus, description: 'Estado del envío' })
     @IsOptional()
     @IsEnum(DeliveryStatus)

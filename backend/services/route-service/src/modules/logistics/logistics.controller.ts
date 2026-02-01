@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards, ParseUUIDPipe, HttpCode, HttpStatus, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards, ParseUUIDPipe, HttpCode, HttpStatus, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { LogisticsService } from './logistics.service';
 import { CreateLogisticRouteDto, AddOrderDto, CancelRuteroDto, UpdateVehicleDto } from './dto/logistics-route.dto';
@@ -15,6 +15,7 @@ import { RouteStatusDto } from './dto/route-status.dto';
 
 @ApiTags('routes')
 @ApiBearerAuth()
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller({ path: 'routes', version: '1' })
 export class LogisticsController {
     constructor(private readonly logisticsService: LogisticsService) { }
@@ -23,7 +24,10 @@ export class LogisticsController {
     @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR)
     @ApiOperation({ summary: 'Crear nueva ruta' })
     @HttpCode(HttpStatus.CREATED)
-    create(@Body() dto: CreateLogisticRouteDto, @CurrentUser() user: AuthUser) {
+    create(@Body() dto: CreateLogisticRouteDto, @CurrentUser() user?: AuthUser) {
+        if (!user?.userId) {
+            throw new UnauthorizedException('Sesion no valida');
+        }
         return this.logisticsService.create(dto, user.userId);
     }
 
@@ -31,12 +35,11 @@ export class LogisticsController {
     @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR, RolUsuario.TRANSPORTISTA, RolUsuario.BODEGUERO)
     @ApiOperation({ summary: 'Listar rutas con paginación y filtros' })
     async findAll(
-        @Query() pagination: PaginationQueryDto,
-        @Query() filters: RouteFilterDto,
-        @CurrentUser() user: AuthUser,
+        @Query() query: RouteFilterDto,
+        @CurrentUser() user?: AuthUser,
     ) {
-        const visibleTo = user.role === RolUsuario.TRANSPORTISTA ? user.userId : undefined;
-        return this.logisticsService.findAllPaginated(pagination, filters, visibleTo);
+        const visibleTo = user?.role === RolUsuario.TRANSPORTISTA ? user.userId : undefined;
+        return this.logisticsService.findAllPaginated(query, query, visibleTo);
     }
 
     @Get('my-routes')

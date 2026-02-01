@@ -1,10 +1,24 @@
 import { IsEnum, IsOptional, IsString, IsUUID } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { EstadoRutero } from '../../../common/constants/route-enums';
+import { PaginationQueryDto } from '../../../common/dto/pagination.dto';
 
-export class RouteFilterDto {
+export class RouteFilterDto extends PaginationQueryDto {
     @IsOptional()
-    @IsEnum(EstadoRutero)
-    status?: EstadoRutero;
+    @Transform(({ value }) => {
+        if (Array.isArray(value)) {
+            return value.map((item) => String(item).toLowerCase().trim()).filter(Boolean);
+        }
+        if (typeof value === 'string') {
+            return value
+                .split(',')
+                .map((item) => item.toLowerCase().trim())
+                .filter(Boolean);
+        }
+        return value;
+    })
+    @IsEnum(EstadoRutero, { each: true })
+    status?: EstadoRutero[];
 
     @IsOptional()
     @IsUUID('4')

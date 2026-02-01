@@ -38,7 +38,20 @@ export class ZonesService {
     }
 
     async findAllPaginated(pagination: PaginationQueryDto, filters: ZoneFilterDto): Promise<PaginatedResponse<Zone>> {
-        const qb = this.zonesRepository.createQueryBuilder('z');
+        const qb = this.zonesRepository.createQueryBuilder('z')
+            // Evita traer geometría pesada en listados
+            .select([
+                'z.id',
+                'z.codigo',
+                'z.nombre',
+                'z.descripcion',
+                'z.activo',
+                'z.creado_en',
+                'z.actualizado_en',
+                'z.creadoPor',
+                'z.actualizadoPor',
+                'z.version',
+            ]);
 
         if (filters.status) {
             const isActive = filters.status === 'activo' || filters.status === 'active';
@@ -49,7 +62,15 @@ export class ZonesService {
             qb.andWhere('(z.nombre ILIKE :search OR z.codigo ILIKE :search)', { search: `%${filters.search}%` });
         }
 
-        const sortField = pagination.sortBy ? `z.${pagination.sortBy}` : 'z.creadoEn';
+        const sortMap: Record<string, string> = {
+            creado_en: 'z.creado_en',
+            creadoEn: 'z.creado_en',
+            createdAt: 'z.creado_en',
+            nombre: 'z.nombre',
+            codigo: 'z.codigo',
+        };
+        const requestedSort = pagination.sortBy?.trim() || 'createdAt';
+        const sortField = sortMap[requestedSort] || 'z.creado_en';
         qb.orderBy(sortField, pagination.sortOrder);
 
         const page = pagination.page || 1;
@@ -60,6 +81,35 @@ export class ZonesService {
         const [data, total] = await qb.getManyAndCount();
 
         return createPaginatedResponse(data, total, page, limit);
+    }
+
+    async findAllForMap(filters: ZoneFilterDto): Promise<Zone[]> {
+        const qb = this.zonesRepository.createQueryBuilder('z')
+            .select('z.id', 'id')
+            .addSelect('z.codigo', 'codigo')
+            .addSelect('z.nombre', 'nombre')
+            .addSelect('z.descripcion', 'descripcion')
+            .addSelect('z.activo', 'activo')
+            .addSelect('ST_AsGeoJSON(z.zona_geom)', 'zona_geom');
+
+        if (filters.status) {
+            const isActive = filters.status === 'activo' || filters.status === 'active';
+            qb.where('z.activo = :isActive', { isActive });
+        }
+
+        if (filters.search) {
+            qb.andWhere('(z.nombre ILIKE :search OR z.codigo ILIKE :search)', { search: `%${filters.search}%` });
+        }
+
+        const rows = await qb.getRawMany();
+        return rows.map((row) => ({
+            id: row.id,
+            codigo: row.codigo,
+            nombre: row.nombre,
+            descripcion: row.descripcion,
+            activo: row.activo,
+            zona_geom: row.zona_geom ? JSON.parse(row.zona_geom) : null,
+        })) as Zone[];
     }
 
     // Legacy method kept for internal compatibility if needed, or deprecated
@@ -74,6 +124,13 @@ export class ZonesService {
         const zone = await this.zonesRepository.findOne({ where: { id } });
         if (!zone) {
             throw new NotFoundException(`Zone with ID ${id} not found`);
+        }
+        const geom = await this.zonesRepository.createQueryBuilder('z')
+            .select('ST_AsGeoJSON(z.zona_geom)', 'zona_geom')
+            .where('z.id = :id', { id })
+            .getRawOne();
+        if (geom?.zona_geom) {
+            zone.zona_geom = JSON.parse(geom.zona_geom);
         }
         return zone;
     }

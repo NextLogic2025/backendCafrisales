@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryGeneratedColumn, Index, ManyToOne, JoinColumn, OneToMany, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn, Index, ManyToOne, JoinColumn, OneToMany, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { TipoNotificacion } from './tipo-notificacion.entity';
 import { HistorialEnvio } from './historial-envio.entity';
 
@@ -90,9 +90,6 @@ export class Notification {
     @UpdateDateColumn({ name: 'actualizado_en' })
     updatedAt: Date;
 
-    @DeleteDateColumn({ name: 'eliminado_en' })
-    deletedAt: Date | null;
-
     @Column({ name: 'creado_por', type: 'uuid', nullable: true })
     creadoPor: string | null;
 
@@ -109,4 +106,3 @@ export class Notification {
     @OneToMany(() => HistorialEnvio, (h) => h.notificacion)
     historialEnvios: HistorialEnvio[];
 }
-

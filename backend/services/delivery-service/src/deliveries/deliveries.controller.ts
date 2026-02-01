@@ -27,9 +27,7 @@ import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { RolUsuario } from '../common/constants/rol-usuario.enum';
 import { AuthUser, CurrentUser } from '../common/decorators/current-user.decorator';
-import { PaginationQueryDto } from '../common/dto/pagination.dto';
 import { DeliveryFilterDto } from './dto/delivery-filter.dto';
-import { createPaginatedResponse } from '../common/interfaces/paginated-response.interface';
 
 @ApiTags('deliveries')
 @ApiBearerAuth()
@@ -45,10 +43,9 @@ export class DeliveriesController {
     @ApiOperation({ summary: 'Listar entregas con paginación y filtros' })
     @Header('Cache-Control', 'no-store')
     async findAll(
-        @Query() pagination: PaginationQueryDto,
-        @Query() filters: DeliveryFilterDto,
+        @Query() query: DeliveryFilterDto,
     ) {
-        return this.deliveriesService.findAllPaginated(pagination, filters);
+        return this.deliveriesService.findAllPaginated(query, query);
     }
 
     @Get(':id')
