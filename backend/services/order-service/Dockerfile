@@ -1,50 +1,48 @@
 # ── Etapa 1: Build ───────────────────────────────────────────────────────────
 FROM node:24-alpine AS builder
 
-# Instalar git (requerido para dependencias de GitHub)
+# Instalar git (necesario para algunas dependencias)
 RUN apk add --no-cache git
 
 WORKDIR /app
 
-# Copiamos solo lo necesario para dependencias → mejor uso de cache
+# Copiamos archivos de dependencias
 COPY package*.json ./
 
-# npm install para proyectos sin package-lock.json
+# Instalamos TODAS las dependencias (incluyendo dev) para poder compilar
 RUN npm install
 
 # Copiamos el código fuente
 COPY . .
 
-# Construimos la aplicación (genera ./dist con main.js en la raíz)
+# Construimos la aplicación (NestJS genera dist/main.js por defecto)
 RUN npm run build
 
-# ── Etapa 2: Imagen final (lo más liviana posible) ───────────────────────────
+# ── Etapa 2: Imagen final (Producción) ───────────────────────────────────────
 FROM node:24-alpine
 
-# Instalar git (requerido para dependencias de GitHub)
+# Instalar git nuevamente si es necesario en runtime (opcional, pero seguro dejarlo)
 RUN apk add --no-cache git
 
-# Por seguridad: no correr como root
+# 🔥 CORRECCIÓN CRÍTICA DE PERMISOS 🔥
+# Creamos la carpeta y le damos dueño ANTES de cambiar de usuario.
+WORKDIR /app
+RUN chown node:node /app
+
+# Ahora sí cambiamos al usuario seguro 'node'
 USER node
 
-WORKDIR /app
-
-# Copiamos solo package.json para instalar solo dependencias de producción
+# Copiamos package.json con los permisos correctos
 COPY --chown=node:node package*.json ./
 
-# Instalamos solo dependencias de producción + limpieza de cache
+# Instalamos solo dependencias de producción (más ligero y seguro)
 RUN npm install --omit=dev --ignore-scripts && npm cache clean --force
 
-# Copiamos solo el resultado del build (dist/)
+# Copiamos el código compilado desde la etapa anterior
 COPY --chown=node:node --from=builder /app/dist ./dist
 
-# Si tienes archivos estáticos que deban ir en runtime (ej: uploads vacía, assets, views, etc.)
-# Descomenta y ajusta según necesites:
-# COPY --chown=node:node --from=builder /app/uploads ./uploads
-# COPY --chown=node:node --from=builder /app/public    ./public
-
-# Puerto (solo informativo)
+# Puerto informativo
 EXPOSE 3000
 
-# Comando de arranque → ¡ESTE es el punto clave para tu proyecto!
+# ✅ EL COMANDO DE TU COMPAÑERO (Limpio y estándar)
 CMD ["node", "dist/main"]
