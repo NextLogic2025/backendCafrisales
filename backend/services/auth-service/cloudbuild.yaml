@@ -15,7 +15,7 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', '--all-tags', '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REGISTRY}/${_SERVICE_NAME}']
 
-  # 3. DESPLEGAR A CLOUD RUN (CON LAS VARIABLES CORRECTAS)
+  # 3. DESPLEGAR A CLOUD RUN (MODO SUPER COMPATIBLE)
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: gcloud
     args:
@@ -28,12 +28,12 @@ steps:
       - '${_REGION}'
       - '--port'
       - '3000'
-      # Conexión a Base de Datos (Socket Unix Seguro)
+      # Conexión a Base de Datos
       - '--add-cloudsql-instances'
       - 'gen-lang-client-0059045498:us-east1:cafrilosa-db-master'
-      # Variables de Entorno (AQUÍ ESTABA EL ERROR CORREGIDO)
+      # Variables de Entorno (ENVIAMOS DOBLES PARA EVITAR ERRORES)
       - '--set-env-vars'
-      - 'NODE_ENV=production,DB_HOST=/cloudsql/gen-lang-client-0059045498:us-east1:cafrilosa-db-master,DB_PORT=5432,DB_USER=postgres,DB_NAME=cafrilosa_auth'
+      - 'NODE_ENV=production,DB_HOST=/cloudsql/gen-lang-client-0059045498:us-east1:cafrilosa-db-master,DB_PORT=5432,DB_USER=postgres,DB_USERNAME=postgres,DB_NAME=cafrilosa_auth,DB_DATABASE=cafrilosa_auth,DB_SCHEMA=app'
       # Secretos
       - '--set-secrets'
       - 'DB_PASSWORD=auth-service-db-password:latest,JWT_SECRET=cafrisales-jwt-secret:latest'
