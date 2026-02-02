@@ -1,5 +1,5 @@
 steps:
-  # 1. Construir imagen (IGUAL QUE ANTES)
+  # 1. Construir imagen (IGUAL)
   - name: 'gcr.io/cloud-builders/docker'
     entrypoint: 'bash'
     args:
@@ -11,11 +11,11 @@ steps:
           -t ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REGISTRY}/${_SERVICE_NAME}:latest \
           backend/services/${_SERVICE_NAME}
 
-  # 2. Subir imagen (IGUAL QUE ANTES)
+  # 2. Subir imagen (IGUAL)
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', '--all-tags', '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REGISTRY}/${_SERVICE_NAME}']
 
-  # 3. DESPLEGAR A CLOUD RUN (CON VPC CONNECTOR PRIVADO)
+  # 3. DESPLEGAR A CLOUD RUN (LIMPIO Y SIN CONFLICTOS)
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: gcloud
     args:
@@ -26,26 +26,14 @@ steps:
       - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REGISTRY}/${_SERVICE_NAME}:latest'
       - '--region'
       - '${_REGION}'
+      # Solo mantenemos el puerto por seguridad
       - '--port'
       - '3000'
-      # Conexión a BD (El Proxy sigue siendo necesario)
-      - '--add-cloudsql-instances'
-      - 'gen-lang-client-0059045498:us-east1:cafrilosa-db-master'
-      # 🔥 AQUÍ ESTÁ LA MAGIA DEL VPC 🔥
-      - '--vpc-connector'
-      - 'projects/gen-lang-client-0059045498/locations/us-east1/connectors/cafrilosa-vpc-conn' 
-      # (👆 Asegúrate de que este nombre sea el correcto, ver abajo cómo obtenerlo)
-      - '--vpc-egress'
-      - 'private-ranges-only'
-      # Variables de Entorno (IGUAL QUE ANTES)
-      - '--set-env-vars'
-      - 'NODE_ENV=production,DB_HOST=/cloudsql/gen-lang-client-0059045498:us-east1:cafrilosa-db-master,DB_PORT=5432,DB_USER=postgres,DB_USERNAME=postgres,DB_NAME=cafrilosa_auth,DB_DATABASE=cafrilosa_auth,DB_SCHEMA=app'
-      # Secretos (IGUAL QUE ANTES)
-      - '--set-secrets'
-      - 'DB_PASSWORD=auth-service-db-password:latest,JWT_SECRET=cafrisales-jwt-secret:latest'
+      # ¡QUITAMOS TODO LO DEMÁS! 
+      # (Terraform ya configuró VPC, Secretos y Variables. No los toquemos.)
 
 images:
   - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REGISTRY}/${_SERVICE_NAME}:latest'
 
 options:
-  logging: CLOUD_LOGGING_ONLY 
+  logging: CLOUD_LOGGING_ONLY

@@ -49,7 +49,7 @@ resource "google_cloudbuild_trigger" "service_triggers" {
 
   name        = "${each.key}-trigger"
   description = "CI/CD Trigger para el servicio ${each.key}"
-  location    = var.region
+  location    = "global"
   
   # Usamos la cuenta de servicio segura creada arriba
   service_account = google_service_account.cloud_build_sa.id
