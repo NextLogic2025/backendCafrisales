@@ -29,14 +29,14 @@ const getDbConfig = () => {
 export const typeormConfig = registerAs('typeorm', (): TypeOrmModuleOptions => ({
     ...getDbConfig(),
     entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-    synchronize: true, // Activado para crear tablas
+    synchronize: false, // 🔥 CAMBIO: Apagado para producción
 }));
 
 export const dataSourceOptions: DataSourceOptions = {
     ...getDbConfig(),
     entities: [__dirname + '/../**/*.entity{.ts,.js}'],
     migrations: [__dirname + '/../migrations/*{.ts,.js}'],
-    synchronize: true, // Activado
+    synchronize: false, // 🔥 CAMBIO: Apagado
     extra: {
         connectionTimeoutMillis: 5000,
     }
