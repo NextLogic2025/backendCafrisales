@@ -8,23 +8,21 @@ schemes:
 produces:
   - application/json
 
-# Definición de seguridad básica para evitar errores de validación de Google
+# Definición de seguridad básica
 securityDefinitions:
   api_key:
     type: "apiKey"
     name: "key"
     in: "query"
 
-# Desactivamos seguridad por defecto (abierto) para que manejes auth en tus servicios
 security: []
 
 # ==================================================================
-# RUTEO INTELIGENTE POR PREFIJO
+# RUTEO INTELIGENTE (CORREGIDO CON /api/v1)
 # ==================================================================
 paths:
-  # 1. AUTH SERVICE (/auth/login, /auth/register...)
-  # CAMBIO: Usamos /** en lugar de /{proxy+}
-  /auth/**:
+  # 1. AUTH SERVICE
+  /api/v1/auth/**:
     post:
       x-google-backend:
         address: ${auth_url}
@@ -50,7 +48,7 @@ paths:
           description: OK
 
   # 2. USER SERVICE
-  /users/**:
+  /api/v1/users/**:
     get:
       x-google-backend:
         address: ${user_url}
@@ -86,7 +84,7 @@ paths:
       responses: { '200': { description: OK } }
 
   # 3. CATALOG SERVICE
-  /catalog/**:
+  /api/v1/catalog/**:
     get:
       x-google-backend:
         address: ${catalog_url}
@@ -110,7 +108,7 @@ paths:
       responses: { '200': { description: OK } }
 
   # 4. ORDER SERVICE
-  /orders/**:
+  /api/v1/orders/**:
     get:
       x-google-backend:
         address: ${order_url}
@@ -134,7 +132,7 @@ paths:
       responses: { '200': { description: OK } }
 
   # 5. ZONE SERVICE
-  /zones/**:
+  /api/v1/zones/**:
     get:
       x-google-backend:
         address: ${zone_url}
@@ -152,7 +150,7 @@ paths:
       responses: { '200': { description: OK } }
 
   # 6. CREDIT SERVICE
-  /credits/**:
+  /api/v1/credits/**:
     get:
       x-google-backend:
         address: ${credit_url}
@@ -176,7 +174,7 @@ paths:
       responses: { '200': { description: OK } }
 
   # 7. ROUTE SERVICE
-  /routes/**:
+  /api/v1/routes/**:
     get:
       x-google-backend:
         address: ${route_url}
@@ -194,7 +192,7 @@ paths:
       responses: { '200': { description: OK } }
 
   # 8. DELIVERY SERVICE
-  /deliveries/**:
+  /api/v1/deliveries/**:
     get:
       x-google-backend:
         address: ${delivery_url}
@@ -218,11 +216,11 @@ paths:
       responses: { '200': { description: OK } }
 
 # ==================================================================
-# CORS GLOBAL (Opción catch-all para OPTIONS en raíz o subrutas no definidas)
+# CORS GLOBAL CATCH-ALL
 # ==================================================================
   /**:
     options:
-      description: CORS Preflight
+      description: CORS Preflight Global
       operationId: corsGlobal
       x-google-backend:
         address: ${auth_url} 
