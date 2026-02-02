@@ -15,7 +15,7 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', '--all-tags', '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REGISTRY}/${_SERVICE_NAME}']
 
-  # 3. DESPLEGAR A CLOUD RUN (CON VARIABLES Y SECRETOS)
+  # 3. DESPLEGAR A CLOUD RUN (CON SECRETOS CORREGIDOS)
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: gcloud
     args:
@@ -28,15 +28,15 @@ steps:
       - '${_REGION}'
       - '--port'
       - '3000'
-      # Conexión a la instancia de BD
+      # Conexión a Base de Datos
       - '--add-cloudsql-instances'
       - 'gen-lang-client-0059045498:us-east1:cafrilosa-db-master'
-      # Variables de Entorno (Texto plano)
+      # Variables de Entorno
       - '--set-env-vars'
       - 'NODE_ENV=production,DB_TYPE=postgres,DB_HOST=/cloudsql/gen-lang-client-0059045498:us-east1:cafrilosa-db-master,DB_PORT=5432,DB_USERNAME=postgres,DB_DATABASE=cafrilosa_auth,DB_SCHEMA=app'
-      # Secretos (Desde Secret Manager)
+      # Secretos (NOMBRES CORREGIDOS SEGÚN TU CONSOLA)
       - '--set-secrets'
-      - 'DB_PASSWORD=db-root-password:latest,JWT_SECRET=cafrisales-jwt-secret:latest'
+      - 'DB_PASSWORD=auth-service-db-password:latest,JWT_SECRET=cafrisales-jwt-secret:latest'
 
 images:
   - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REGISTRY}/${_SERVICE_NAME}:latest'
