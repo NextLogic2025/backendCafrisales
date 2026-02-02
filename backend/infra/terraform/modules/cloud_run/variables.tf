@@ -61,3 +61,9 @@ variable "bucket_name" {
   description = "Nombre del bucket de almacenamiento"
   type        = string
 }
+
+variable "cors_origin" {
+  description = "Origenes permitidos para CORS (separados por coma)"
+  type        = string
+  default     = "*"
+}

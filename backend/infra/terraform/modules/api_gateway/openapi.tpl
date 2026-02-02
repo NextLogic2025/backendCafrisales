@@ -169,8 +169,8 @@ paths:
       description: CORS Preflight
       operationId: corsGlobal
       x-google-backend:
-        address: ${auth_url} # Usamos auth como dummy para responder el OPTIONS
-        deadline: 1.0
+        address: ${auth_url}
+        deadline: 30.0  # Aumentado para evitar 503 en cold starts
       responses:
         '200':
           description: OK
@@ -183,4 +183,7 @@ paths:
               default: 'GET, POST, PUT, DELETE, PATCH, OPTIONS'
             Access-Control-Allow-Headers:
               type: string
-              default: 'Authorization, Content-Type, X-Api-Key'
+              default: 'Authorization, Content-Type, X-Api-Key, X-Service-Token'
+            Access-Control-Allow-Credentials:
+              type: string
+              default: 'true'
