@@ -19,8 +19,8 @@ export const typeOrmConfig = (): TypeOrmModuleOptions => {
       }),
     entities: [__dirname + '/../**/*.entity{.ts,.js}'],
     migrations: [__dirname + '/../database/migrations/*{.ts,.js}'],
-    // IMPORTANTE: True para crear tablas automáticamente ahora
-    synchronize: true,
+    // IMPORTANTE: False en producción porque ya creamos los esquemas manualmente
+    synchronize: false,
     logging: false,
     ssl: isProduction ? { rejectUnauthorized: false } : false,
   };
