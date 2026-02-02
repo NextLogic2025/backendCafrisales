@@ -7,12 +7,36 @@ schemes:
   - https
 produces:
   - application/json
-  
+
 # ==================================================================
 # RUTEO INTELIGENTE POR PREFIJO
+# Soporta tanto /auth/* como /api/v1/auth/* para compatibilidad
 # ==================================================================
 paths:
-  # 1. AUTH SERVICE (/auth/login, /auth/register...)
+  # 1. AUTH SERVICE (/api/v1/auth/login, /api/v1/auth/register...)
+  /api/v1/auth/{proxy+}:
+    x-google-backend:
+      address: ${auth_url}/api
+      path_translation: APPEND_PATH_TO_ADDRESS
+    post:
+      summary: Auth Service Endpoints
+      operationId: authApiV1ProxyPost
+      responses:
+        '200':
+          description: OK
+    get:
+      summary: Auth Service Endpoints
+      operationId: authApiV1ProxyGet
+      responses:
+        '200':
+          description: OK
+    options:
+      operationId: authApiV1Cors
+      responses:
+        '200':
+          description: OK
+
+  # 1b. AUTH SERVICE (legacy /auth/login, /auth/register...)
   /auth/{proxy+}:
     x-google-backend:
       address: ${auth_url}
@@ -35,7 +59,31 @@ paths:
         '200':
           description: OK
 
-  # 2. USER SERVICE (/users/profile, /users/staff...)
+  # 2. USER SERVICE (/api/v1/users/profile, /api/v1/users/staff...)
+  /api/v1/users/{proxy+}:
+    x-google-backend:
+      address: ${user_url}/api
+      path_translation: APPEND_PATH_TO_ADDRESS
+    get:
+      operationId: userApiV1Get
+      responses: { '200': { description: OK } }
+    post:
+      operationId: userApiV1Post
+      responses: { '200': { description: OK } }
+    put:
+      operationId: userApiV1Put
+      responses: { '200': { description: OK } }
+    patch:
+      operationId: userApiV1Patch
+      responses: { '200': { description: OK } }
+    delete:
+      operationId: userApiV1Delete
+      responses: { '200': { description: OK } }
+    options:
+      operationId: userApiV1Cors
+      responses: { '200': { description: OK } }
+
+  # 2b. USER SERVICE (legacy /users/profile, /users/staff...)
   /users/{proxy+}:
     x-google-backend:
       address: ${user_url}
@@ -59,7 +107,25 @@ paths:
       operationId: userCors
       responses: { '200': { description: OK } }
 
-  # 3. CATALOG SERVICE (/catalog/products, /catalog/prices...)
+  # 3. CATALOG SERVICE (/api/v1/catalog/products, /api/v1/catalog/prices...)
+  /api/v1/catalog/{proxy+}:
+    x-google-backend:
+      address: ${catalog_url}/api
+      path_translation: APPEND_PATH_TO_ADDRESS
+    get:
+      operationId: catalogApiV1Get
+      responses: { '200': { description: OK } }
+    post:
+      operationId: catalogApiV1Post
+      responses: { '200': { description: OK } }
+    put:
+      operationId: catalogApiV1Put
+      responses: { '200': { description: OK } }
+    options:
+      operationId: catalogApiV1Cors
+      responses: { '200': { description: OK } }
+
+  # 3b. CATALOG SERVICE (legacy /catalog/products, /catalog/prices...)
   /catalog/{proxy+}:
     x-google-backend:
       address: ${catalog_url}
@@ -77,7 +143,25 @@ paths:
       operationId: catalogCors
       responses: { '200': { description: OK } }
 
-  # 4. ORDER SERVICE (/orders/create, /orders/list...)
+  # 4. ORDER SERVICE (/api/v1/orders/create, /api/v1/orders/list...)
+  /api/v1/orders/{proxy+}:
+    x-google-backend:
+      address: ${order_url}/api
+      path_translation: APPEND_PATH_TO_ADDRESS
+    get:
+      operationId: orderApiV1Get
+      responses: { '200': { description: OK } }
+    post:
+      operationId: orderApiV1Post
+      responses: { '200': { description: OK } }
+    patch:
+      operationId: orderApiV1Patch
+      responses: { '200': { description: OK } }
+    options:
+      operationId: orderApiV1Cors
+      responses: { '200': { description: OK } }
+
+  # 4b. ORDER SERVICE (legacy /orders/create, /orders/list...)
   /orders/{proxy+}:
     x-google-backend:
       address: ${order_url}
@@ -95,7 +179,22 @@ paths:
       operationId: orderCors
       responses: { '200': { description: OK } }
 
-  # 5. ZONE SERVICE (/zones/coverage...)
+  # 5. ZONE SERVICE (/api/v1/zones/coverage...)
+  /api/v1/zones/{proxy+}:
+    x-google-backend:
+      address: ${zone_url}/api
+      path_translation: APPEND_PATH_TO_ADDRESS
+    get:
+      operationId: zoneApiV1Get
+      responses: { '200': { description: OK } }
+    post:
+      operationId: zoneApiV1Post
+      responses: { '200': { description: OK } }
+    options:
+      operationId: zoneApiV1Cors
+      responses: { '200': { description: OK } }
+
+  # 5b. ZONE SERVICE (legacy /zones/coverage...)
   /zones/{proxy+}:
     x-google-backend:
       address: ${zone_url}
@@ -110,7 +209,25 @@ paths:
       operationId: zoneCors
       responses: { '200': { description: OK } }
 
-  # 6. CREDIT SERVICE (/credits/check...)
+  # 6. CREDIT SERVICE (/api/v1/credits/check...)
+  /api/v1/credits/{proxy+}:
+    x-google-backend:
+      address: ${credit_url}/api
+      path_translation: APPEND_PATH_TO_ADDRESS
+    get:
+      operationId: creditApiV1Get
+      responses: { '200': { description: OK } }
+    post:
+      operationId: creditApiV1Post
+      responses: { '200': { description: OK } }
+    put:
+      operationId: creditApiV1Put
+      responses: { '200': { description: OK } }
+    options:
+      operationId: creditApiV1Cors
+      responses: { '200': { description: OK } }
+
+  # 6b. CREDIT SERVICE (legacy /credits/check...)
   /credits/{proxy+}:
     x-google-backend:
       address: ${credit_url}
@@ -128,7 +245,22 @@ paths:
       operationId: creditCors
       responses: { '200': { description: OK } }
 
-  # 7. ROUTE SERVICE (/routes/plan...)
+  # 7. ROUTE SERVICE (/api/v1/routes/plan...)
+  /api/v1/routes/{proxy+}:
+    x-google-backend:
+      address: ${route_url}/api
+      path_translation: APPEND_PATH_TO_ADDRESS
+    get:
+      operationId: routeApiV1Get
+      responses: { '200': { description: OK } }
+    post:
+      operationId: routeApiV1Post
+      responses: { '200': { description: OK } }
+    options:
+      operationId: routeApiV1Cors
+      responses: { '200': { description: OK } }
+
+  # 7b. ROUTE SERVICE (legacy /routes/plan...)
   /routes/{proxy+}:
     x-google-backend:
       address: ${route_url}
@@ -143,7 +275,25 @@ paths:
       operationId: routeCors
       responses: { '200': { description: OK } }
 
-  # 8. DELIVERY SERVICE (/deliveries/evidence...)
+  # 8. DELIVERY SERVICE (/api/v1/deliveries/evidence...)
+  /api/v1/deliveries/{proxy+}:
+    x-google-backend:
+      address: ${delivery_url}/api
+      path_translation: APPEND_PATH_TO_ADDRESS
+    get:
+      operationId: deliveryApiV1Get
+      responses: { '200': { description: OK } }
+    post:
+      operationId: deliveryApiV1Post
+      responses: { '200': { description: OK } }
+    put:
+      operationId: deliveryApiV1Put
+      responses: { '200': { description: OK } }
+    options:
+      operationId: deliveryApiV1Cors
+      responses: { '200': { description: OK } }
+
+  # 8b. DELIVERY SERVICE (legacy /deliveries/evidence...)
   /deliveries/{proxy+}:
     x-google-backend:
       address: ${delivery_url}
@@ -164,13 +314,37 @@ paths:
 # ==================================================================
 # CORS GLOBAL (Permitir acceso desde Web y Móvil)
 # ==================================================================
+  /api/v1/{proxy+}:
+    options:
+      description: CORS Preflight for /api/v1 routes
+      operationId: corsApiV1Global
+      x-google-backend:
+        address: ${auth_url}
+        deadline: 30.0
+      responses:
+        '200':
+          description: OK
+          headers:
+            Access-Control-Allow-Origin:
+              type: string
+              default: '*'
+            Access-Control-Allow-Methods:
+              type: string
+              default: 'GET, POST, PUT, DELETE, PATCH, OPTIONS'
+            Access-Control-Allow-Headers:
+              type: string
+              default: 'Authorization, Content-Type, X-Api-Key, X-Service-Token'
+            Access-Control-Allow-Credentials:
+              type: string
+              default: 'true'
+
   /{proxy+}:
     options:
       description: CORS Preflight
       operationId: corsGlobal
       x-google-backend:
         address: ${auth_url}
-        deadline: 30.0  # Aumentado para evitar 503 en cold starts
+        deadline: 30.0
       responses:
         '200':
           description: OK
