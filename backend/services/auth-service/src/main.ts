@@ -13,6 +13,8 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const logger = new Logger('Bootstrap');
 
+  // 🔥 AGREGA ESTO PARA VERIFICAR EN LOS LOGS
+  logger.warn('⚠️⚠️⚠️ INTENTO DE DESPLIEGUE NUEVO: CORS PRODUCTION FIX APLICADO ⚠️⚠️⚠️');
   // Seguridad: cabeceras HTTP contra XSS, clickjacking, sniffing
   app.use(helmet());
   app.use(cookieParser());

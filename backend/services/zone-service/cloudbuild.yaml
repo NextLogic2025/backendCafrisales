@@ -1,5 +1,5 @@
 steps:
-  # 1. Construir imagen
+  # 1. Construir imagen (YA LO TIENES)
   - name: 'gcr.io/cloud-builders/docker'
     entrypoint: 'bash'
     args:
@@ -11,12 +11,21 @@ steps:
           -t ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REGISTRY}/${_SERVICE_NAME}:latest \
           backend/services/${_SERVICE_NAME}
 
-  # 2. Subir imagen (con --all-tags para push de ambas etiquetas)
+  # 2. Subir imagen (YA LO TIENES)
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', '--all-tags', '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REGISTRY}/${_SERVICE_NAME}']
 
-  # NOTA: El despliegue a Cloud Run se maneja via Terraform
-  # para mantener configuración consistente (VPC, secrets, service accounts)
+  # 🔥 3. DESPLEGAR A CLOUD RUN (¡AGREGA ESTO!) 🔥
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - '${_SERVICE_NAME}'
+      - '--image'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REGISTRY}/${_SERVICE_NAME}:latest'
+      - '--region'
+      - '${_REGION}'
 
 images:
   - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REGISTRY}/${_SERVICE_NAME}:latest'
