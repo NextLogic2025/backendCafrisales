@@ -15,7 +15,7 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', '--all-tags', '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REGISTRY}/${_SERVICE_NAME}']
 
-  # 🔥 3. DESPLEGAR A CLOUD RUN (¡AGREGA ESTO!) 🔥
+# 🔥 3. DESPLEGAR A CLOUD RUN (CORREGIDO CON DB) 🔥
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: gcloud
     args:
@@ -26,6 +26,10 @@ steps:
       - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REGISTRY}/${_SERVICE_NAME}:latest'
       - '--region'
       - '${_REGION}'
+      - '--port'
+      - '3000'
+      - '--add-cloudsql-instances'  # <--- ESTO FALTABA
+      - 'gen-lang-client-0059045498:us-east1:cafrilosa-db-master' # <--- TU BASE DE DATOS
 
 images:
   - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REGISTRY}/${_SERVICE_NAME}:latest'
