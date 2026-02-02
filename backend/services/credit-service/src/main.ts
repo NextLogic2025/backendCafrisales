@@ -18,7 +18,10 @@ async function bootstrap() {
     app.setGlobalPrefix('api');
 
     app.enableCors({
-        origin: process.env.CORS_ORIGIN?.split(',').map((o) => o.trim()).filter(Boolean) || 'http://localhost:5173',
+        origin: [
+        'http://localhost:5173',                      // Tu local
+        'https://gen-lang-client-0059045498.web.app' // Tu producción
+        ],
         credentials: true,
         methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
         allowedHeaders: ['Content-Type', 'Authorization'],

@@ -16,9 +16,13 @@ async function bootstrap() {
 
     // Security headers & CORS
     app.enableCors({
-        origin: process.env.CORS_ORIGIN?.split(',').map((o) => o.trim()).filter(Boolean) || '*',
+        origin: [
+        'http://localhost:5173',                      // Tu local
+        'https://gen-lang-client-0059045498.web.app' // Tu producción
+        ],
         methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
         credentials: true,
+        allowedHeaders: ['Content-Type', 'Authorization'],
     });
 
     // Global prefix
