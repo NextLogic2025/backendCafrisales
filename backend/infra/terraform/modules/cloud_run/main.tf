@@ -106,7 +106,11 @@ resource "google_cloud_run_v2_service" "default" {
         name  = "GCS_BUCKET_NAME"
         value = var.bucket_name
       }
-      
+      env {
+        name  = "CORS_ORIGIN"
+        value = var.cors_origin
+      }
+
       env {
         name  = "SERVICE_TOKEN"
         value = "token-super-secreto-interno-123456"

@@ -121,20 +121,23 @@ module "cloud_run" {
   services              = var.services
   artifact_registry_url = module.artifact_registry.repository_url
   bucket_name           = module.storage.bucket_name
-  
+
+  # CORS: Dominios permitidos (Firebase Hosting + localhost para desarrollo)
+  cors_origin = "https://${var.project_id}.web.app,https://${var.project_id}.firebaseapp.com,http://localhost:5173"
+
   # --- CAMBIO CRÍTICO: Direct VPC Egress ---
   # Ya no usamos vpc_connector_id. Pasamos los nombres de red y subred.
   vpc_name    = module.networking.vpc_name
   subnet_name = module.networking.app_subnet_name
   # -----------------------------------------
-  
+
   # DB Info
   cloudsql_private_ip   = module.database.cloudsql_private_ip
   cloudsql_connection   = module.database.cloudsql_connection_name
-  
+
   # Secretos
   db_password_secret_ids = module.secrets.service_secret_ids
-  
+
   gateway_sa_email      = google_service_account.gateway_sa.email
   jwt_secret_id         = google_secret_manager_secret.jwt_secret.id
 
