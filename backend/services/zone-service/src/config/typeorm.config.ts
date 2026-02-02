@@ -28,15 +28,19 @@ const dbConfig = {
 export const typeormConfig = registerAs('typeorm', () => ({
     ...dbConfig,
     autoLoadEntities: true,
-    entities: [__dirname + '/../**/*.entity{.ts,.js}'], // Ajustado a standard
+    entities: [__dirname + '/../**/*.entity{.ts,.js}'],
     migrations: [__dirname + '/../migrations/*{.ts,.js}'],
-    synchronize: true, // Activado para crear tablas
+    // 🔥 CAMBIO: Apagado para producción
+    synchronize: false, 
     migrationsRun: false,
+    schema: 'app', // 🔥 AGREGADO: Para que busque en el esquema correcto
 }));
 
 export const connectionSource = new DataSource({
     ...dbConfig,
     entities: [__dirname + '/../**/*.entity{.ts,.js}'],
     migrations: [__dirname + '/../migrations/*{.ts,.js}'],
-    synchronize: true, // Activado
+    // 🔥 CAMBIO: Apagado
+    synchronize: false,
+    schema: 'app',
 } as DataSourceOptions);
