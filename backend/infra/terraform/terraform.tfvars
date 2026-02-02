@@ -17,7 +17,7 @@ services = [
   "credit-service",
   "route-service",
   "delivery-service",
-  "notification-service" 
+  # "notification-service"  <-- COMENTADO O BORRADO
 ]
 
 # --- CONFIGURACIÓN DE BASE DE DATOS ---

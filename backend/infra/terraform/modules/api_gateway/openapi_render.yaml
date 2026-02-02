@@ -27,7 +27,7 @@ paths:
   /auth/**:
     post:
       x-google-backend:
-        address: ${auth_url}
+        address: https://auth-service-6i2z4tjbba-ue.a.run.app
         path_translation: APPEND_PATH_TO_ADDRESS
       summary: Auth Service Endpoints
       operationId: authProxyPost
@@ -36,7 +36,7 @@ paths:
           description: OK
     get:
       x-google-backend:
-        address: ${auth_url}
+        address: https://auth-service-6i2z4tjbba-ue.a.run.app
         path_translation: APPEND_PATH_TO_ADDRESS
       summary: Auth Service Endpoints
       operationId: authProxyGet
@@ -53,31 +53,31 @@ paths:
   /users/**:
     get:
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         path_translation: APPEND_PATH_TO_ADDRESS
       operationId: userGet
       responses: { '200': { description: OK } }
     post:
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         path_translation: APPEND_PATH_TO_ADDRESS
       operationId: userPost
       responses: { '200': { description: OK } }
     put:
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         path_translation: APPEND_PATH_TO_ADDRESS
       operationId: userPut
       responses: { '200': { description: OK } }
     patch:
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         path_translation: APPEND_PATH_TO_ADDRESS
       operationId: userPatch
       responses: { '200': { description: OK } }
     delete:
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         path_translation: APPEND_PATH_TO_ADDRESS
       operationId: userDelete
       responses: { '200': { description: OK } }
@@ -89,19 +89,19 @@ paths:
   /catalog/**:
     get:
       x-google-backend:
-        address: ${catalog_url}
+        address: https://catalog-service-6i2z4tjbba-ue.a.run.app
         path_translation: APPEND_PATH_TO_ADDRESS
       operationId: catalogGet
       responses: { '200': { description: OK } }
     post:
       x-google-backend:
-        address: ${catalog_url}
+        address: https://catalog-service-6i2z4tjbba-ue.a.run.app
         path_translation: APPEND_PATH_TO_ADDRESS
       operationId: catalogPost
       responses: { '200': { description: OK } }
     put:
       x-google-backend:
-        address: ${catalog_url}
+        address: https://catalog-service-6i2z4tjbba-ue.a.run.app
         path_translation: APPEND_PATH_TO_ADDRESS
       operationId: catalogPut
       responses: { '200': { description: OK } }
@@ -113,19 +113,19 @@ paths:
   /orders/**:
     get:
       x-google-backend:
-        address: ${order_url}
+        address: https://order-service-6i2z4tjbba-ue.a.run.app
         path_translation: APPEND_PATH_TO_ADDRESS
       operationId: orderGet
       responses: { '200': { description: OK } }
     post:
       x-google-backend:
-        address: ${order_url}
+        address: https://order-service-6i2z4tjbba-ue.a.run.app
         path_translation: APPEND_PATH_TO_ADDRESS
       operationId: orderPost
       responses: { '200': { description: OK } }
     patch:
       x-google-backend:
-        address: ${order_url}
+        address: https://order-service-6i2z4tjbba-ue.a.run.app
         path_translation: APPEND_PATH_TO_ADDRESS
       operationId: orderPatch
       responses: { '200': { description: OK } }
@@ -137,13 +137,13 @@ paths:
   /zones/**:
     get:
       x-google-backend:
-        address: ${zone_url}
+        address: https://zone-service-6i2z4tjbba-ue.a.run.app
         path_translation: APPEND_PATH_TO_ADDRESS
       operationId: zoneGet
       responses: { '200': { description: OK } }
     post:
       x-google-backend:
-        address: ${zone_url}
+        address: https://zone-service-6i2z4tjbba-ue.a.run.app
         path_translation: APPEND_PATH_TO_ADDRESS
       operationId: zonePost
       responses: { '200': { description: OK } }
@@ -155,19 +155,19 @@ paths:
   /credits/**:
     get:
       x-google-backend:
-        address: ${credit_url}
+        address: https://credit-service-6i2z4tjbba-ue.a.run.app
         path_translation: APPEND_PATH_TO_ADDRESS
       operationId: creditGet
       responses: { '200': { description: OK } }
     post:
       x-google-backend:
-        address: ${credit_url}
+        address: https://credit-service-6i2z4tjbba-ue.a.run.app
         path_translation: APPEND_PATH_TO_ADDRESS
       operationId: creditPost
       responses: { '200': { description: OK } }
     put:
       x-google-backend:
-        address: ${credit_url}
+        address: https://credit-service-6i2z4tjbba-ue.a.run.app
         path_translation: APPEND_PATH_TO_ADDRESS
       operationId: creditPut
       responses: { '200': { description: OK } }
@@ -179,13 +179,13 @@ paths:
   /routes/**:
     get:
       x-google-backend:
-        address: ${route_url}
+        address: https://route-service-6i2z4tjbba-ue.a.run.app
         path_translation: APPEND_PATH_TO_ADDRESS
       operationId: routeGet
       responses: { '200': { description: OK } }
     post:
       x-google-backend:
-        address: ${route_url}
+        address: https://route-service-6i2z4tjbba-ue.a.run.app
         path_translation: APPEND_PATH_TO_ADDRESS
       operationId: routePost
       responses: { '200': { description: OK } }
@@ -197,19 +197,19 @@ paths:
   /deliveries/**:
     get:
       x-google-backend:
-        address: ${delivery_url}
+        address: https://delivery-service-6i2z4tjbba-ue.a.run.app
         path_translation: APPEND_PATH_TO_ADDRESS
       operationId: deliveryGet
       responses: { '200': { description: OK } }
     post:
       x-google-backend:
-        address: ${delivery_url}
+        address: https://delivery-service-6i2z4tjbba-ue.a.run.app
         path_translation: APPEND_PATH_TO_ADDRESS
       operationId: deliveryPost
       responses: { '200': { description: OK } }
     put:
       x-google-backend:
-        address: ${delivery_url}
+        address: https://delivery-service-6i2z4tjbba-ue.a.run.app
         path_translation: APPEND_PATH_TO_ADDRESS
       operationId: deliveryPut
       responses: { '200': { description: OK } }
@@ -225,7 +225,7 @@ paths:
       description: CORS Preflight
       operationId: corsGlobal
       x-google-backend:
-        address: ${auth_url} 
+        address: https://auth-service-6i2z4tjbba-ue.a.run.app 
         deadline: 1.0
       responses:
         '200':
