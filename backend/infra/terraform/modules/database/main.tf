@@ -1,7 +1,22 @@
 # backend/infra/terraform/modules/database/main.tf
-# (NOTA: Ya no hay bloques "variable" aquí, están en variables.tf)
 
-# 1. La Instancia Física (El servidor)
+# --- DICCIONARIO DE NOMBRES DE BASES DE DATOS (Inglés -> Español) ---
+# Esto asegura que Terraform cree las bases con el nombre exacto que usan tus SQLs.
+locals {
+  db_names = {
+    "auth-service"         = "cafrilosa_auth"
+    "user-service"         = "cafrilosa_usuarios"
+    "catalog-service"      = "cafrilosa_catalogo"
+    "order-service"        = "cafrilosa_pedidos"
+    "zone-service"         = "cafrilosa_zonas"
+    "credit-service"       = "cafrilosa_creditos"
+    "route-service"        = "cafrilosa_rutas"
+    "delivery-service"     = "cafrilosa_entregas"
+    "notification-service" = "cafrilosa_notificaciones"
+  }
+}
+
+# 1. La Instancia Física
 resource "google_sql_database_instance" "master" {
   name             = "cafrilosa-db-master"
   region           = var.region
@@ -30,19 +45,20 @@ resource "google_sql_user" "root" {
   password = var.root_password
 }
 
-# 3. Bases de Datos Lógicas (CORREGIDO)
+# 3. Bases de Datos Lógicas (CORREGIDO CON MAPA)
 resource "google_sql_database" "databases" {
   for_each = toset(var.services)
 
-  # LÓGICA CONDICIONAL:
-  # Si es 'notification-service', usa 'cafrilosa_notificaciones' (plural español).
-  # Si es cualquier otro, usa la lógica estándar (ej. auth-service -> cafrilosa_auth).
-  name = each.key == "notification-service" ? "cafrilosa_notificaciones" : "cafrilosa_${replace(replace(each.key, "-service", ""), "-", "_")}"
-  
+  # Usa el nombre del mapa si existe, si no, usa un fallback genérico
+  name     = lookup(local.db_names, each.key, "cafrilosa_${replace(each.key, "-service", "")}")
   instance = google_sql_database_instance.master.name
 }
 
 # 4. Usuarios por Servicio
+# NOTA: Los usuarios de servicio (ej. order_user) pueden seguir en inglés o español.
+# Normalmente el usuario de la DB no afecta tanto, pero si quieres alinearlo, avísame.
+# Por ahora lo dejamos estándar para no romper la conexión desde los microservicios
+# (a menos que tus microservicios también esperen usuarios en español).
 resource "google_sql_user" "users" {
   for_each = toset(var.services)
   name     = "${replace(each.key, "-service", "")}_user"
@@ -61,9 +77,5 @@ output "cloudsql_private_ip" {
 }
 
 output "service_password_secrets" {
-  # Este output era necesario para el error anterior, pero como
-  # ahora los secretos los maneja el módulo 'secrets', esto podría quedar vacío 
-  # o eliminarse si no lo usas dentro de este módulo específico.
-  # Para evitar errores, lo dejamos comentado o devolvemos un mapa vacío por ahora.
   value = {} 
 }

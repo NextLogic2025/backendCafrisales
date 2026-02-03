@@ -17,7 +17,8 @@ securityDefinitions:
 security: []
 
 # ==================================================================
-# RUTEO INTELIGENTE (Sintaxis Google Cloud: Usar /**)
+# RUTEO INTELIGENTE (Sintaxis Correcta: /**)
+# Corrección: Direcciones SIN "/api" al final
 # ==================================================================
 paths:
   # 1. AUTH SERVICE
@@ -26,7 +27,7 @@ paths:
       summary: Auth Get
       operationId: authApiV1Get
       x-google-backend:
-        address: ${auth_url}/api
+        address: ${auth_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses:
@@ -36,7 +37,7 @@ paths:
       summary: Auth Post
       operationId: authApiV1Post
       x-google-backend:
-        address: ${auth_url}/api
+        address: ${auth_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses:
@@ -46,7 +47,7 @@ paths:
       summary: Auth Cors
       operationId: authApiV1Cors
       x-google-backend:
-        address: ${auth_url}/api
+        address: ${auth_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses:
@@ -60,84 +61,66 @@ paths:
         address: ${auth_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
     post:
       operationId: authPost
       x-google-backend:
         address: ${auth_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
     options:
       operationId: authCors
       x-google-backend:
         address: ${auth_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
 
   # 2. USER SERVICE
   /api/v1/users/**:
     get:
       operationId: userApiV1Get
       x-google-backend:
-        address: ${user_url}/api
+        address: ${user_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
     post:
       operationId: userApiV1Post
       x-google-backend:
-        address: ${user_url}/api
+        address: ${user_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
     put:
       operationId: userApiV1Put
       x-google-backend:
-        address: ${user_url}/api
+        address: ${user_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
     patch:
       operationId: userApiV1Patch
       x-google-backend:
-        address: ${user_url}/api
+        address: ${user_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
     delete:
       operationId: userApiV1Delete
       x-google-backend:
-        address: ${user_url}/api
+        address: ${user_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
     options:
       operationId: userApiV1Cors
       x-google-backend:
-        address: ${user_url}/api
+        address: ${user_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
 
   /users/**:
     get:
@@ -146,93 +129,73 @@ paths:
         address: ${user_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
     post:
       operationId: userPost
       x-google-backend:
         address: ${user_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
     put:
       operationId: userPut
       x-google-backend:
         address: ${user_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
     patch:
       operationId: userPatch
       x-google-backend:
         address: ${user_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
     delete:
       operationId: userDelete
       x-google-backend:
         address: ${user_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
     options:
       operationId: userCors
       x-google-backend:
         address: ${user_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
 
   # 3. CATALOG SERVICE
   /api/v1/catalog/**:
     get:
       operationId: catalogApiV1Get
       x-google-backend:
-        address: ${catalog_url}/api
+        address: ${catalog_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
     post:
       operationId: catalogApiV1Post
       x-google-backend:
-        address: ${catalog_url}/api
+        address: ${catalog_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
     put:
       operationId: catalogApiV1Put
       x-google-backend:
-        address: ${catalog_url}/api
+        address: ${catalog_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
     options:
       operationId: catalogApiV1Cors
       x-google-backend:
-        address: ${catalog_url}/api
+        address: ${catalog_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
 
   /catalog/**:
     get:
@@ -241,75 +204,59 @@ paths:
         address: ${catalog_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
     post:
       operationId: catalogPost
       x-google-backend:
         address: ${catalog_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
     put:
       operationId: catalogPut
       x-google-backend:
         address: ${catalog_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
     options:
       operationId: catalogCors
       x-google-backend:
         address: ${catalog_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
 
   # 4. ORDER SERVICE
   /api/v1/orders/**:
     get:
       operationId: orderApiV1Get
       x-google-backend:
-        address: ${order_url}/api
+        address: ${order_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
     post:
       operationId: orderApiV1Post
       x-google-backend:
-        address: ${order_url}/api
+        address: ${order_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
     patch:
       operationId: orderApiV1Patch
       x-google-backend:
-        address: ${order_url}/api
+        address: ${order_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
     options:
       operationId: orderApiV1Cors
       x-google-backend:
-        address: ${order_url}/api
+        address: ${order_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
 
   /orders/**:
     get:
@@ -318,66 +265,52 @@ paths:
         address: ${order_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
     post:
       operationId: orderPost
       x-google-backend:
         address: ${order_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
     patch:
       operationId: orderPatch
       x-google-backend:
         address: ${order_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
     options:
       operationId: orderCors
       x-google-backend:
         address: ${order_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
 
   # 5. ZONE SERVICE
   /api/v1/zones/**:
     get:
       operationId: zoneApiV1Get
       x-google-backend:
-        address: ${zone_url}/api
+        address: ${zone_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
     post:
       operationId: zoneApiV1Post
       x-google-backend:
-        address: ${zone_url}/api
+        address: ${zone_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
     options:
       operationId: zoneApiV1Cors
       x-google-backend:
-        address: ${zone_url}/api
+        address: ${zone_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
 
   /zones/**:
     get:
@@ -386,66 +319,52 @@ paths:
         address: ${zone_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
     post:
       operationId: zonePost
       x-google-backend:
         address: ${zone_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
     options:
       operationId: zoneCors
       x-google-backend:
         address: ${zone_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
 
   # 6. CREDIT SERVICE
   /api/v1/credits/**:
     get:
       operationId: creditApiV1Get
       x-google-backend:
-        address: ${credit_url}/api
+        address: ${credit_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
     post:
       operationId: creditApiV1Post
       x-google-backend:
-        address: ${credit_url}/api
+        address: ${credit_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
     put:
       operationId: creditApiV1Put
       x-google-backend:
-        address: ${credit_url}/api
+        address: ${credit_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
     options:
       operationId: creditApiV1Cors
       x-google-backend:
-        address: ${credit_url}/api
+        address: ${credit_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
 
   /credits/**:
     get:
@@ -454,66 +373,52 @@ paths:
         address: ${credit_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
     post:
       operationId: creditPost
       x-google-backend:
         address: ${credit_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
     put:
       operationId: creditPut
       x-google-backend:
         address: ${credit_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
     options:
       operationId: creditCors
       x-google-backend:
         address: ${credit_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
 
   # 7. ROUTE SERVICE
   /api/v1/routes/**:
     get:
       operationId: routeApiV1Get
       x-google-backend:
-        address: ${route_url}/api
+        address: ${route_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
     post:
       operationId: routeApiV1Post
       x-google-backend:
-        address: ${route_url}/api
+        address: ${route_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
     options:
       operationId: routeApiV1Cors
       x-google-backend:
-        address: ${route_url}/api
+        address: ${route_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
 
   /routes/**:
     get:
@@ -522,66 +427,52 @@ paths:
         address: ${route_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
     post:
       operationId: routePost
       x-google-backend:
         address: ${route_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
     options:
       operationId: routeCors
       x-google-backend:
         address: ${route_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
 
   # 8. DELIVERY SERVICE
   /api/v1/deliveries/**:
     get:
       operationId: deliveryApiV1Get
       x-google-backend:
-        address: ${delivery_url}/api
+        address: ${delivery_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
     post:
       operationId: deliveryApiV1Post
       x-google-backend:
-        address: ${delivery_url}/api
+        address: ${delivery_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
     put:
       operationId: deliveryApiV1Put
       x-google-backend:
-        address: ${delivery_url}/api
+        address: ${delivery_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
     options:
       operationId: deliveryApiV1Cors
       x-google-backend:
-        address: ${delivery_url}/api
+        address: ${delivery_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
 
   /deliveries/**:
     get:
@@ -590,36 +481,28 @@ paths:
         address: ${delivery_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
     post:
       operationId: deliveryPost
       x-google-backend:
         address: ${delivery_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
     put:
       operationId: deliveryPut
       x-google-backend:
         address: ${delivery_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
     options:
       operationId: deliveryCors
       x-google-backend:
         address: ${delivery_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
-      responses:
-        '200':
-          description: OK
+      responses: { '200': { description: OK } }
 
   # CORS GLOBAL CATCH-ALL
   /**:
@@ -634,7 +517,10 @@ paths:
           headers:
             Access-Control-Allow-Origin:
               type: string
+              default: '*'
             Access-Control-Allow-Methods:
               type: string
+              default: 'GET, POST, PUT, DELETE, PATCH, OPTIONS'
             Access-Control-Allow-Headers:
               type: string
+              default: 'Authorization, Content-Type, X-Api-Key, X-Service-Token'

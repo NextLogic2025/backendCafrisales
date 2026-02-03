@@ -6,65 +6,61 @@ import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
-    const logger = new Logger('Bootstrap');
-    const app = await NestFactory.create(AppModule);
+  const logger = new Logger('Bootstrap');
+  const app = await NestFactory.create(AppModule);
 
-    // Seguridad: cabeceras HTTP contra XSS, clickjacking, sniffing
-    app.use(helmet());
+  // Seguridad
+  app.use(helmet());
+  app.setGlobalPrefix('api');
 
-    // CORS
-    app.enableCors({
-        origin: [
-        'http://localhost:5173',
-        'https://gen-lang-client-0059045498.web.app'
-        ],
-        credentials: true,
-        methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-        allowedHeaders: ['Content-Type', 'Authorization'],
-    });
+  // ✅ Versionado de API
+  app.enableVersioning({
+    type: VersioningType.URI,
+    defaultVersion: '1',
+  });
 
-    // Filtro global para formatear errores y ocultar detalles sensibles
-    app.useGlobalFilters(new HttpExceptionFilter());
+  // CORS - Configuración Robusta
+  app.enableCors({
+    origin: [
+      'http://localhost:5173',                                  // Desarrollo Local
+      'https://gen-lang-client-0059045498.web.app',            // Producción Frontend
+      'https://cafrisales-gateway-gw-4dxrikij.ue.gateway.dev'   // Producción Gateway
+    ],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Service-Token', 'x-api-key'],
+  });
 
-    // Global validation pipe
-    app.useGlobalPipes(
-        new ValidationPipe({
-            whitelist: true,
-            forbidNonWhitelisted: true,
-            transform: true,
-        }),
-    );
+  // Filtro global
+  app.useGlobalFilters(new HttpExceptionFilter());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
 
-    // API prefix
-    app.setGlobalPrefix('api');
+  // ✅ Swagger
+  const config = new DocumentBuilder()
+    .setTitle('Notification Service API')
+    .setDescription('API de gestión de notificaciones')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .addTag('notifications')
+    .build();
 
-    // ✅ Versionado de API
-    app.enableVersioning({
-        type: VersioningType.URI,
-        defaultVersion: '1',
-    });
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/docs', app, document);
 
-    // ✅ Swagger
-    const config = new DocumentBuilder()
-        .setTitle('Notification Service API')
-        .setDescription('API de gestión de notificaciones')
-        .setVersion('1.0')
-        .addBearerAuth()
-        .addTag('notifications')
-        .build();
+  // Graceful shutdown
+  app.enableShutdownHooks();
 
-    const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('api/docs', app, document);
+  // ⚠️ CRÍTICO: Escuchar en 0.0.0.0 para Cloud Run
+  const port = process.env.PORT || 3000;
+  await app.listen(port, '0.0.0.0');
 
-    // Graceful shutdown: cierra conexiones pendientes antes de terminar
-    app.enableShutdownHooks();
-
-    const port = process.env.PORT || 3000;
-    await app.listen(port);
-
-    logger.log(`🚀 Notification Service running on http://localhost:${port}`);
-    logger.log(`📚 API Docs available at http://localhost:${port}/api/docs`);
-    logger.log(`🔌 WebSocket available at ws://localhost:${port}/notifications`);
+  logger.log(`🚀 Notification Service running on http://localhost:${port}`);
 }
 
 bootstrap();

@@ -1,21 +1,16 @@
 import 'reflect-metadata';
-
-import { ValidationPipe, Logger } from '@nestjs/common';
+import { ValidationPipe, Logger, VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import helmet from 'helmet';
-
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
-
-import { VersioningType } from '@nestjs/common';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const logger = new Logger('Bootstrap');
 
   app.use(helmet());
-
   app.setGlobalPrefix('api');
 
   app.enableVersioning({
@@ -26,14 +21,15 @@ async function bootstrap() {
   app.enableCors({
     origin: [
       'http://localhost:5173',
-      'https://gen-lang-client-0059045498.web.app'
+      'https://gen-lang-client-0059045498.web.app',
+      'https://cafrisales-gateway-gw-4dxrikij.ue.gateway.dev'
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Service-Token', 'x-api-key'],
   });
-  app.useGlobalFilters(new HttpExceptionFilter());
 
+  app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -42,10 +38,9 @@ async function bootstrap() {
     }),
   );
 
-  // Swagger Configuration
   const config = new DocumentBuilder()
     .setTitle('User Service API')
-    .setDescription('API de gestión de usuarios y perfiles')
+    .setDescription('API de Usuarios')
     .setVersion('1.0')
     .addBearerAuth()
     .build();
@@ -53,11 +48,9 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, document);
 
   app.enableShutdownHooks();
-
   const port = process.env.PORT || 3000;
   await app.listen(port, '0.0.0.0');
 
-  logger.log(`🚀 Servicio Usuarios corriendo en puerto: ${port}`);
+  logger.log(`🚀 Servicio User corriendo en puerto: ${port}`);
 }
-
 bootstrap();

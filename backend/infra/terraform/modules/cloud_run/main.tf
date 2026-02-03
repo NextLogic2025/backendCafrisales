@@ -1,18 +1,25 @@
 # backend/infra/terraform/modules/cloud_run/main.tf
 
-# ==============================================================================
-# 1. SERVICE ACCOUNTS
-# ==============================================================================
+locals {
+  db_names = {
+    "auth-service"         = "cafrilosa_auth"
+    "user-service"         = "cafrilosa_usuarios"
+    "catalog-service"      = "cafrilosa_catalogo"
+    "order-service"        = "cafrilosa_pedidos"
+    "zone-service"         = "cafrilosa_zonas"
+    "credit-service"       = "cafrilosa_creditos"
+    "route-service"        = "cafrilosa_rutas"
+    "delivery-service"     = "cafrilosa_entregas"
+    "notification-service" = "cafrilosa_notificaciones"
+  }
+}
+
 resource "google_service_account" "sa" {
-  # Creamos cuentas de servicio para todos, incluido notification (por si acaso se usa luego)
   for_each     = toset(var.services)
   account_id   = "${each.key}-sa"
   display_name = "Service Account para ${each.key}"
 }
 
-# ==============================================================================
-# 2. PERMISOS DE SECRETOS
-# ==============================================================================
 resource "google_secret_manager_secret_iam_member" "db_pass_access" {
   for_each  = toset(var.services)
   secret_id = var.db_password_secret_ids[each.key]
@@ -27,13 +34,7 @@ resource "google_secret_manager_secret_iam_member" "jwt_secret_access" {
   member    = "serviceAccount:${google_service_account.sa[each.key].email}"
 }
 
-# ==============================================================================
-# 3. CLOUD RUN SERVICES (Solo Servicios Estables)
-# ==============================================================================
 resource "google_cloud_run_v2_service" "default" {
-  # 🔥 FILTRO DE SEGURIDAD: 
-  # Esto despliega todos los servicios EXCEPTO notification-service.
-  # Así aseguramos que el sistema principal suba sin errores.
   for_each = setsubtract(toset(var.services), ["notification-service"])
 
   name     = each.key
@@ -42,6 +43,9 @@ resource "google_cloud_run_v2_service" "default" {
 
   template {
     service_account = google_service_account.sa[each.key].email
+    
+    # Aumentamos el timeout de ejecución global por si acaso
+    timeout = "300s"
 
     scaling {
       min_instance_count = 0
@@ -59,6 +63,7 @@ resource "google_cloud_run_v2_service" "default" {
     containers {
       image = "${var.artifact_registry_url}/${each.key}:latest"
 
+      # Cloud Run inyectará la variable PORT=3000 automáticamente gracias a esto
       ports {
         container_port = 3000
       }
@@ -70,13 +75,14 @@ resource "google_cloud_run_v2_service" "default" {
         }
       }
 
-      # --- Variables de Entorno (Sintaxis Multilínea Correcta) ---
-      
       env {
         name  = "NODE_ENV"
         value = "production"
       }
       
+      # NO definimos PORT manualmente aquí para evitar el error de "reserved env name".
+      # Cloud Run lo pone solo.
+
       env {
         name  = "DB_HOST"
         value = var.cloudsql_private_ip
@@ -89,39 +95,29 @@ resource "google_cloud_run_v2_service" "default" {
       
       env {
         name  = "DB_NAME"
-        value = "cafrilosa_${replace(replace(each.key, "-service", ""), "-", "_")}"
+        value = lookup(local.db_names, each.key, "cafrilosa_${replace(replace(each.key, "-service", ""), "-", "_")}")
       }
       
       env {
-        name  = "DB_USER"
+        name  = "DB_USERNAME"
         value = "${replace(each.key, "-service", "")}_user"
       }
       
       env {
-        name  = "DB_SCHEMA"
-        value = "public"
+        name  = "DB_Schema" 
+        value = "app" 
       }
-      
+
       env {
-        name  = "GCS_BUCKET_NAME"
+        name  = "GCP_BUCKET_NAME"
         value = var.bucket_name
       }
+      
       env {
         name  = "CORS_ORIGIN"
         value = var.cors_origin
       }
 
-      env {
-        name  = "SERVICE_TOKEN"
-        value = "token-super-secreto-interno-123456"
-      }
-      
-      env {
-        name  = "DATABASE_URL"
-        value = "postgres://dummy:dummy@localhost:5432/dummy_db"
-      }
-
-      # --- Secretos ---
       env {
         name = "DB_PASSWORD"
         value_source {
@@ -141,15 +137,23 @@ resource "google_cloud_run_v2_service" "default" {
           }
         }
       }
+      
+      # CORRECCIÓN VITAL: Healthcheck más permisivo
+      # Le damos 60 segundos iniciales para arrancar (conectar a BD, migraciones, etc.)
+      startup_probe {
+        tcp_socket {
+          port = 3000
+        }
+        initial_delay_seconds = 60  
+        period_seconds        = 10
+        failure_threshold     = 10
+        timeout_seconds       = 5
+      }
     }
   }
 }
 
-# ==============================================================================
-# 4. SEGURIDAD Y SALIDAS
-# ==============================================================================
 resource "google_cloud_run_service_iam_member" "invoker" {
-  # Aplicamos solo a los servicios que realmente se crearon
   for_each = setsubtract(toset(var.services), ["notification-service"])
   
   service  = google_cloud_run_v2_service.default[each.key].name

@@ -1,66 +1,66 @@
-import { Logger, ValidationPipe } from '@nestjs/common';
+import 'reflect-metadata';
+import { Logger, ValidationPipe, VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
-import { VersioningType } from '@nestjs/common';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-
 async function bootstrap() {
-    const app = await NestFactory.create(AppModule);
-    const logger = new Logger('Bootstrap');
+  const app = await NestFactory.create(AppModule);
+  const logger = new Logger('Bootstrap');
 
-    // Seguridad: cabeceras HTTP contra ataques comunes (XSS, clickjacking, etc.)
-    app.use(helmet());
+  // Seguridad
+  app.use(helmet());
+  app.setGlobalPrefix('api');
 
-    // Security headers & CORS
-    app.enableCors({
-        origin: [
-        'http://localhost:5173',                      // Tu local
-        'https://gen-lang-client-0059045498.web.app' // Tu producción
-        ],
-        methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-        credentials: true,
-        allowedHeaders: ['Content-Type', 'Authorization'],
-    });
+  // ✅ Versionado de API
+  app.enableVersioning({
+    type: VersioningType.URI,
+    defaultVersion: '1',
+  });
 
-    // Global prefix
-    app.setGlobalPrefix('api');
+  // CORS - Configuración Robusta
+  app.enableCors({
+    origin: [
+      'http://localhost:5173',                                  // Desarrollo Local
+      'https://gen-lang-client-0059045498.web.app',            // Producción Frontend
+      'https://cafrisales-gateway-gw-4dxrikij.ue.gateway.dev'   // Producción Gateway
+    ],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Service-Token', 'x-api-key'],
+  });
 
-    app.enableVersioning({
-        type: VersioningType.URI,
-        defaultVersion: '1',
-    });
+  // Filtros y Pipes
+  app.useGlobalFilters(new HttpExceptionFilter());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+      forbidNonWhitelisted: true,
+    }),
+  );
 
-    // Filtro global para formatear errores y ocultar detalles sensibles
-    app.useGlobalFilters(new HttpExceptionFilter());
+  // Swagger Configuration
+  const config = new DocumentBuilder()
+    .setTitle('Route Service API')
+    .setDescription('API de gestión de rutas y logística')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+  
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/docs', app, document);
 
-    // Validation
-    app.useGlobalPipes(
-        new ValidationPipe({
-            whitelist: true,
-            forbidNonWhitelisted: true,
-            transform: true,
-        }),
-    );
+  // Graceful shutdown
+  app.enableShutdownHooks();
 
-    // Swagger Configuration
-    const config = new DocumentBuilder()
-        .setTitle('Route Service API')
-        .setDescription('API de gestión de rutas y logística')
-        .setVersion('1.0')
-        .addBearerAuth()
-        .build();
-    const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('api/docs', app, document);
+  // Puerto (Vital para Cloud Run y Local)
+  const port = process.env.PORT || 3000;
+  await app.listen(port, '0.0.0.0');
 
-    // Graceful shutdown: cierra conexiones pendientes antes de terminar
-    app.enableShutdownHooks();
-
-    const port = process.env.PORT || 3000;
-    await app.listen(port, '0.0.0.0');
-    logger.log(`🚀 Route Service running on port ${port}`);
+  logger.log(`🚀 Route Service running on port ${port}`);
 }
 
 bootstrap();
