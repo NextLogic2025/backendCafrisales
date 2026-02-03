@@ -39,7 +39,7 @@ resource "google_cloud_run_v2_service" "default" {
 
   name     = each.key
   location = var.region
-  ingress  = "INGRESS_TRAFFIC_ALL"
+  ingress  = "INGRESS_TRAFFIC_ALL" 
 
   template {
     service_account = google_service_account.sa[each.key].email
