@@ -39,7 +39,13 @@ resource "google_cloud_run_v2_service" "default" {
 
   name     = each.key
   location = var.region
-  ingress  = "INGRESS_TRAFFIC_ALL" 
+  ingress  = "INGRESS_TRAFFIC_ALL"
+ 
+  # DEPENDENCIA CRÍTICA: Esperar a que los permisos IAM estén listos
+  depends_on = [
+    google_secret_manager_secret_iam_member.db_pass_access,
+    google_secret_manager_secret_iam_member.jwt_secret_access
+  ] 
 
   template {
     service_account = google_service_account.sa[each.key].email
