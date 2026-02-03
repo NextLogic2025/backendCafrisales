@@ -5,6 +5,11 @@
 resource "random_password" "db_root_password" {
   length  = 16
   special = false
+
+  # Usar keepers para controlar regeneración
+  keepers = {
+    version = "v1"  # Cambiar a "v2", "v3", etc. para forzar nueva contraseña
+  }
 }
 
 resource "google_secret_manager_secret" "db_root_pass" {
@@ -30,6 +35,12 @@ resource "random_password" "service_db_passwords" {
   for_each = toset(var.services)
   length   = 16
   special  = false
+
+  # Usar keepers para controlar cuándo se regenera la contraseña
+  # Solo cambia si cambia el nombre del servicio
+  keepers = {
+    service_name = each.key
+  }
 }
 
 # 3. Guardar las contraseñas en Secret Manager

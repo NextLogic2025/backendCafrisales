@@ -28,6 +28,10 @@ resource "google_sql_user" "root" {
   name     = var.db_admin_user
   instance = google_sql_database_instance.master.name
   password = var.root_password
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 # 3. Bases de Datos Lógicas (CORREGIDO)
@@ -48,6 +52,14 @@ resource "google_sql_user" "users" {
   name     = "${replace(each.key, "-service", "")}_user"
   instance = google_sql_database_instance.master.name
   password = var.service_passwords[each.key]
+
+  # Dependencia explícita: primero la BD, luego el usuario
+  depends_on = [google_sql_database.databases]
+
+  # Evitar errores de recreación
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 # --- OUTPUTS ---
