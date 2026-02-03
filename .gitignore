@@ -90,10 +90,22 @@ tmp/
 .cache/
 .history/
 
-# Terraform
+# Terraform (Seguridad mejorada - NUNCA subir estados ni secretos)
 .terraform/
 *.tfstate
-*.tfstate.backup
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraform.lock.hcl
+crash.log
+crash.*.log
+
+# Archivos de debug de Terraform
+**/openapi_render.yaml
 
 # Service-level logs/tmp (each microservice can add its own .gitignore)
 logs/
