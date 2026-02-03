@@ -8,34 +8,46 @@ schemes:
 produces:
   - application/json
 
-# Definición de seguridad básica
-securityDefinitions:
-  api_key:
-    type: "apiKey"
-    name: "key"
-    in: "query"
-
-security: []
-
 # ==================================================================
-# RUTEO INTELIGENTE (CORREGIDO CON /api/v1)
+# RUTEO INTELIGENTE POR PREFIJO
+# Soporta tanto /auth/* como /api/v1/auth/* para compatibilidad
 # ==================================================================
 paths:
-  # 1. AUTH SERVICE
-  /api/v1/auth/**:
+  # 1. AUTH SERVICE (/api/v1/auth/login, /api/v1/auth/register...)
+  /api/v1/auth/{proxy+}:
+    x-google-backend:
+      address: https://auth-service-6i2z4tjbba-ue.a.run.app/api
+      path_translation: APPEND_PATH_TO_ADDRESS
     post:
-      x-google-backend:
-        address: https://auth-service-6i2z4tjbba-ue.a.run.app
-        path_translation: APPEND_PATH_TO_ADDRESS
+      summary: Auth Service Endpoints
+      operationId: authApiV1ProxyPost
+      responses:
+        '200':
+          description: OK
+    get:
+      summary: Auth Service Endpoints
+      operationId: authApiV1ProxyGet
+      responses:
+        '200':
+          description: OK
+    options:
+      operationId: authApiV1Cors
+      responses:
+        '200':
+          description: OK
+
+  # 1b. AUTH SERVICE (legacy /auth/login, /auth/register...)
+  /auth/{proxy+}:
+    x-google-backend:
+      address: https://auth-service-6i2z4tjbba-ue.a.run.app
+      path_translation: APPEND_PATH_TO_ADDRESS
+    post:
       summary: Auth Service Endpoints
       operationId: authProxyPost
       responses:
         '200':
           description: OK
     get:
-      x-google-backend:
-        address: https://auth-service-6i2z4tjbba-ue.a.run.app
-        path_translation: APPEND_PATH_TO_ADDRESS
       summary: Auth Service Endpoints
       operationId: authProxyGet
       responses:
@@ -47,168 +59,252 @@ paths:
         '200':
           description: OK
 
-  # 2. USER SERVICE
-  /api/v1/users/**:
+  # 2. USER SERVICE (/api/v1/users/profile, /api/v1/users/staff...)
+  /api/v1/users/{proxy+}:
+    x-google-backend:
+      address: https://user-service-6i2z4tjbba-ue.a.run.app/api
+      path_translation: APPEND_PATH_TO_ADDRESS
     get:
-      x-google-backend:
-        address: https://user-service-6i2z4tjbba-ue.a.run.app
-        path_translation: APPEND_PATH_TO_ADDRESS
+      operationId: userApiV1Get
+      responses: { '200': { description: OK } }
+    post:
+      operationId: userApiV1Post
+      responses: { '200': { description: OK } }
+    put:
+      operationId: userApiV1Put
+      responses: { '200': { description: OK } }
+    patch:
+      operationId: userApiV1Patch
+      responses: { '200': { description: OK } }
+    delete:
+      operationId: userApiV1Delete
+      responses: { '200': { description: OK } }
+    options:
+      operationId: userApiV1Cors
+      responses: { '200': { description: OK } }
+
+  # 2b. USER SERVICE (legacy /users/profile, /users/staff...)
+  /users/{proxy+}:
+    x-google-backend:
+      address: https://user-service-6i2z4tjbba-ue.a.run.app
+      path_translation: APPEND_PATH_TO_ADDRESS
+    get:
       operationId: userGet
       responses: { '200': { description: OK } }
     post:
-      x-google-backend:
-        address: https://user-service-6i2z4tjbba-ue.a.run.app
-        path_translation: APPEND_PATH_TO_ADDRESS
       operationId: userPost
       responses: { '200': { description: OK } }
     put:
-      x-google-backend:
-        address: https://user-service-6i2z4tjbba-ue.a.run.app
-        path_translation: APPEND_PATH_TO_ADDRESS
       operationId: userPut
       responses: { '200': { description: OK } }
     patch:
-      x-google-backend:
-        address: https://user-service-6i2z4tjbba-ue.a.run.app
-        path_translation: APPEND_PATH_TO_ADDRESS
       operationId: userPatch
       responses: { '200': { description: OK } }
     delete:
-      x-google-backend:
-        address: https://user-service-6i2z4tjbba-ue.a.run.app
-        path_translation: APPEND_PATH_TO_ADDRESS
       operationId: userDelete
       responses: { '200': { description: OK } }
     options:
       operationId: userCors
       responses: { '200': { description: OK } }
 
-  # 3. CATALOG SERVICE
-  /api/v1/catalog/**:
+  # 3. CATALOG SERVICE (/api/v1/catalog/products, /api/v1/catalog/prices...)
+  /api/v1/catalog/{proxy+}:
+    x-google-backend:
+      address: https://catalog-service-6i2z4tjbba-ue.a.run.app/api
+      path_translation: APPEND_PATH_TO_ADDRESS
     get:
-      x-google-backend:
-        address: https://catalog-service-6i2z4tjbba-ue.a.run.app
-        path_translation: APPEND_PATH_TO_ADDRESS
+      operationId: catalogApiV1Get
+      responses: { '200': { description: OK } }
+    post:
+      operationId: catalogApiV1Post
+      responses: { '200': { description: OK } }
+    put:
+      operationId: catalogApiV1Put
+      responses: { '200': { description: OK } }
+    options:
+      operationId: catalogApiV1Cors
+      responses: { '200': { description: OK } }
+
+  # 3b. CATALOG SERVICE (legacy /catalog/products, /catalog/prices...)
+  /catalog/{proxy+}:
+    x-google-backend:
+      address: https://catalog-service-6i2z4tjbba-ue.a.run.app
+      path_translation: APPEND_PATH_TO_ADDRESS
+    get:
       operationId: catalogGet
       responses: { '200': { description: OK } }
     post:
-      x-google-backend:
-        address: https://catalog-service-6i2z4tjbba-ue.a.run.app
-        path_translation: APPEND_PATH_TO_ADDRESS
       operationId: catalogPost
       responses: { '200': { description: OK } }
     put:
-      x-google-backend:
-        address: https://catalog-service-6i2z4tjbba-ue.a.run.app
-        path_translation: APPEND_PATH_TO_ADDRESS
       operationId: catalogPut
       responses: { '200': { description: OK } }
     options:
       operationId: catalogCors
       responses: { '200': { description: OK } }
 
-  # 4. ORDER SERVICE
-  /api/v1/orders/**:
+  # 4. ORDER SERVICE (/api/v1/orders/create, /api/v1/orders/list...)
+  /api/v1/orders/{proxy+}:
+    x-google-backend:
+      address: https://order-service-6i2z4tjbba-ue.a.run.app/api
+      path_translation: APPEND_PATH_TO_ADDRESS
     get:
-      x-google-backend:
-        address: https://order-service-6i2z4tjbba-ue.a.run.app
-        path_translation: APPEND_PATH_TO_ADDRESS
+      operationId: orderApiV1Get
+      responses: { '200': { description: OK } }
+    post:
+      operationId: orderApiV1Post
+      responses: { '200': { description: OK } }
+    patch:
+      operationId: orderApiV1Patch
+      responses: { '200': { description: OK } }
+    options:
+      operationId: orderApiV1Cors
+      responses: { '200': { description: OK } }
+
+  # 4b. ORDER SERVICE (legacy /orders/create, /orders/list...)
+  /orders/{proxy+}:
+    x-google-backend:
+      address: https://order-service-6i2z4tjbba-ue.a.run.app
+      path_translation: APPEND_PATH_TO_ADDRESS
+    get:
       operationId: orderGet
       responses: { '200': { description: OK } }
     post:
-      x-google-backend:
-        address: https://order-service-6i2z4tjbba-ue.a.run.app
-        path_translation: APPEND_PATH_TO_ADDRESS
       operationId: orderPost
       responses: { '200': { description: OK } }
     patch:
-      x-google-backend:
-        address: https://order-service-6i2z4tjbba-ue.a.run.app
-        path_translation: APPEND_PATH_TO_ADDRESS
       operationId: orderPatch
       responses: { '200': { description: OK } }
     options:
       operationId: orderCors
       responses: { '200': { description: OK } }
 
-  # 5. ZONE SERVICE
-  /api/v1/zones/**:
+  # 5. ZONE SERVICE (/api/v1/zones/coverage...)
+  /api/v1/zones/{proxy+}:
+    x-google-backend:
+      address: https://zone-service-6i2z4tjbba-ue.a.run.app/api
+      path_translation: APPEND_PATH_TO_ADDRESS
     get:
-      x-google-backend:
-        address: https://zone-service-6i2z4tjbba-ue.a.run.app
-        path_translation: APPEND_PATH_TO_ADDRESS
+      operationId: zoneApiV1Get
+      responses: { '200': { description: OK } }
+    post:
+      operationId: zoneApiV1Post
+      responses: { '200': { description: OK } }
+    options:
+      operationId: zoneApiV1Cors
+      responses: { '200': { description: OK } }
+
+  # 5b. ZONE SERVICE (legacy /zones/coverage...)
+  /zones/{proxy+}:
+    x-google-backend:
+      address: https://zone-service-6i2z4tjbba-ue.a.run.app
+      path_translation: APPEND_PATH_TO_ADDRESS
+    get:
       operationId: zoneGet
       responses: { '200': { description: OK } }
     post:
-      x-google-backend:
-        address: https://zone-service-6i2z4tjbba-ue.a.run.app
-        path_translation: APPEND_PATH_TO_ADDRESS
       operationId: zonePost
       responses: { '200': { description: OK } }
     options:
       operationId: zoneCors
       responses: { '200': { description: OK } }
 
-  # 6. CREDIT SERVICE
-  /api/v1/credits/**:
+  # 6. CREDIT SERVICE (/api/v1/credits/check...)
+  /api/v1/credits/{proxy+}:
+    x-google-backend:
+      address: https://credit-service-6i2z4tjbba-ue.a.run.app/api
+      path_translation: APPEND_PATH_TO_ADDRESS
     get:
-      x-google-backend:
-        address: https://credit-service-6i2z4tjbba-ue.a.run.app
-        path_translation: APPEND_PATH_TO_ADDRESS
+      operationId: creditApiV1Get
+      responses: { '200': { description: OK } }
+    post:
+      operationId: creditApiV1Post
+      responses: { '200': { description: OK } }
+    put:
+      operationId: creditApiV1Put
+      responses: { '200': { description: OK } }
+    options:
+      operationId: creditApiV1Cors
+      responses: { '200': { description: OK } }
+
+  # 6b. CREDIT SERVICE (legacy /credits/check...)
+  /credits/{proxy+}:
+    x-google-backend:
+      address: https://credit-service-6i2z4tjbba-ue.a.run.app
+      path_translation: APPEND_PATH_TO_ADDRESS
+    get:
       operationId: creditGet
       responses: { '200': { description: OK } }
     post:
-      x-google-backend:
-        address: https://credit-service-6i2z4tjbba-ue.a.run.app
-        path_translation: APPEND_PATH_TO_ADDRESS
       operationId: creditPost
       responses: { '200': { description: OK } }
     put:
-      x-google-backend:
-        address: https://credit-service-6i2z4tjbba-ue.a.run.app
-        path_translation: APPEND_PATH_TO_ADDRESS
       operationId: creditPut
       responses: { '200': { description: OK } }
     options:
       operationId: creditCors
       responses: { '200': { description: OK } }
 
-  # 7. ROUTE SERVICE
-  /api/v1/routes/**:
+  # 7. ROUTE SERVICE (/api/v1/routes/plan...)
+  /api/v1/routes/{proxy+}:
+    x-google-backend:
+      address: https://route-service-6i2z4tjbba-ue.a.run.app/api
+      path_translation: APPEND_PATH_TO_ADDRESS
     get:
-      x-google-backend:
-        address: https://route-service-6i2z4tjbba-ue.a.run.app
-        path_translation: APPEND_PATH_TO_ADDRESS
+      operationId: routeApiV1Get
+      responses: { '200': { description: OK } }
+    post:
+      operationId: routeApiV1Post
+      responses: { '200': { description: OK } }
+    options:
+      operationId: routeApiV1Cors
+      responses: { '200': { description: OK } }
+
+  # 7b. ROUTE SERVICE (legacy /routes/plan...)
+  /routes/{proxy+}:
+    x-google-backend:
+      address: https://route-service-6i2z4tjbba-ue.a.run.app
+      path_translation: APPEND_PATH_TO_ADDRESS
+    get:
       operationId: routeGet
       responses: { '200': { description: OK } }
     post:
-      x-google-backend:
-        address: https://route-service-6i2z4tjbba-ue.a.run.app
-        path_translation: APPEND_PATH_TO_ADDRESS
       operationId: routePost
       responses: { '200': { description: OK } }
     options:
       operationId: routeCors
       responses: { '200': { description: OK } }
 
-  # 8. DELIVERY SERVICE
-  /api/v1/deliveries/**:
+  # 8. DELIVERY SERVICE (/api/v1/deliveries/evidence...)
+  /api/v1/deliveries/{proxy+}:
+    x-google-backend:
+      address: https://delivery-service-6i2z4tjbba-ue.a.run.app/api
+      path_translation: APPEND_PATH_TO_ADDRESS
     get:
-      x-google-backend:
-        address: https://delivery-service-6i2z4tjbba-ue.a.run.app
-        path_translation: APPEND_PATH_TO_ADDRESS
+      operationId: deliveryApiV1Get
+      responses: { '200': { description: OK } }
+    post:
+      operationId: deliveryApiV1Post
+      responses: { '200': { description: OK } }
+    put:
+      operationId: deliveryApiV1Put
+      responses: { '200': { description: OK } }
+    options:
+      operationId: deliveryApiV1Cors
+      responses: { '200': { description: OK } }
+
+  # 8b. DELIVERY SERVICE (legacy /deliveries/evidence...)
+  /deliveries/{proxy+}:
+    x-google-backend:
+      address: https://delivery-service-6i2z4tjbba-ue.a.run.app
+      path_translation: APPEND_PATH_TO_ADDRESS
+    get:
       operationId: deliveryGet
       responses: { '200': { description: OK } }
     post:
-      x-google-backend:
-        address: https://delivery-service-6i2z4tjbba-ue.a.run.app
-        path_translation: APPEND_PATH_TO_ADDRESS
       operationId: deliveryPost
       responses: { '200': { description: OK } }
     put:
-      x-google-backend:
-        address: https://delivery-service-6i2z4tjbba-ue.a.run.app
-        path_translation: APPEND_PATH_TO_ADDRESS
       operationId: deliveryPut
       responses: { '200': { description: OK } }
     options:
@@ -216,15 +312,39 @@ paths:
       responses: { '200': { description: OK } }
 
 # ==================================================================
-# CORS GLOBAL CATCH-ALL
+# CORS GLOBAL (Permitir acceso desde Web y Móvil)
 # ==================================================================
-  /**:
+  /api/v1/{proxy+}:
     options:
-      description: CORS Preflight Global
+      description: CORS Preflight for /api/v1 routes
+      operationId: corsApiV1Global
+      x-google-backend:
+        address: https://auth-service-6i2z4tjbba-ue.a.run.app
+        deadline: 30.0
+      responses:
+        '200':
+          description: OK
+          headers:
+            Access-Control-Allow-Origin:
+              type: string
+              default: '*'
+            Access-Control-Allow-Methods:
+              type: string
+              default: 'GET, POST, PUT, DELETE, PATCH, OPTIONS'
+            Access-Control-Allow-Headers:
+              type: string
+              default: 'Authorization, Content-Type, X-Api-Key, X-Service-Token'
+            Access-Control-Allow-Credentials:
+              type: string
+              default: 'true'
+
+  /{proxy+}:
+    options:
+      description: CORS Preflight
       operationId: corsGlobal
       x-google-backend:
-        address: https://auth-service-6i2z4tjbba-ue.a.run.app # Usamos auth como dummy para responder el OPTIONS
-        deadline: 1.0
+        address: https://auth-service-6i2z4tjbba-ue.a.run.app
+        deadline: 30.0
       responses:
         '200':
           description: OK
