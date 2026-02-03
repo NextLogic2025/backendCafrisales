@@ -8,33 +8,42 @@ schemes:
 produces:
   - application/json
 
+securityDefinitions:
+  api_key:
+    type: "apiKey"
+    name: "key"
+    in: "query"
+
+security: []
+
 # ==================================================================
-# RUTEO INTELIGENTE POR PREFIJO
-# Soporta tanto /auth/* como /api/v1/auth/* para compatibilidad
-# x-google-backend DEBE estar a nivel de operación, NO de path
+# RUTEO INTELIGENTE (Sintaxis Google Cloud: Usar /**)
 # ==================================================================
 paths:
-  # ================================================================
-  # AUTH SERVICE - Rutas /api/v1/auth/*
-  # ================================================================
-  /api/v1/auth/{proxy+}:
+  # 1. AUTH SERVICE
+  /api/v1/auth/**:
     get:
+      summary: Auth Get
       operationId: authApiV1Get
       x-google-backend:
         address: ${auth_url}/api
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
       responses:
         '200':
           description: OK
     post:
+      summary: Auth Post
       operationId: authApiV1Post
       x-google-backend:
         address: ${auth_url}/api
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
       responses:
         '200':
           description: OK
     options:
+      summary: Auth Cors
       operationId: authApiV1Cors
       x-google-backend:
         address: ${auth_url}/api
@@ -44,13 +53,13 @@ paths:
         '200':
           description: OK
 
-  # AUTH SERVICE - Rutas legacy /auth/*
-  /auth/{proxy+}:
+  /auth/**:
     get:
       operationId: authGet
       x-google-backend:
         address: ${auth_url}
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
       responses:
         '200':
           description: OK
@@ -59,6 +68,7 @@ paths:
       x-google-backend:
         address: ${auth_url}
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
       responses:
         '200':
           description: OK
@@ -72,15 +82,14 @@ paths:
         '200':
           description: OK
 
-  # ================================================================
-  # USER SERVICE - Rutas /api/v1/users/*
-  # ================================================================
-  /api/v1/users/{proxy+}:
+  # 2. USER SERVICE
+  /api/v1/users/**:
     get:
       operationId: userApiV1Get
       x-google-backend:
         address: ${user_url}/api
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
       responses:
         '200':
           description: OK
@@ -89,6 +98,7 @@ paths:
       x-google-backend:
         address: ${user_url}/api
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
       responses:
         '200':
           description: OK
@@ -97,6 +107,7 @@ paths:
       x-google-backend:
         address: ${user_url}/api
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
       responses:
         '200':
           description: OK
@@ -105,6 +116,7 @@ paths:
       x-google-backend:
         address: ${user_url}/api
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
       responses:
         '200':
           description: OK
@@ -113,6 +125,7 @@ paths:
       x-google-backend:
         address: ${user_url}/api
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
       responses:
         '200':
           description: OK
@@ -126,13 +139,13 @@ paths:
         '200':
           description: OK
 
-  # USER SERVICE - Rutas legacy /users/*
-  /users/{proxy+}:
+  /users/**:
     get:
       operationId: userGet
       x-google-backend:
         address: ${user_url}
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
       responses:
         '200':
           description: OK
@@ -141,6 +154,7 @@ paths:
       x-google-backend:
         address: ${user_url}
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
       responses:
         '200':
           description: OK
@@ -149,6 +163,7 @@ paths:
       x-google-backend:
         address: ${user_url}
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
       responses:
         '200':
           description: OK
@@ -157,6 +172,7 @@ paths:
       x-google-backend:
         address: ${user_url}
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
       responses:
         '200':
           description: OK
@@ -165,6 +181,7 @@ paths:
       x-google-backend:
         address: ${user_url}
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
       responses:
         '200':
           description: OK
@@ -178,15 +195,14 @@ paths:
         '200':
           description: OK
 
-  # ================================================================
-  # CATALOG SERVICE - Rutas /api/v1/catalog/*
-  # ================================================================
-  /api/v1/catalog/{proxy+}:
+  # 3. CATALOG SERVICE
+  /api/v1/catalog/**:
     get:
       operationId: catalogApiV1Get
       x-google-backend:
         address: ${catalog_url}/api
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
       responses:
         '200':
           description: OK
@@ -195,6 +211,7 @@ paths:
       x-google-backend:
         address: ${catalog_url}/api
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
       responses:
         '200':
           description: OK
@@ -203,6 +220,7 @@ paths:
       x-google-backend:
         address: ${catalog_url}/api
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
       responses:
         '200':
           description: OK
@@ -216,13 +234,13 @@ paths:
         '200':
           description: OK
 
-  # CATALOG SERVICE - Rutas legacy /catalog/*
-  /catalog/{proxy+}:
+  /catalog/**:
     get:
       operationId: catalogGet
       x-google-backend:
         address: ${catalog_url}
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
       responses:
         '200':
           description: OK
@@ -231,6 +249,7 @@ paths:
       x-google-backend:
         address: ${catalog_url}
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
       responses:
         '200':
           description: OK
@@ -239,6 +258,7 @@ paths:
       x-google-backend:
         address: ${catalog_url}
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
       responses:
         '200':
           description: OK
@@ -252,15 +272,14 @@ paths:
         '200':
           description: OK
 
-  # ================================================================
-  # ORDER SERVICE - Rutas /api/v1/orders/*
-  # ================================================================
-  /api/v1/orders/{proxy+}:
+  # 4. ORDER SERVICE
+  /api/v1/orders/**:
     get:
       operationId: orderApiV1Get
       x-google-backend:
         address: ${order_url}/api
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
       responses:
         '200':
           description: OK
@@ -269,6 +288,7 @@ paths:
       x-google-backend:
         address: ${order_url}/api
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
       responses:
         '200':
           description: OK
@@ -277,6 +297,7 @@ paths:
       x-google-backend:
         address: ${order_url}/api
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
       responses:
         '200':
           description: OK
@@ -290,13 +311,13 @@ paths:
         '200':
           description: OK
 
-  # ORDER SERVICE - Rutas legacy /orders/*
-  /orders/{proxy+}:
+  /orders/**:
     get:
       operationId: orderGet
       x-google-backend:
         address: ${order_url}
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
       responses:
         '200':
           description: OK
@@ -305,6 +326,7 @@ paths:
       x-google-backend:
         address: ${order_url}
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
       responses:
         '200':
           description: OK
@@ -313,6 +335,7 @@ paths:
       x-google-backend:
         address: ${order_url}
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
       responses:
         '200':
           description: OK
@@ -326,15 +349,14 @@ paths:
         '200':
           description: OK
 
-  # ================================================================
-  # ZONE SERVICE - Rutas /api/v1/zones/*
-  # ================================================================
-  /api/v1/zones/{proxy+}:
+  # 5. ZONE SERVICE
+  /api/v1/zones/**:
     get:
       operationId: zoneApiV1Get
       x-google-backend:
         address: ${zone_url}/api
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
       responses:
         '200':
           description: OK
@@ -343,6 +365,7 @@ paths:
       x-google-backend:
         address: ${zone_url}/api
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
       responses:
         '200':
           description: OK
@@ -356,13 +379,13 @@ paths:
         '200':
           description: OK
 
-  # ZONE SERVICE - Rutas legacy /zones/*
-  /zones/{proxy+}:
+  /zones/**:
     get:
       operationId: zoneGet
       x-google-backend:
         address: ${zone_url}
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
       responses:
         '200':
           description: OK
@@ -371,6 +394,7 @@ paths:
       x-google-backend:
         address: ${zone_url}
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
       responses:
         '200':
           description: OK
@@ -384,15 +408,14 @@ paths:
         '200':
           description: OK
 
-  # ================================================================
-  # CREDIT SERVICE - Rutas /api/v1/credits/*
-  # ================================================================
-  /api/v1/credits/{proxy+}:
+  # 6. CREDIT SERVICE
+  /api/v1/credits/**:
     get:
       operationId: creditApiV1Get
       x-google-backend:
         address: ${credit_url}/api
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
       responses:
         '200':
           description: OK
@@ -401,6 +424,7 @@ paths:
       x-google-backend:
         address: ${credit_url}/api
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
       responses:
         '200':
           description: OK
@@ -409,6 +433,7 @@ paths:
       x-google-backend:
         address: ${credit_url}/api
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
       responses:
         '200':
           description: OK
@@ -422,13 +447,13 @@ paths:
         '200':
           description: OK
 
-  # CREDIT SERVICE - Rutas legacy /credits/*
-  /credits/{proxy+}:
+  /credits/**:
     get:
       operationId: creditGet
       x-google-backend:
         address: ${credit_url}
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
       responses:
         '200':
           description: OK
@@ -437,6 +462,7 @@ paths:
       x-google-backend:
         address: ${credit_url}
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
       responses:
         '200':
           description: OK
@@ -445,6 +471,7 @@ paths:
       x-google-backend:
         address: ${credit_url}
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
       responses:
         '200':
           description: OK
@@ -458,15 +485,14 @@ paths:
         '200':
           description: OK
 
-  # ================================================================
-  # ROUTE SERVICE - Rutas /api/v1/routes/*
-  # ================================================================
-  /api/v1/routes/{proxy+}:
+  # 7. ROUTE SERVICE
+  /api/v1/routes/**:
     get:
       operationId: routeApiV1Get
       x-google-backend:
         address: ${route_url}/api
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
       responses:
         '200':
           description: OK
@@ -475,6 +501,7 @@ paths:
       x-google-backend:
         address: ${route_url}/api
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
       responses:
         '200':
           description: OK
@@ -488,13 +515,13 @@ paths:
         '200':
           description: OK
 
-  # ROUTE SERVICE - Rutas legacy /routes/*
-  /routes/{proxy+}:
+  /routes/**:
     get:
       operationId: routeGet
       x-google-backend:
         address: ${route_url}
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
       responses:
         '200':
           description: OK
@@ -503,6 +530,7 @@ paths:
       x-google-backend:
         address: ${route_url}
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
       responses:
         '200':
           description: OK
@@ -516,15 +544,14 @@ paths:
         '200':
           description: OK
 
-  # ================================================================
-  # DELIVERY SERVICE - Rutas /api/v1/deliveries/*
-  # ================================================================
-  /api/v1/deliveries/{proxy+}:
+  # 8. DELIVERY SERVICE
+  /api/v1/deliveries/**:
     get:
       operationId: deliveryApiV1Get
       x-google-backend:
         address: ${delivery_url}/api
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
       responses:
         '200':
           description: OK
@@ -533,6 +560,7 @@ paths:
       x-google-backend:
         address: ${delivery_url}/api
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
       responses:
         '200':
           description: OK
@@ -541,6 +569,7 @@ paths:
       x-google-backend:
         address: ${delivery_url}/api
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
       responses:
         '200':
           description: OK
@@ -554,13 +583,13 @@ paths:
         '200':
           description: OK
 
-  # DELIVERY SERVICE - Rutas legacy /deliveries/*
-  /deliveries/{proxy+}:
+  /deliveries/**:
     get:
       operationId: deliveryGet
       x-google-backend:
         address: ${delivery_url}
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
       responses:
         '200':
           description: OK
@@ -569,6 +598,7 @@ paths:
       x-google-backend:
         address: ${delivery_url}
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
       responses:
         '200':
           description: OK
@@ -577,6 +607,7 @@ paths:
       x-google-backend:
         address: ${delivery_url}
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
       responses:
         '200':
           description: OK
@@ -590,29 +621,8 @@ paths:
         '200':
           description: OK
 
-  # ================================================================
-  # CORS GLOBAL - Catch-all para preflight requests
-  # ================================================================
-  /api/v1/{proxy+}:
-    options:
-      operationId: corsApiV1Global
-      x-google-backend:
-        address: ${auth_url}
-        deadline: 30.0
-      responses:
-        '200':
-          description: CORS Preflight
-          headers:
-            Access-Control-Allow-Origin:
-              type: string
-            Access-Control-Allow-Methods:
-              type: string
-            Access-Control-Allow-Headers:
-              type: string
-            Access-Control-Allow-Credentials:
-              type: string
-
-  /{proxy+}:
+  # CORS GLOBAL CATCH-ALL
+  /**:
     options:
       operationId: corsGlobal
       x-google-backend:
@@ -620,13 +630,11 @@ paths:
         deadline: 30.0
       responses:
         '200':
-          description: CORS Preflight
+          description: OK
           headers:
             Access-Control-Allow-Origin:
               type: string
             Access-Control-Allow-Methods:
               type: string
             Access-Control-Allow-Headers:
-              type: string
-            Access-Control-Allow-Credentials:
               type: string
