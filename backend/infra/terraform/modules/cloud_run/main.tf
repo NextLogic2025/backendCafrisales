@@ -69,6 +69,17 @@ resource "google_cloud_run_v2_service" "default" {
         }
       }
 
+      # Healthcheck permisivo para NestJS (da tiempo para conectar a BD)
+      startup_probe {
+        tcp_socket {
+          port = 3000
+        }
+        initial_delay_seconds = 30
+        period_seconds        = 10
+        failure_threshold     = 10
+        timeout_seconds       = 5
+      }
+
       # VARIABLES DE ENTORNO
       env {
         name  = "NODE_ENV"
@@ -86,7 +97,17 @@ resource "google_cloud_run_v2_service" "default" {
       # Tu corrección para notificaciones se mantiene aquí:
       env {
         name  = "DB_NAME" 
-        value = each.key == "notification-service" ? "cafrilosa_notificaciones" : "cafrilosa_${replace(replace(each.key, "-service", ""), "-", "_")}"
+        value = lookup({
+          "auth-service"         = "cafrilosa_auth"
+          "user-service"         = "cafrilosa_usuarios"
+          "catalog-service"      = "cafrilosa_catalogo"
+          "order-service"        = "cafrilosa_pedidos"
+          "zone-service"         = "cafrilosa_zonas"
+          "credit-service"       = "cafrilosa_creditos"
+          "route-service"        = "cafrilosa_rutas"
+          "delivery-service"     = "cafrilosa_entregas"
+          "notification-service" = "cafrilosa_notificaciones"
+        }, each.key, "cafrilosa_${replace(each.key, "-service", "")}")
       }
       
       env {
