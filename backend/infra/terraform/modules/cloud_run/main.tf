@@ -131,6 +131,15 @@ resource "google_cloud_run_v2_service" "default" {
           }
         }
       }
+
+      # URL del servicio de usuarios (solo para auth-service)
+      dynamic "env" {
+        for_each = each.key == "auth-service" ? [1] : []
+        content {
+          name  = "USUARIOS_SERVICE_URL"
+          value = google_cloud_run_v2_service.default["user-service"].uri
+        }
+      }
     }
   }
   
