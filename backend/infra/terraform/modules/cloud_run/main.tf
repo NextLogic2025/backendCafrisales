@@ -131,15 +131,6 @@ resource "google_cloud_run_v2_service" "default" {
           }
         }
       }
-
-      # URL del servicio de usuarios (solo para auth-service)
-      dynamic "env" {
-        for_each = each.key == "auth-service" ? [1] : []
-        content {
-          name  = "USUARIOS_SERVICE_URL"
-          value = google_cloud_run_v2_service.default["user-service"].uri
-        }
-      }
     }
   }
   
@@ -177,6 +168,28 @@ resource "google_storage_bucket_iam_member" "upload_permission" {
   bucket = var.bucket_name
   role   = "roles/storage.objectAdmin"
   member = "serviceAccount:${google_service_account.sa[each.key].email}"
+}
+
+# 6. CONFIGURAR USUARIOS_SERVICE_URL en auth-service (después de crear todos los servicios)
+resource "null_resource" "auth_service_env_update" {
+  # Se ejecuta cuando user-service o auth-service cambian
+  triggers = {
+    user_service_uri = google_cloud_run_v2_service.default["user-service"].uri
+    auth_service_id  = google_cloud_run_v2_service.default["auth-service"].id
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      gcloud run services update auth-service \
+        --region=${var.region} \
+        --project=${var.project_id} \
+        --update-env-vars="USUARIOS_SERVICE_URL=${google_cloud_run_v2_service.default["user-service"].uri}"
+    EOT
+  }
+
+  depends_on = [
+    google_cloud_run_v2_service.default
+  ]
 }
 
 output "service_urls" {
