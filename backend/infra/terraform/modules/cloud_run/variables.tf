@@ -67,3 +67,9 @@ variable "cors_origin" {
   type        = string
   default     = "*"
 }
+
+variable "service_urls" {
+  description = "Mapa de URLs de servicios para comunicación S2S"
+  type        = map(string)
+  default     = {}
+}

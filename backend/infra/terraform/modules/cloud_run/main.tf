@@ -1,5 +1,10 @@
 # backend/infra/terraform/modules/cloud_run/main.tf
 
+# Data source para obtener información del proyecto
+data "google_project" "project" {
+  project_id = var.project_id
+}
+
 # 1. SERVICE ACCOUNTS
 resource "google_service_account" "sa" {
   for_each = toset(var.services)
@@ -151,6 +156,61 @@ resource "google_cloud_run_v2_service" "default" {
             version = "latest"
           }
         }
+      }
+
+      # URLs de servicios para comunicación S2S
+      # Usamos referencias directas a los servicios creados en este mismo módulo
+      env {
+        name  = "USER_SERVICE_URL"
+        value = "https://user-service-${data.google_project.project.number}-${var.region}.a.run.app"
+      }
+      env {
+        name  = "USUARIOS_SERVICE_URL"
+        value = "https://user-service-${data.google_project.project.number}-${var.region}.a.run.app"
+      }
+      env {
+        name  = "USUARIOS_URL"
+        value = "https://user-service-${data.google_project.project.number}-${var.region}.a.run.app"
+      }
+      env {
+        name  = "AUTH_SERVICE_URL"
+        value = "https://auth-service-${data.google_project.project.number}-${var.region}.a.run.app"
+      }
+      env {
+        name  = "AUTH_URL"
+        value = "https://auth-service-${data.google_project.project.number}-${var.region}.a.run.app"
+      }
+      env {
+        name  = "ORDER_SERVICE_URL"
+        value = "https://order-service-${data.google_project.project.number}-${var.region}.a.run.app"
+      }
+      env {
+        name  = "CATALOG_SERVICE_URL"
+        value = "https://catalog-service-${data.google_project.project.number}-${var.region}.a.run.app"
+      }
+      env {
+        name  = "ZONE_SERVICE_URL"
+        value = "https://zone-service-${data.google_project.project.number}-${var.region}.a.run.app"
+      }
+      env {
+        name  = "ZONAS_URL"
+        value = "https://zone-service-${data.google_project.project.number}-${var.region}.a.run.app"
+      }
+      env {
+        name  = "CREDIT_SERVICE_URL"
+        value = "https://credit-service-${data.google_project.project.number}-${var.region}.a.run.app"
+      }
+      env {
+        name  = "DELIVERY_SERVICE_URL"
+        value = "https://delivery-service-${data.google_project.project.number}-${var.region}.a.run.app"
+      }
+      env {
+        name  = "ROUTE_SERVICE_URL"
+        value = "https://route-service-${data.google_project.project.number}-${var.region}.a.run.app"
+      }
+      env {
+        name  = "NOTIFICATION_SERVICE_URL"
+        value = "https://notification-service-${data.google_project.project.number}-${var.region}.a.run.app"
       }
     }
   }
