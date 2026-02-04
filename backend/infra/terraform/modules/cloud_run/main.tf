@@ -143,7 +143,6 @@ resource "google_cloud_run_v2_service" "default" {
           }
         }
       }
-      
       # CORRECCIÓN VITAL: Healthcheck más permisivo
       # Le damos 60 segundos iniciales para arrancar (conectar a BD, migraciones, etc.)
       startup_probe {
@@ -154,6 +153,17 @@ resource "google_cloud_run_v2_service" "default" {
         period_seconds        = 10
         failure_threshold     = 10
         timeout_seconds       = 5
+
+
+      # SERVICE_TOKEN para autenticación entre servicios (S2S)
+      env {
+        name = "SERVICE_TOKEN"
+        value_source {
+          secret_key_ref {
+            secret  = var.jwt_secret_id
+            version = "latest"
+          }
+        }
       }
     }
   }

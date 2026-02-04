@@ -4,8 +4,9 @@ export const envValidationSchema = Joi.object({
     NODE_ENV: Joi.string().valid('development', 'production', 'test').default('development'),
     PORT: Joi.number().default(3000),
 
-    // 🔥 CAMBIO: Flexible para Cloud Run (Híbrido)
-    DATABASE_URL: Joi.string().uri().optional(),
+
+    // Lógica Híbrida: DATABASE_URL o variables individuales (DB_HOST, etc.)
+    DATABASE_URL: Joi.string().optional(),
     DB_HOST: Joi.string().optional(),
     DB_PORT: Joi.number().default(5432),
     DB_USER: Joi.string().optional(),
@@ -21,4 +22,5 @@ export const envValidationSchema = Joi.object({
     USER_SERVICE_URL: Joi.string().default('http://user-service:3000'),
     
     UPLOAD_PATH: Joi.string().default('./uploads/evidence'),
-});
+
+}).or('DATABASE_URL', 'DB_HOST');
