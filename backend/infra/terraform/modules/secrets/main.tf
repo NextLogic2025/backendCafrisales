@@ -37,9 +37,10 @@ resource "random_password" "service_db_passwords" {
   special  = false
 
   # Usar keepers para controlar cuándo se regenera la contraseña
-  # Solo cambia si cambia el nombre del servicio
+  # Cambiar 'password_version' a "v3", "v4", etc. para forzar rotación de TODAS las contraseñas
   keepers = {
-    service_name = each.key
+    service_name     = each.key
+    password_version = "v2"  # SINCRONIZACIÓN: Forzar nuevas contraseñas
   }
 }
 
