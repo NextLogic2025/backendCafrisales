@@ -1,66 +1,60 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe, Logger, VersioningType } from '@nestjs/common';
+import { ValidationPipe, Logger } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
-  const logger = new Logger('Bootstrap');
-  const app = await NestFactory.create(AppModule);
+    const logger = new Logger('Bootstrap');
+    const app = await NestFactory.create(AppModule);
 
-  // Seguridad
-  app.use(helmet());
-  app.setGlobalPrefix('api');
+    // Seguridad: cabeceras HTTP contra XSS, clickjacking, sniffing
+    app.use(helmet());
 
-  // ✅ Versionado de API
-  app.enableVersioning({
-    type: VersioningType.URI,
-    defaultVersion: '1',
-  });
+    // CORS - Modo permisivo para producción (refleja dinámicamente el origen)
+    app.enableCors({
+        origin: true,
+        credentials: true,
+        methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization', 'X-Service-Token', 'x-api-key'],
+    });
 
-  // CORS - Configuración Robusta
-  app.enableCors({
-    origin: [
-      'http://localhost:5173',                                  // Desarrollo Local
-      'https://gen-lang-client-0059045498.web.app',            // Producción Frontend
-      'https://cafrisales-gateway-gw-4dxrikij.ue.gateway.dev'   // Producción Gateway
-    ],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Service-Token', 'x-api-key'],
-  });
+    // Filtro global para formatear errores y ocultar detalles sensibles
+    app.useGlobalFilters(new HttpExceptionFilter());
 
-  // Filtro global
-  app.useGlobalFilters(new HttpExceptionFilter());
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      transform: true,
-    }),
-  );
+    // Global validation pipe
+    app.useGlobalPipes(
+        new ValidationPipe({
+            whitelist: true,
+            forbidNonWhitelisted: true,
+            transform: true,
+        }),
+    );
 
-  // ✅ Swagger
-  const config = new DocumentBuilder()
-    .setTitle('Notification Service API')
-    .setDescription('API de gestión de notificaciones')
-    .setVersion('1.0')
-    .addBearerAuth()
-    .addTag('notifications')
-    .build();
+    // API prefix
+    app.setGlobalPrefix('api');
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
+    // Swagger documentation
+    const config = new DocumentBuilder()
+        .setTitle('Notification Service API')
+        .setDescription('Sistema híbrido de notificaciones en tiempo real')
+        .setVersion('1.0')
+        .addBearerAuth()
+        .build();
 
-  // Graceful shutdown
-  app.enableShutdownHooks();
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api/docs', app, document);
 
-  // ⚠️ CRÍTICO: Escuchar en 0.0.0.0 para Cloud Run
-  const port = process.env.PORT || 3000;
-  await app.listen(port, '0.0.0.0');
+    // Graceful shutdown: cierra conexiones pendientes antes de terminar
+    app.enableShutdownHooks();
 
-  logger.log(`🚀 Notification Service running on http://localhost:${port}`);
+    const port = process.env.PORT || 3000;
+    await app.listen(port);
+
+    logger.log(`🚀 Notification Service running on http://localhost:${port}`);
+    logger.log(`📚 API Docs available at http://localhost:${port}/api/docs`);
+    logger.log(`🔌 WebSocket available at ws://localhost:${port}/notifications`);
 }
 
 bootstrap();

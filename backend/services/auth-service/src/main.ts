@@ -1,9 +1,8 @@
 import 'reflect-metadata';
-import { ValidationPipe, Logger, VersioningType } from '@nestjs/common';
+
+import { ValidationPipe, Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import helmet from 'helmet';
-import * as cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
@@ -11,33 +10,23 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const logger = new Logger('Bootstrap');
 
-  // Seguridad
+  // Seguridad: cabeceras HTTP contra XSS, clickjacking, sniffing
   app.use(helmet());
-  app.use(cookieParser());
 
-  // Prefijo global
+  // API prefix unified across services
   app.setGlobalPrefix('api');
 
-  // Versionado
-  app.enableVersioning({
-    type: VersioningType.URI,
-    defaultVersion: '1',
-  });
-
-  // CORS - Configuración Robusta
+  // CORS - Modo permisivo para producción (refleja dinámicamente el origen)
   app.enableCors({
-    origin: [
-      'http://localhost:5173',
-      'https://gen-lang-client-0059045498.web.app',
-      'https://cafrisales-gateway-gw-4dxrikij.ue.gateway.dev' // Agregamos el Gateway por si acaso
-    ],
+    origin: true,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Service-Token', 'x-api-key'],
   });
 
-  // Filtros y Pipes
+  // Filtro global para formatear errores y ocultar detalles sensibles
   app.useGlobalFilters(new HttpExceptionFilter());
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -46,21 +35,13 @@ async function bootstrap() {
     }),
   );
 
-  // Swagger
-  const config = new DocumentBuilder()
-    .setTitle('Auth Service API')
-    .setDescription('API de Autenticación')
-    .setVersion('1.0')
-    .addBearerAuth()
-    .build();
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
-
-  // Puerto (Vital para Cloud Run)
+  // Graceful shutdown: cierra conexiones pendientes antes de terminar
   app.enableShutdownHooks();
+
   const port = process.env.PORT || 3000;
   await app.listen(port, '0.0.0.0');
 
   logger.log(`🚀 Servicio Auth corriendo en puerto: ${port}`);
 }
+
 bootstrap();
