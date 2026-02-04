@@ -50,6 +50,7 @@ resource "google_cloud_run_v2_service" "default" {
     }
 
     # --- CAMBIO CRÍTICO: Direct VPC Egress ---
+    # Esto reemplaza al conector y evita el Error 13
     vpc_access {
       network_interfaces {
         network    = var.vpc_name
@@ -73,7 +74,7 @@ resource "google_cloud_run_v2_service" "default" {
         }
       }
 
-      # Healthcheck permisivo para NestJS
+      # Healthcheck permisivo para NestJS (da tiempo para conectar a BD)
       startup_probe {
         tcp_socket {
           port = 3000
@@ -84,7 +85,7 @@ resource "google_cloud_run_v2_service" "default" {
         timeout_seconds       = 5
       }
 
-      # VARIABLES DE ENTORNO BÁSICAS
+      # VARIABLES DE ENTORNO
       env {
         name  = "NODE_ENV"
         value = "production"
@@ -127,7 +128,6 @@ resource "google_cloud_run_v2_service" "default" {
         value = var.cors_origin
       }
 
-      # SECRETOS
       env {
         name = "DB_PASSWORD"
         value_source {
@@ -146,6 +146,9 @@ resource "google_cloud_run_v2_service" "default" {
           }
         }
       }
+
+      # SERVICE_TOKEN para autenticación entre servicios (S2S)
+      # Esto asegura que use el Secreto guardado y no falle por string literal
       env {
         name = "SERVICE_TOKEN"
         value_source {
@@ -156,10 +159,10 @@ resource "google_cloud_run_v2_service" "default" {
         }
       }
 
-      # --- URLs DE SERVICIOS (HARDCODED - ESTABLES) ---
-      # El hash 6i2z4tjbba es estable para este proyecto
-      # Solo cambia si se borra y recrea el servicio con otro nombre
-      
+      # --- CORRECCIÓN DE URLs PARA CLOUD RUN ---
+      # Usamos el hash real '6i2z4tjbba' y la región 'ue' (us-east1) detectados en tus logs.
+      # Esto conecta los servicios correctamente.
+
       env {
         name  = "USER_SERVICE_URL"
         value = "https://user-service-6i2z4tjbba-ue.a.run.app"
