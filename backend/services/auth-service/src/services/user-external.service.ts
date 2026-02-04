@@ -47,7 +47,10 @@ export class UserExternalService {
      */
     async getUserRole(userId: string): Promise<string> {
         const user = await this.getUserById(userId);
-        return user?.rol || 'cliente';
+        if (!user || !user.rol) {
+            return null;
+        }
+        return user.rol;
     }
 
     async syncUser(payload: any): Promise<any> {
