@@ -214,7 +214,8 @@ resource "google_cloud_run_v2_service" "default" {
       env {
         name  = "NOTIFICATION_SERVICE_URL"
         value = "https://notification-service-6i2z4tjbba-ue.a.run.app"
-
+      }
+      
       # URL del servicio de usuarios (solo para auth-service)
       dynamic "env" {
         for_each = each.key == "auth-service" ? [1] : []
