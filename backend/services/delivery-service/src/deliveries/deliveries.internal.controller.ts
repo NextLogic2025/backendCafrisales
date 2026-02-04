@@ -3,7 +3,7 @@ import { DeliveriesService } from './deliveries.service';
 import { CreateDeliveriesBatchDto } from './dto/create-delivery.dto';
 import { ServiceTokenGuard } from '../common/guards/service-token.guard';
 
-@Controller('entregas')
+@Controller({ path: 'entregas', version: '1' })
 @UseGuards(ServiceTokenGuard)
 export class DeliveriesInternalController {
     constructor(private readonly deliveriesService: DeliveriesService) { }

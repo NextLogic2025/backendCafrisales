@@ -7,10 +7,10 @@ import { EstadoPedido } from '../../common/constants/order-status.enum';
  * Controlador interno para comunicación S2S (servicio a servicio).
  * No requiere JWT de usuario, solo ServiceTokenGuard.
  */
-@Controller('internal/pedidos')
+@Controller({ path: 'internal/pedidos', version: '1' })
 @UseGuards(ServiceTokenGuard)
 export class OrdersInternalController {
-    constructor(private readonly ordersService: OrdersService) {}
+    constructor(private readonly ordersService: OrdersService) { }
 
     @Get(':id')
     findOne(@Param('id', ParseUUIDPipe) id: string) {

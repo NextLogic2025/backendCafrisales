@@ -2,10 +2,10 @@ import { Controller, Get, Param, Req, UseGuards, ForbiddenException } from '@nes
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { SkusService } from './skus.service';
 
-@Controller('internal/skus')
+@Controller({ path: 'internal/skus', version: '1' })
 @UseGuards(RolesGuard)
 export class SkusInternalController {
-  constructor(private readonly skusService: SkusService) {}
+  constructor(private readonly skusService: SkusService) { }
 
   @Get(':id')
   async getById(@Param('id') id: string, @Req() req: any) {

@@ -6,7 +6,7 @@ import { ZonesService } from '../zones/zones.service';
  * Controlador interno para comunicación S2S (servicio a servicio).
  * No requiere JWT de usuario, solo ServiceTokenGuard.
  */
-@Controller('internal/zones')
+@Controller({ path: 'internal/zones', version: '1' })
 @UseGuards(ServiceTokenGuard)
 export class InternalZonesController {
     constructor(private readonly zonesService: ZonesService) { }

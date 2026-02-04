@@ -3,7 +3,7 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { RolesGuard } from '../../common/guards/roles.guard';
 
-@Controller('internal/usuarios')
+@Controller({ path: 'internal/usuarios', version: '1' })
 @UseGuards(RolesGuard)
 export class UsersInternalController {
   private readonly logger = new Logger(UsersInternalController.name);

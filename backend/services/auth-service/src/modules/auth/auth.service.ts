@@ -44,10 +44,13 @@ export class AuthService {
   private async resolveUserRole(userId: string): Promise<string> {
     try {
       const role = await this.userExternalService.getUserRole(userId);
+      if (!role) {
+        throw new InternalServerErrorException('No se pudo obtener el rol del usuario');
+      }
       return role;
     } catch (e) {
-      this.logger.warn(`No se pudo resolver rol desde user-service para ${userId}, usando fallback`);
-      return 'cliente';
+      this.logger.error(`No se pudo resolver rol desde user-service para ${userId}: ${e?.message || e}`);
+      throw new InternalServerErrorException('Error al verificar permisos del usuario');
     }
   }
 

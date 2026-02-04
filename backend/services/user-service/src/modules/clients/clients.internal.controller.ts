@@ -16,7 +16,7 @@ import { Usuario } from '../users/entities/usuario.entity';
 import { Perfil } from '../profiles/entities/perfil.entity';
 import { CanalComercial } from '../channels/entities/canal-comercial.entity';
 
-@Controller('internal/clientes')
+@Controller({ path: 'internal/clientes', version: '1' })
 @UseGuards(RolesGuard)
 export class ClientsInternalController {
   constructor(
@@ -30,7 +30,7 @@ export class ClientsInternalController {
     private readonly perfilRepo: Repository<Perfil>,
     @InjectRepository(CanalComercial)
     private readonly canalRepo: Repository<CanalComercial>,
-  ) {}
+  ) { }
 
   @Get(':usuarioId')
   async getByUsuarioId(@Param('usuarioId') usuarioId: string, @Req() req: any) {
