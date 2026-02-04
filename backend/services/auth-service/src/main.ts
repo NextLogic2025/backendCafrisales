@@ -1,6 +1,6 @@
 import 'reflect-metadata';
-
-import { ValidationPipe, Logger } from '@nestjs/common';
+// 1. AGREGAMOS 'VersioningType' A LOS IMPORTS
+import { ValidationPipe, Logger, VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
@@ -10,13 +10,21 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const logger = new Logger('Bootstrap');
 
-  // Seguridad: cabeceras HTTP contra XSS, clickjacking, sniffing
+  // Seguridad
   app.use(helmet());
 
-  // API prefix unified across services
+  // Prefijo global (/api)
   app.setGlobalPrefix('api');
 
-  // CORS - Modo permisivo para producción (refleja dinámicamente el origen)
+  // 2. ACTIVAMOS EL VERSIONADO (ESTO ES LO QUE FALTABA)
+  // Esto hace que NestJS lea el "version: '1'" del controlador
+  // y transforme la ruta de "/api/auth" a "/api/v1/auth"
+  app.enableVersioning({
+    type: VersioningType.URI,
+    defaultVersion: '1',
+  });
+
+  // CORS - Modo permisivo (tu configuración actual correcta)
   app.enableCors({
     origin: true,
     credentials: true,
@@ -24,7 +32,7 @@ async function bootstrap() {
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Service-Token', 'x-api-key'],
   });
 
-  // Filtro global para formatear errores y ocultar detalles sensibles
+  // Filtros y Pipes
   app.useGlobalFilters(new HttpExceptionFilter());
 
   app.useGlobalPipes(
@@ -35,7 +43,7 @@ async function bootstrap() {
     }),
   );
 
-  // Graceful shutdown: cierra conexiones pendientes antes de terminar
+  // Graceful shutdown
   app.enableShutdownHooks();
 
   const port = process.env.PORT || 3000;
