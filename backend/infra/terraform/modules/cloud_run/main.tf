@@ -214,6 +214,14 @@ resource "google_cloud_run_v2_service" "default" {
       env {
         name  = "NOTIFICATION_SERVICE_URL"
         value = "https://notification-service-6i2z4tjbba-ue.a.run.app"
+
+      # URL del servicio de usuarios (solo para auth-service)
+      dynamic "env" {
+        for_each = each.key == "auth-service" ? [1] : []
+        content {
+          name  = "USUARIOS_SERVICE_URL"
+          value = google_cloud_run_v2_service.default["user-service"].uri
+        }
       }
     }
   }
@@ -227,13 +235,23 @@ resource "google_cloud_run_v2_service" "default" {
   }
 }
 
-# 4. SEGURIDAD INVOKER
+# 4. SEGURIDAD INVOKER (Gateway)
 resource "google_cloud_run_service_iam_member" "invoker" {
   for_each = toset(var.services)
   service  = google_cloud_run_v2_service.default[each.key].name
   location = google_cloud_run_v2_service.default[each.key].location
   role     = "roles/run.invoker"
   member   = "serviceAccount:${var.gateway_sa_email}"
+}
+
+# 4.1 PERMITIR INVOCACIONES PÚBLICAS (necesario para S2S sin IAM token)
+# Esto permite que los servicios se comuniquen entre sí usando SERVICE_TOKEN
+resource "google_cloud_run_service_iam_member" "public_invoker" {
+  for_each = toset(var.services)
+  service  = google_cloud_run_v2_service.default[each.key].name
+  location = google_cloud_run_v2_service.default[each.key].location
+  role     = "roles/run.invoker"
+  member   = "allUsers"
 }
 
 # 5. PERMISOS STORAGE
