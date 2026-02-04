@@ -12,12 +12,12 @@ async function bootstrap() {
     // Seguridad: cabeceras HTTP contra XSS, clickjacking, sniffing
     app.use(helmet());
 
-    // CORS
+    // CORS - Modo permisivo para producción (refleja dinámicamente el origen)
     app.enableCors({
-        origin: process.env.CORS_ORIGIN?.split(',').map((o) => o.trim()).filter(Boolean) || '*',
+        origin: true,
         credentials: true,
         methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-        allowedHeaders: ['Content-Type', 'Authorization'],
+        allowedHeaders: ['Content-Type', 'Authorization', 'X-Service-Token', 'x-api-key'],
     });
 
     // Filtro global para formatear errores y ocultar detalles sensibles
