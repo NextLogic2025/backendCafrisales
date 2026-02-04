@@ -50,7 +50,6 @@ resource "google_cloud_run_v2_service" "default" {
     }
 
     # --- CAMBIO CRÍTICO: Direct VPC Egress ---
-    # Esto reemplaza al conector y evita el Error 13
     vpc_access {
       network_interfaces {
         network    = var.vpc_name
@@ -74,7 +73,7 @@ resource "google_cloud_run_v2_service" "default" {
         }
       }
 
-      # Healthcheck permisivo para NestJS (da tiempo para conectar a BD)
+      # Healthcheck permisivo para NestJS
       startup_probe {
         tcp_socket {
           port = 3000
@@ -85,7 +84,7 @@ resource "google_cloud_run_v2_service" "default" {
         timeout_seconds       = 5
       }
 
-      # VARIABLES DE ENTORNO
+      # VARIABLES DE ENTORNO BÁSICAS
       env {
         name  = "NODE_ENV"
         value = "production"
@@ -99,7 +98,7 @@ resource "google_cloud_run_v2_service" "default" {
         value = "5432"
       }
       
-      # Tu corrección para notificaciones se mantiene aquí:
+      # Mapeo de bases de datos
       env {
         name  = "DB_NAME" 
         value = lookup({
@@ -128,6 +127,7 @@ resource "google_cloud_run_v2_service" "default" {
         value = var.cors_origin
       }
 
+      # SECRETOS
       env {
         name = "DB_PASSWORD"
         value_source {
@@ -146,8 +146,6 @@ resource "google_cloud_run_v2_service" "default" {
           }
         }
       }
-
-      # SERVICE_TOKEN para autenticación entre servicios (S2S)
       env {
         name = "SERVICE_TOKEN"
         value_source {
@@ -158,63 +156,65 @@ resource "google_cloud_run_v2_service" "default" {
         }
       }
 
-      # URLs de servicios para comunicación S2S
-      # Usamos referencias directas a los servicios creados en este mismo módulo
+      # --- URLs DE SERVICIOS (DINÁMICAS) ---
+      # ✅ CORRECTO: Usa referencias a los servicios creados
+      # Terraform calculará las URLs automáticamente
+      
       env {
         name  = "USER_SERVICE_URL"
-        value = "https://user-service-${data.google_project.project.number}-${var.region}.a.run.app"
+        value = google_cloud_run_v2_service.default["user-service"].uri
       }
       env {
         name  = "USUARIOS_SERVICE_URL"
-        value = "https://user-service-${data.google_project.project.number}-${var.region}.a.run.app"
+        value = google_cloud_run_v2_service.default["user-service"].uri
       }
       env {
         name  = "USUARIOS_URL"
-        value = "https://user-service-${data.google_project.project.number}-${var.region}.a.run.app"
+        value = google_cloud_run_v2_service.default["user-service"].uri
       }
       env {
         name  = "AUTH_SERVICE_URL"
-        value = "https://auth-service-${data.google_project.project.number}-${var.region}.a.run.app"
+        value = google_cloud_run_v2_service.default["auth-service"].uri
       }
       env {
         name  = "AUTH_URL"
-        value = "https://auth-service-${data.google_project.project.number}-${var.region}.a.run.app"
+        value = google_cloud_run_v2_service.default["auth-service"].uri
       }
       env {
         name  = "ORDER_SERVICE_URL"
-        value = "https://order-service-${data.google_project.project.number}-${var.region}.a.run.app"
+        value = google_cloud_run_v2_service.default["order-service"].uri
       }
       env {
         name  = "CATALOG_SERVICE_URL"
-        value = "https://catalog-service-${data.google_project.project.number}-${var.region}.a.run.app"
+        value = google_cloud_run_v2_service.default["catalog-service"].uri
       }
       env {
         name  = "ZONE_SERVICE_URL"
-        value = "https://zone-service-${data.google_project.project.number}-${var.region}.a.run.app"
+        value = google_cloud_run_v2_service.default["zone-service"].uri
       }
       env {
         name  = "ZONAS_URL"
-        value = "https://zone-service-${data.google_project.project.number}-${var.region}.a.run.app"
+        value = google_cloud_run_v2_service.default["zone-service"].uri
       }
       env {
         name  = "CREDIT_SERVICE_URL"
-        value = "https://credit-service-${data.google_project.project.number}-${var.region}.a.run.app"
+        value = google_cloud_run_v2_service.default["credit-service"].uri
       }
       env {
         name  = "DELIVERY_SERVICE_URL"
-        value = "https://delivery-service-${data.google_project.project.number}-${var.region}.a.run.app"
+        value = google_cloud_run_v2_service.default["delivery-service"].uri
       }
       env {
         name  = "ROUTE_SERVICE_URL"
-        value = "https://route-service-${data.google_project.project.number}-${var.region}.a.run.app"
+        value = google_cloud_run_v2_service.default["route-service"].uri
       }
       env {
         name  = "NOTIFICATION_SERVICE_URL"
-        value = "https://notification-service-${data.google_project.project.number}-${var.region}.a.run.app"
+        value = google_cloud_run_v2_service.default["notification-service"].uri
       }
     }
   }
-  
+
   lifecycle {
     ignore_changes = [
       client,
