@@ -120,6 +120,17 @@ resource "google_cloud_run_v2_service" "default" {
           }
         }
       }
+
+      # SERVICE_TOKEN para autenticación entre servicios (S2S)
+      env {
+        name = "SERVICE_TOKEN"
+        value_source {
+          secret_key_ref {
+            secret  = var.jwt_secret_id
+            version = "latest"
+          }
+        }
+      }
     }
   }
   
