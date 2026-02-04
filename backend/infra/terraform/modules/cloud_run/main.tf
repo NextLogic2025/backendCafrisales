@@ -156,61 +156,61 @@ resource "google_cloud_run_v2_service" "default" {
         }
       }
 
-      # --- URLs DE SERVICIOS (DINÁMICAS) ---
-      # ✅ CORRECTO: Usa referencias a los servicios creados
-      # Terraform calculará las URLs automáticamente
+      # --- URLs DE SERVICIOS (HARDCODED - ESTABLES) ---
+      # El hash 6i2z4tjbba es estable para este proyecto
+      # Solo cambia si se borra y recrea el servicio con otro nombre
       
       env {
         name  = "USER_SERVICE_URL"
-        value = google_cloud_run_v2_service.default["user-service"].uri
+        value = "https://user-service-6i2z4tjbba-ue.a.run.app"
       }
       env {
         name  = "USUARIOS_SERVICE_URL"
-        value = google_cloud_run_v2_service.default["user-service"].uri
+        value = "https://user-service-6i2z4tjbba-ue.a.run.app"
       }
       env {
         name  = "USUARIOS_URL"
-        value = google_cloud_run_v2_service.default["user-service"].uri
+        value = "https://user-service-6i2z4tjbba-ue.a.run.app"
       }
       env {
         name  = "AUTH_SERVICE_URL"
-        value = google_cloud_run_v2_service.default["auth-service"].uri
+        value = "https://auth-service-6i2z4tjbba-ue.a.run.app"
       }
       env {
         name  = "AUTH_URL"
-        value = google_cloud_run_v2_service.default["auth-service"].uri
+        value = "https://auth-service-6i2z4tjbba-ue.a.run.app"
       }
       env {
         name  = "ORDER_SERVICE_URL"
-        value = google_cloud_run_v2_service.default["order-service"].uri
+        value = "https://order-service-6i2z4tjbba-ue.a.run.app"
       }
       env {
         name  = "CATALOG_SERVICE_URL"
-        value = google_cloud_run_v2_service.default["catalog-service"].uri
+        value = "https://catalog-service-6i2z4tjbba-ue.a.run.app"
       }
       env {
         name  = "ZONE_SERVICE_URL"
-        value = google_cloud_run_v2_service.default["zone-service"].uri
+        value = "https://zone-service-6i2z4tjbba-ue.a.run.app"
       }
       env {
         name  = "ZONAS_URL"
-        value = google_cloud_run_v2_service.default["zone-service"].uri
+        value = "https://zone-service-6i2z4tjbba-ue.a.run.app"
       }
       env {
         name  = "CREDIT_SERVICE_URL"
-        value = google_cloud_run_v2_service.default["credit-service"].uri
+        value = "https://credit-service-6i2z4tjbba-ue.a.run.app"
       }
       env {
         name  = "DELIVERY_SERVICE_URL"
-        value = google_cloud_run_v2_service.default["delivery-service"].uri
+        value = "https://delivery-service-6i2z4tjbba-ue.a.run.app"
       }
       env {
         name  = "ROUTE_SERVICE_URL"
-        value = google_cloud_run_v2_service.default["route-service"].uri
+        value = "https://route-service-6i2z4tjbba-ue.a.run.app"
       }
       env {
         name  = "NOTIFICATION_SERVICE_URL"
-        value = google_cloud_run_v2_service.default["notification-service"].uri
+        value = "https://notification-service-6i2z4tjbba-ue.a.run.app"
       }
     }
   }
