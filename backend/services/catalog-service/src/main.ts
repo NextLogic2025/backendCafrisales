@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 
-import { ValidationPipe, Logger } from '@nestjs/common';
+// 1. AGREGAMOS 'VersioningType'
+import { ValidationPipe, Logger, VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import helmet from 'helmet';
 
@@ -15,7 +16,13 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api');
 
-  // CORS - Modo permisivo para producción (refleja dinámicamente el origen)
+  // 2. ACTIVAMOS EL VERSIONADO URI
+  app.enableVersioning({
+    type: VersioningType.URI,
+    defaultVersion: '1',
+  });
+
+  // CORS - Modo permisivo
   app.enableCors({
     origin: true,
     credentials: true,

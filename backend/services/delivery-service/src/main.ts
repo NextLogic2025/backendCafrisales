@@ -1,4 +1,5 @@
-import { Logger, ValidationPipe } from '@nestjs/common';
+// 1. IMPORTAR VersioningType
+import { Logger, ValidationPipe, VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
@@ -8,10 +9,10 @@ async function bootstrap() {
     const app = await NestFactory.create(AppModule);
     const logger = new Logger('Bootstrap');
 
-    // Seguridad: cabeceras HTTP contra ataques comunes (XSS, clickjacking, etc.)
+    // Seguridad
     app.use(helmet());
 
-    // CORS - Modo permisivo para producción (refleja dinámicamente el origen)
+    // CORS - Modo permisivo
     app.enableCors({
         origin: true,
         credentials: true,
@@ -21,7 +22,13 @@ async function bootstrap() {
 
     app.setGlobalPrefix('api');
 
-    // Filtro global para formatear errores y ocultar detalles sensibles
+    // 2. ACTIVAR VERSIONADO
+    app.enableVersioning({
+        type: VersioningType.URI,
+        defaultVersion: '1',
+    });
+
+    // Filtros y Pipes
     app.useGlobalFilters(new HttpExceptionFilter());
 
     app.useGlobalPipes(
@@ -32,7 +39,7 @@ async function bootstrap() {
         }),
     );
 
-    // Graceful shutdown: cierra conexiones pendientes antes de terminar
+    // Graceful shutdown
     app.enableShutdownHooks();
 
     const port = process.env.PORT || 3000;

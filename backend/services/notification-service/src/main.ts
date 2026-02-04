@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe, Logger } from '@nestjs/common';
+// 1. IMPORTAR VersioningType
+import { ValidationPipe, Logger, VersioningType } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
@@ -9,10 +10,10 @@ async function bootstrap() {
     const logger = new Logger('Bootstrap');
     const app = await NestFactory.create(AppModule);
 
-    // Seguridad: cabeceras HTTP contra XSS, clickjacking, sniffing
+    // Seguridad
     app.use(helmet());
 
-    // CORS - Modo permisivo para producción (refleja dinámicamente el origen)
+    // CORS - Modo permisivo
     app.enableCors({
         origin: true,
         credentials: true,
@@ -20,10 +21,9 @@ async function bootstrap() {
         allowedHeaders: ['Content-Type', 'Authorization', 'X-Service-Token', 'x-api-key'],
     });
 
-    // Filtro global para formatear errores y ocultar detalles sensibles
+    // Filtros y Pipes
     app.useGlobalFilters(new HttpExceptionFilter());
 
-    // Global validation pipe
     app.useGlobalPipes(
         new ValidationPipe({
             whitelist: true,
@@ -35,7 +35,13 @@ async function bootstrap() {
     // API prefix
     app.setGlobalPrefix('api');
 
-    // Swagger documentation
+    // 2. ACTIVAR VERSIONADO
+    app.enableVersioning({
+        type: VersioningType.URI,
+        defaultVersion: '1',
+    });
+
+    // Swagger configuration
     const config = new DocumentBuilder()
         .setTitle('Notification Service API')
         .setDescription('Sistema híbrido de notificaciones en tiempo real')
@@ -46,7 +52,7 @@ async function bootstrap() {
     const document = SwaggerModule.createDocument(app, config);
     SwaggerModule.setup('api/docs', app, document);
 
-    // Graceful shutdown: cierra conexiones pendientes antes de terminar
+    // Graceful shutdown
     app.enableShutdownHooks();
 
     const port = process.env.PORT || 3000;
