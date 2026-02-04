@@ -1,6 +1,21 @@
 # backend/infra/terraform/modules/database/main.tf
 # (NOTA: Ya no hay bloques "variable" aquí, están en variables.tf)
 
+# MAPEO DE NOMBRES DE BASE DE DATOS (servicio -> nombre español)
+locals {
+  db_name_map = {
+    "auth-service"         = "cafrilosa_auth"
+    "user-service"         = "cafrilosa_usuarios"
+    "catalog-service"      = "cafrilosa_catalogo"
+    "order-service"        = "cafrilosa_pedidos"
+    "zone-service"         = "cafrilosa_zonas"
+    "credit-service"       = "cafrilosa_creditos"
+    "route-service"        = "cafrilosa_rutas"
+    "delivery-service"     = "cafrilosa_entregas"
+    "notification-service" = "cafrilosa_notificaciones"
+  }
+}
+
 # 1. La Instancia Física (El servidor)
 resource "google_sql_database_instance" "master" {
   name             = "cafrilosa-db-master"
@@ -34,15 +49,12 @@ resource "google_sql_user" "root" {
   }
 }
 
-# 3. Bases de Datos Lógicas (CORREGIDO)
+# 3. Bases de Datos Lógicas (usando mapeo español)
 resource "google_sql_database" "databases" {
   for_each = toset(var.services)
 
-  # LÓGICA CONDICIONAL:
-  # Si es 'notification-service', usa 'cafrilosa_notificaciones' (plural español).
-  # Si es cualquier otro, usa la lógica estándar (ej. auth-service -> cafrilosa_auth).
-  name = each.key == "notification-service" ? "cafrilosa_notificaciones" : "cafrilosa_${replace(replace(each.key, "-service", ""), "-", "_")}"
-  
+  # Usar el mapeo de nombres en español
+  name     = local.db_name_map[each.key]
   instance = google_sql_database_instance.master.name
 }
 

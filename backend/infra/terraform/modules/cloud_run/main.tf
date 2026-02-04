@@ -1,5 +1,20 @@
 # backend/infra/terraform/modules/cloud_run/main.tf
 
+# MAPEO DE NOMBRES DE BASE DE DATOS (inglés -> español)
+locals {
+  db_name_map = {
+    "auth-service"         = "cafrilosa_auth"
+    "user-service"         = "cafrilosa_usuarios"
+    "catalog-service"      = "cafrilosa_catalogo"
+    "order-service"        = "cafrilosa_pedidos"
+    "zone-service"         = "cafrilosa_zonas"
+    "credit-service"       = "cafrilosa_creditos"
+    "route-service"        = "cafrilosa_rutas"
+    "delivery-service"     = "cafrilosa_entregas"
+    "notification-service" = "cafrilosa_notificaciones"
+  }
+}
+
 # 1. SERVICE ACCOUNTS
 resource "google_service_account" "sa" {
   for_each = toset(var.services)
@@ -83,10 +98,10 @@ resource "google_cloud_run_v2_service" "default" {
         value = "5432"
       }
       
-      # Tu corrección para notificaciones se mantiene aquí:
+      # Nombre de BD usando el mapeo español
       env {
-        name  = "DB_NAME" 
-        value = each.key == "notification-service" ? "cafrilosa_notificaciones" : "cafrilosa_${replace(replace(each.key, "-service", ""), "-", "_")}"
+        name  = "DB_NAME"
+        value = local.db_name_map[each.key]
       }
       
       env {
