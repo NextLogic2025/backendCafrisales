@@ -113,11 +113,11 @@ export class AuthService {
   private async buildTokens(userId: string, email: string, role: string, meta?: { ip?: string; userAgent?: string; device?: any }) {
     const session = await this.sessionService.createSession(userId, { ip: meta?.ip, ua: meta?.userAgent, device: meta?.device });
     const payload = { sub: userId, email, role };
-    const accessToken = this.jwtService.sign(payload, { expiresIn: '15m' });
+    const accessToken = this.jwtService.sign(payload, { expiresIn: '1h' });
     return {
       access_token: accessToken,
       refresh_token: session.refreshToken,
-      expires_in: 900,
+      expires_in: 3600,
       usuario_id: userId,
       rol: role,
     };
@@ -303,8 +303,8 @@ export class AuthService {
               role,
               ...(credential?.email ? { email: credential.email } : {}),
             };
-            const accessToken = this.jwtService.sign(payload, { expiresIn: '15m' });
-            return { access_token: accessToken, refresh_token: newRefresh, expires_in: 900 };
+            const accessToken = this.jwtService.sign(payload, { expiresIn: '1h' });
+            return { access_token: accessToken, refresh_token: newRefresh, expires_in: 3600 };
           });
         }
       } catch (e) {

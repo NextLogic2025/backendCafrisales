@@ -25,7 +25,7 @@ import { JwtOrServiceGuard } from '../../common/guards/jwt-or-service.guard';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         secret: configService.getOrThrow<string>('JWT_SECRET'),
-        signOptions: { expiresIn: '15m' },
+        signOptions: { expiresIn: '1h' },
       }),
     }),
   ],
