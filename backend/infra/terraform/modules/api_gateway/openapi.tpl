@@ -2064,4 +2064,4 @@ paths:
               default: 'GET, POST, PUT, DELETE, PATCH, OPTIONS'
             Access-Control-Allow-Headers:
               type: string
-              default: 'Authorization, Content-Type, X-Api-Key, X-Service-Token'
+              default: 'Authorization, X-Authorization, Content-Type, X-Api-Key, X-Service-Token'
