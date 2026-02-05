@@ -12,6 +12,8 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { RolUsuario } from '../../common/enums/rol-usuario.enum';
 import { GetUser, AuthUser } from '../../common/decorators/get-user.decorator';
 import { ZoneFilterDto } from './dto/zone-filter.dto';
+import { ScheduleResponseDto } from '../schedules/dto/schedule-response.dto';
+import { plainToInstance } from 'class-transformer';
 
 @ApiTags('Zones')
 @ApiBearerAuth()
@@ -136,18 +138,24 @@ export class ZonesController {
     /* ... Keep existing Schedule endpoints ... */
 
     @Get(':id/horarios')
-    getSchedules(@Param('id', ParseUUIDPipe) id: string) {
-        return this.schedulesService.findByZone(id);
+    @ApiOperation({ summary: 'Obtener horarios de una zona' })
+    @ApiResponse({ status: 200, type: [ScheduleResponseDto] })
+    async getSchedules(@Param('id', ParseUUIDPipe) id: string): Promise<ScheduleResponseDto[]> {
+        const schedules = await this.schedulesService.findByZone(id);
+        return plainToInstance(ScheduleResponseDto, schedules, { excludeExtraneousValues: true });
     }
 
     @Put(':id/horarios')
     @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR)
-    updateSchedules(
+    @ApiOperation({ summary: 'Actualizar horarios de una zona' })
+    @ApiResponse({ status: 200, type: [ScheduleResponseDto] })
+    async updateSchedules(
         @Param('id', ParseUUIDPipe) id: string,
         @Body() schedules: any[],
         @GetUser() user: AuthUser,
-    ) {
-        return this.schedulesService.replaceForZone(id, schedules, user?.userId);
+    ): Promise<ScheduleResponseDto[]> {
+        const updated = await this.schedulesService.replaceForZone(id, schedules, user?.userId);
+        return plainToInstance(ScheduleResponseDto, updated, { excludeExtraneousValues: true });
     }
 
     @Put(':id/horarios/:dia')
