@@ -4,14 +4,15 @@
 # Esto evita errores de lectura de archivos que aún no existen
 locals {
   openapi_content = templatefile("${path.module}/openapi.tpl", {
-    auth_url     = var.backend_urls["auth-service"]
-    user_url     = var.backend_urls["user-service"]
-    catalog_url  = var.backend_urls["catalog-service"]
-    order_url    = var.backend_urls["order-service"]
-    zone_url     = var.backend_urls["zone-service"]
-    credit_url   = var.backend_urls["credit-service"]
-    route_url    = var.backend_urls["route-service"]
-    delivery_url = var.backend_urls["delivery-service"]
+    auth_url          = var.backend_urls["auth-service"]
+    user_url          = var.backend_urls["user-service"]
+    catalog_url       = var.backend_urls["catalog-service"]
+    order_url         = var.backend_urls["order-service"]
+    zone_url          = var.backend_urls["zone-service"]
+    credit_url        = var.backend_urls["credit-service"]
+    route_url         = var.backend_urls["route-service"]
+    delivery_url      = var.backend_urls["delivery-service"]
+    notification_url  = var.notification_url
   })
 }
 

@@ -697,6 +697,29 @@ paths:
         deadline: 30.0
       responses: { '200': { description: OK } }
 
+  /api/v1/skus:
+    get:
+      operationId: skusApiV1GetBase
+      x-google-backend:
+        address: ${catalog_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+    post:
+      operationId: skusApiV1PostBase
+      x-google-backend:
+        address: ${catalog_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+    options:
+      operationId: skusApiV1CorsBase
+      x-google-backend:
+        address: ${catalog_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+
   /api/v1/skus/**:
     get:
       operationId: skusApiV1Get
@@ -764,6 +787,29 @@ paths:
         deadline: 30.0
       responses: { '200': { description: OK } }
 
+  /api/v1/products:
+    get:
+      operationId: productsApiV1GetBase
+      x-google-backend:
+        address: ${catalog_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+    post:
+      operationId: productsApiV1PostBase
+      x-google-backend:
+        address: ${catalog_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+    options:
+      operationId: productsApiV1CorsBase
+      x-google-backend:
+        address: ${catalog_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+
   /api/v1/products/**:
     get:
       operationId: productsApiV1Get
@@ -802,6 +848,29 @@ paths:
       responses: { '200': { description: OK } }
     options:
       operationId: productsApiV1Cors
+      x-google-backend:
+        address: ${catalog_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+
+  /api/v1/categorias:
+    get:
+      operationId: categoriasApiV1GetBase
+      x-google-backend:
+        address: ${catalog_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+    post:
+      operationId: categoriasApiV1PostBase
+      x-google-backend:
+        address: ${catalog_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+    options:
+      operationId: categoriasApiV1CorsBase
       x-google-backend:
         address: ${catalog_url}
         path_translation: APPEND_PATH_TO_ADDRESS
@@ -883,6 +952,29 @@ paths:
       responses: { '200': { description: OK } }
 
   # 4. ORDER SERVICE
+  /api/v1/orders:
+    get:
+      operationId: ordersApiV1GetBase
+      x-google-backend:
+        address: ${order_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+    post:
+      operationId: ordersApiV1PostBase
+      x-google-backend:
+        address: ${order_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+    options:
+      operationId: ordersApiV1CorsBase
+      x-google-backend:
+        address: ${order_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+
   /api/v1/orders/**:
     get:
       operationId: orderApiV1Get
@@ -898,8 +990,22 @@ paths:
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
+    put:
+      operationId: orderApiV1Put
+      x-google-backend:
+        address: ${order_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
     patch:
       operationId: orderApiV1Patch
+      x-google-backend:
+        address: ${order_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+    delete:
+      operationId: orderApiV1Delete
       x-google-backend:
         address: ${order_url}
         path_translation: APPEND_PATH_TO_ADDRESS
@@ -937,6 +1043,22 @@ paths:
       responses: { '200': { description: OK } }
     options:
       operationId: pedidosInternalApiV1Cors
+      x-google-backend:
+        address: ${order_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+
+  /api/v1/validations:
+    post:
+      operationId: validationsApiV1PostBase
+      x-google-backend:
+        address: ${order_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+    options:
+      operationId: validationsApiV1CorsBase
       x-google-backend:
         address: ${order_url}
         path_translation: APPEND_PATH_TO_ADDRESS
@@ -997,6 +1119,29 @@ paths:
       responses: { '200': { description: OK } }
 
   # 5. ZONE SERVICE
+  /api/v1/zones:
+    get:
+      operationId: zonesApiV1GetBase
+      x-google-backend:
+        address: ${zone_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+    post:
+      operationId: zonesApiV1PostBase
+      x-google-backend:
+        address: ${zone_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+    options:
+      operationId: zonesApiV1CorsBase
+      x-google-backend:
+        address: ${zone_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+
   /api/v1/zones/**:
     get:
       operationId: zoneApiV1Get
@@ -1043,6 +1188,22 @@ paths:
         deadline: 30.0
       responses: { '200': { description: OK } }
 
+  /api/v1/coverage:
+    post:
+      operationId: coverageApiV1PostBase
+      x-google-backend:
+        address: ${zone_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+    options:
+      operationId: coverageApiV1CorsBase
+      x-google-backend:
+        address: ${zone_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+
   /api/v1/coverage/**:
     get:
       operationId: coverageApiV1Get
@@ -1081,6 +1242,29 @@ paths:
       responses: { '200': { description: OK } }
     options:
       operationId: coverageApiV1Cors
+      x-google-backend:
+        address: ${zone_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+
+  /api/v1/schedules:
+    get:
+      operationId: schedulesApiV1GetBase
+      x-google-backend:
+        address: ${zone_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+    post:
+      operationId: schedulesApiV1PostBase
+      x-google-backend:
+        address: ${zone_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+    options:
+      operationId: schedulesApiV1CorsBase
       x-google-backend:
         address: ${zone_url}
         path_translation: APPEND_PATH_TO_ADDRESS
@@ -1155,6 +1339,22 @@ paths:
       responses: { '200': { description: OK } }
 
   # 6. CREDIT SERVICE
+  /api/v1/credits:
+    get:
+      operationId: creditApiV1GetBase
+      x-google-backend:
+        address: ${credit_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+    options:
+      operationId: creditApiV1CorsBase
+      x-google-backend:
+        address: ${credit_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+
   /api/v1/credits/**:
     get:
       operationId: creditApiV1Get
@@ -1179,6 +1379,22 @@ paths:
       responses: { '200': { description: OK } }
     options:
       operationId: creditApiV1Cors
+      x-google-backend:
+        address: ${credit_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+
+  /api/v1/creditos:
+    get:
+      operationId: creditosApiV1GetBase
+      x-google-backend:
+        address: ${credit_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+    options:
+      operationId: creditosApiV1CorsBase
       x-google-backend:
         address: ${credit_url}
         path_translation: APPEND_PATH_TO_ADDRESS
@@ -1223,6 +1439,22 @@ paths:
       responses: { '200': { description: OK } }
     options:
       operationId: creditosApiV1Cors
+      x-google-backend:
+        address: ${credit_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+
+  /api/v1/reports:
+    get:
+      operationId: reportsApiV1GetBase
+      x-google-backend:
+        address: ${credit_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+    options:
+      operationId: reportsApiV1CorsBase
       x-google-backend:
         address: ${credit_url}
         path_translation: APPEND_PATH_TO_ADDRESS
@@ -1283,6 +1515,29 @@ paths:
       responses: { '200': { description: OK } }
 
   # 7. ROUTE SERVICE
+  /api/v1/routes:
+    get:
+      operationId: routeApiV1GetBase
+      x-google-backend:
+        address: ${route_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+    post:
+      operationId: routeApiV1PostBase
+      x-google-backend:
+        address: ${route_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+    options:
+      operationId: routeApiV1CorsBase
+      x-google-backend:
+        address: ${route_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+
   /api/v1/routes/**:
     get:
       operationId: routeApiV1Get
@@ -1298,8 +1553,45 @@ paths:
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
+    put:
+      operationId: routeApiV1Put
+      x-google-backend:
+        address: ${route_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+    delete:
+      operationId: routeApiV1Delete
+      x-google-backend:
+        address: ${route_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
     options:
       operationId: routeApiV1Cors
+      x-google-backend:
+        address: ${route_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+
+  /api/v1/ruteros-comerciales:
+    get:
+      operationId: ruterosComercialesApiV1GetBase
+      x-google-backend:
+        address: ${route_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+    post:
+      operationId: ruterosComercialesApiV1PostBase
+      x-google-backend:
+        address: ${route_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+    options:
+      operationId: ruterosComercialesApiV1CorsBase
       x-google-backend:
         address: ${route_url}
         path_translation: APPEND_PATH_TO_ADDRESS
@@ -1551,6 +1843,22 @@ paths:
       responses: { '200': { description: OK } }
 
   # 8. DELIVERY SERVICE
+  /api/v1/deliveries:
+    get:
+      operationId: deliveryApiV1GetBase
+      x-google-backend:
+        address: ${delivery_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+    options:
+      operationId: deliveryApiV1CorsBase
+      x-google-backend:
+        address: ${delivery_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+
   /api/v1/deliveries/**:
     get:
       operationId: deliveryApiV1Get
@@ -1568,6 +1876,20 @@ paths:
       responses: { '200': { description: OK } }
     put:
       operationId: deliveryApiV1Put
+      x-google-backend:
+        address: ${delivery_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+    patch:
+      operationId: deliveryApiV1Patch
+      x-google-backend:
+        address: ${delivery_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+    delete:
+      operationId: deliveryApiV1Delete
       x-google-backend:
         address: ${delivery_url}
         path_translation: APPEND_PATH_TO_ADDRESS
@@ -1651,6 +1973,74 @@ paths:
       operationId: deliveryCors
       x-google-backend:
         address: ${delivery_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+
+  # 9. NOTIFICATION SERVICE (REST)
+  /api/v1/notifications:
+    get:
+      operationId: notificationsApiV1GetBase
+      x-google-backend:
+        address: ${notification_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+    post:
+      operationId: notificationsApiV1PostBase
+      x-google-backend:
+        address: ${notification_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+    options:
+      operationId: notificationsApiV1CorsBase
+      x-google-backend:
+        address: ${notification_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+
+  /api/v1/notifications/**:
+    get:
+      operationId: notificationsApiV1Get
+      x-google-backend:
+        address: ${notification_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+    post:
+      operationId: notificationsApiV1Post
+      x-google-backend:
+        address: ${notification_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+    put:
+      operationId: notificationsApiV1Put
+      x-google-backend:
+        address: ${notification_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+    patch:
+      operationId: notificationsApiV1Patch
+      x-google-backend:
+        address: ${notification_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+    delete:
+      operationId: notificationsApiV1Delete
+      x-google-backend:
+        address: ${notification_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+    options:
+      operationId: notificationsApiV1Cors
+      x-google-backend:
+        address: ${notification_url}
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }

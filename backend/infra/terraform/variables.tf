@@ -87,3 +87,7 @@ variable "backend_repo_name" {
   type        = string
   default     = "backendCafrisales" # Asegúrate que coincida con tu repo real
 }
+variable "notification_url" {
+  description = "URL de notification-service (Cloud Run) para el API Gateway"
+  type        = string
+}

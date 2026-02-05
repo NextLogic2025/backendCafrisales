@@ -152,6 +152,7 @@ module "api_gateway" {
   region       = var.region
   services     = var.services
   backend_urls = module.cloud_run.service_urls
+  notification_url = var.notification_url
   
   gateway_sa_email = google_service_account.gateway_sa.email
   

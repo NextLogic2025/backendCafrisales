@@ -18,6 +18,11 @@ variable "backend_urls" {
   type        = map(string)
 }
 
+variable "notification_url" {
+  description = "URL del notification-service (puede estar fuera del mapa backend_urls)"
+  type        = string
+}
+
 variable "api_id" {
   description = "ID del API Gateway"
   type        = string
