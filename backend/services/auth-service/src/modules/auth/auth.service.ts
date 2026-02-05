@@ -239,15 +239,17 @@ export class AuthService {
     try {
       await this.userExternalService.syncUser(payloadObj);
     } catch (error: any) {
-      if (error instanceof ConflictException || (error.status === 409)) {
+      const status = error?.response?.status ?? error?.status;
+      const message = error?.response?.data?.message ?? error?.message;
+      if (error instanceof ConflictException || status === 409) {
         this.logger.warn(`Usuario ${id} ya sincronizado con user-service`);
-        return; // Idempotency success
+        return result; // Idempotency success
       }
 
       // If it's a client error (e.g. 400 from user-service for FK violation), rethrow it cleanly
-      if (error.status && error.status >= 400 && error.status < 500) {
-        this.logger.error(`Error de cliente sincronizando usuario ${id}: ${error.message}`);
-        throw error;
+      if (status && status >= 400 && status < 500) {
+        this.logger.error(`Error de cliente sincronizando usuario ${id}: ${message || status}`);
+        throw new BadRequestException(message || 'Error de validacion en user-service');
       }
 
       this.logger.error(`Error sincronizando usuario ${id} con user-service`, error);
