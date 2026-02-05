@@ -22,6 +22,7 @@ paths:
       operationId: authApiV1Get
       x-google-backend:
         address: ${auth_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses:
@@ -32,6 +33,7 @@ paths:
       operationId: authApiV1Post
       x-google-backend:
         address: ${auth_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses:
@@ -42,6 +44,7 @@ paths:
       operationId: authApiV1Cors
       x-google-backend:
         address: ${auth_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses:
@@ -53,6 +56,7 @@ paths:
       operationId: authGet
       x-google-backend:
         address: ${auth_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -60,6 +64,7 @@ paths:
       operationId: authPost
       x-google-backend:
         address: ${auth_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -67,6 +72,7 @@ paths:
       operationId: authCors
       x-google-backend:
         address: ${auth_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -77,6 +83,7 @@ paths:
       operationId: usersApiV1GetBase
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -84,6 +91,7 @@ paths:
       operationId: usersApiV1PostBase
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -91,6 +99,7 @@ paths:
       operationId: usersApiV1PutBase
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -98,6 +107,7 @@ paths:
       operationId: usersApiV1PatchBase
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -105,6 +115,7 @@ paths:
       operationId: usersApiV1DeleteBase
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -112,6 +123,7 @@ paths:
       operationId: usersApiV1CorsBase
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -121,6 +133,7 @@ paths:
       operationId: userApiV1Get
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -128,6 +141,7 @@ paths:
       operationId: userApiV1Post
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -135,6 +149,7 @@ paths:
       operationId: userApiV1Put
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -142,6 +157,7 @@ paths:
       operationId: userApiV1Patch
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -149,6 +165,7 @@ paths:
       operationId: userApiV1Delete
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -156,6 +173,7 @@ paths:
       operationId: userApiV1Cors
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -165,6 +183,7 @@ paths:
       operationId: usuariosApiV1GetBase
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -172,6 +191,7 @@ paths:
       operationId: usuariosApiV1PostBase
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -179,6 +199,7 @@ paths:
       operationId: usuariosApiV1PutBase
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -186,6 +207,7 @@ paths:
       operationId: usuariosApiV1PatchBase
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -193,6 +215,7 @@ paths:
       operationId: usuariosApiV1DeleteBase
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -200,6 +223,7 @@ paths:
       operationId: usuariosApiV1CorsBase
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -209,6 +233,7 @@ paths:
       operationId: usuariosApiV1Get
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -216,6 +241,7 @@ paths:
       operationId: usuariosApiV1Post
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -223,6 +249,7 @@ paths:
       operationId: usuariosApiV1Put
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -230,6 +257,7 @@ paths:
       operationId: usuariosApiV1Patch
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -237,6 +265,7 @@ paths:
       operationId: usuariosApiV1Delete
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -244,6 +273,7 @@ paths:
       operationId: usuariosApiV1Cors
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -253,6 +283,7 @@ paths:
       operationId: clientesApiV1GetBase
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -260,6 +291,7 @@ paths:
       operationId: clientesApiV1PostBase
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -267,6 +299,7 @@ paths:
       operationId: clientesApiV1PutBase
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -274,6 +307,7 @@ paths:
       operationId: clientesApiV1PatchBase
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -281,6 +315,7 @@ paths:
       operationId: clientesApiV1DeleteBase
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -288,6 +323,7 @@ paths:
       operationId: clientesApiV1CorsBase
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -297,6 +333,7 @@ paths:
       operationId: clientesApiV1Get
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -304,6 +341,7 @@ paths:
       operationId: clientesApiV1Post
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -311,6 +349,7 @@ paths:
       operationId: clientesApiV1Put
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -318,6 +357,7 @@ paths:
       operationId: clientesApiV1Patch
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -325,6 +365,7 @@ paths:
       operationId: clientesApiV1Delete
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -332,6 +373,7 @@ paths:
       operationId: clientesApiV1Cors
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -341,6 +383,7 @@ paths:
       operationId: canalesApiV1GetBase
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -348,6 +391,7 @@ paths:
       operationId: canalesApiV1PostBase
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -355,6 +399,7 @@ paths:
       operationId: canalesApiV1PutBase
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -362,6 +407,7 @@ paths:
       operationId: canalesApiV1PatchBase
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -369,6 +415,7 @@ paths:
       operationId: canalesApiV1DeleteBase
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -376,6 +423,7 @@ paths:
       operationId: canalesApiV1CorsBase
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -385,6 +433,7 @@ paths:
       operationId: canalesApiV1Get
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -392,6 +441,7 @@ paths:
       operationId: canalesApiV1Post
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -399,6 +449,7 @@ paths:
       operationId: canalesApiV1Put
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -406,6 +457,7 @@ paths:
       operationId: canalesApiV1Patch
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -413,6 +465,7 @@ paths:
       operationId: canalesApiV1Delete
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -420,6 +473,7 @@ paths:
       operationId: canalesApiV1Cors
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -429,6 +483,7 @@ paths:
       operationId: staffApiV1GetBase
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -436,6 +491,7 @@ paths:
       operationId: staffApiV1PostBase
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -443,6 +499,7 @@ paths:
       operationId: staffApiV1PutBase
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -450,6 +507,7 @@ paths:
       operationId: staffApiV1PatchBase
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -457,6 +515,7 @@ paths:
       operationId: staffApiV1DeleteBase
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -464,6 +523,7 @@ paths:
       operationId: staffApiV1CorsBase
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -473,6 +533,7 @@ paths:
       operationId: staffApiV1Get
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -480,6 +541,7 @@ paths:
       operationId: staffApiV1Post
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -487,6 +549,7 @@ paths:
       operationId: staffApiV1Put
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -494,6 +557,7 @@ paths:
       operationId: staffApiV1Patch
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -501,6 +565,7 @@ paths:
       operationId: staffApiV1Delete
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -508,6 +573,7 @@ paths:
       operationId: staffApiV1Cors
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -517,6 +583,7 @@ paths:
       operationId: vendedoresApiV1GetBase
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -524,6 +591,7 @@ paths:
       operationId: vendedoresApiV1CorsBase
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -533,6 +601,7 @@ paths:
       operationId: vendedoresApiV1Get
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -540,6 +609,7 @@ paths:
       operationId: vendedoresApiV1Cors
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -549,6 +619,7 @@ paths:
       operationId: zonasUsuariosApiV1GetBase
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -556,6 +627,7 @@ paths:
       operationId: zonasUsuariosApiV1CorsBase
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -565,6 +637,7 @@ paths:
       operationId: zonasUsuariosApiV1Get
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -572,6 +645,7 @@ paths:
       operationId: zonasUsuariosApiV1Cors
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -581,6 +655,7 @@ paths:
       operationId: usuariosInternalApiV1Get
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -588,6 +663,7 @@ paths:
       operationId: usuariosInternalApiV1Post
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -595,6 +671,7 @@ paths:
       operationId: usuariosInternalApiV1Cors
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -604,6 +681,7 @@ paths:
       operationId: clientesInternalApiV1Get
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -611,6 +689,7 @@ paths:
       operationId: clientesInternalApiV1Post
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -618,6 +697,7 @@ paths:
       operationId: clientesInternalApiV1Cors
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -627,6 +707,7 @@ paths:
       operationId: userGet
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -634,6 +715,7 @@ paths:
       operationId: userPost
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -641,6 +723,7 @@ paths:
       operationId: userPut
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -648,6 +731,7 @@ paths:
       operationId: userPatch
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -655,6 +739,7 @@ paths:
       operationId: userDelete
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -662,6 +747,7 @@ paths:
       operationId: userCors
       x-google-backend:
         address: ${user_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -672,6 +758,7 @@ paths:
       operationId: catalogApiV1Get
       x-google-backend:
         address: ${catalog_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -679,6 +766,7 @@ paths:
       operationId: catalogApiV1Post
       x-google-backend:
         address: ${catalog_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -686,6 +774,7 @@ paths:
       operationId: catalogApiV1Put
       x-google-backend:
         address: ${catalog_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -693,6 +782,7 @@ paths:
       operationId: catalogApiV1Cors
       x-google-backend:
         address: ${catalog_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -702,6 +792,7 @@ paths:
       operationId: skusApiV1GetBase
       x-google-backend:
         address: ${catalog_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -709,6 +800,7 @@ paths:
       operationId: skusApiV1PostBase
       x-google-backend:
         address: ${catalog_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -716,6 +808,7 @@ paths:
       operationId: skusApiV1CorsBase
       x-google-backend:
         address: ${catalog_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -725,6 +818,7 @@ paths:
       operationId: skusApiV1Get
       x-google-backend:
         address: ${catalog_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -732,6 +826,7 @@ paths:
       operationId: skusApiV1Post
       x-google-backend:
         address: ${catalog_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -739,6 +834,7 @@ paths:
       operationId: skusApiV1Put
       x-google-backend:
         address: ${catalog_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -746,6 +842,7 @@ paths:
       operationId: skusApiV1Patch
       x-google-backend:
         address: ${catalog_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -753,6 +850,7 @@ paths:
       operationId: skusApiV1Delete
       x-google-backend:
         address: ${catalog_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -760,6 +858,7 @@ paths:
       operationId: skusApiV1Cors
       x-google-backend:
         address: ${catalog_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -769,6 +868,7 @@ paths:
       operationId: skusInternalApiV1Get
       x-google-backend:
         address: ${catalog_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -776,6 +876,7 @@ paths:
       operationId: skusInternalApiV1Post
       x-google-backend:
         address: ${catalog_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -783,6 +884,7 @@ paths:
       operationId: skusInternalApiV1Cors
       x-google-backend:
         address: ${catalog_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -792,6 +894,7 @@ paths:
       operationId: productsApiV1GetBase
       x-google-backend:
         address: ${catalog_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -799,6 +902,7 @@ paths:
       operationId: productsApiV1PostBase
       x-google-backend:
         address: ${catalog_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -806,6 +910,7 @@ paths:
       operationId: productsApiV1CorsBase
       x-google-backend:
         address: ${catalog_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -815,6 +920,7 @@ paths:
       operationId: productsApiV1Get
       x-google-backend:
         address: ${catalog_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -822,6 +928,7 @@ paths:
       operationId: productsApiV1Post
       x-google-backend:
         address: ${catalog_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -829,6 +936,7 @@ paths:
       operationId: productsApiV1Put
       x-google-backend:
         address: ${catalog_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -836,6 +944,7 @@ paths:
       operationId: productsApiV1Patch
       x-google-backend:
         address: ${catalog_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -843,6 +952,7 @@ paths:
       operationId: productsApiV1Delete
       x-google-backend:
         address: ${catalog_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -850,6 +960,7 @@ paths:
       operationId: productsApiV1Cors
       x-google-backend:
         address: ${catalog_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -859,6 +970,7 @@ paths:
       operationId: categoriasApiV1GetBase
       x-google-backend:
         address: ${catalog_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -866,6 +978,7 @@ paths:
       operationId: categoriasApiV1PostBase
       x-google-backend:
         address: ${catalog_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -873,6 +986,7 @@ paths:
       operationId: categoriasApiV1CorsBase
       x-google-backend:
         address: ${catalog_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -882,6 +996,7 @@ paths:
       operationId: categoriasApiV1Get
       x-google-backend:
         address: ${catalog_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -889,6 +1004,7 @@ paths:
       operationId: categoriasApiV1Post
       x-google-backend:
         address: ${catalog_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -896,6 +1012,7 @@ paths:
       operationId: categoriasApiV1Put
       x-google-backend:
         address: ${catalog_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -903,6 +1020,7 @@ paths:
       operationId: categoriasApiV1Patch
       x-google-backend:
         address: ${catalog_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -910,6 +1028,7 @@ paths:
       operationId: categoriasApiV1Delete
       x-google-backend:
         address: ${catalog_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -917,6 +1036,7 @@ paths:
       operationId: categoriasApiV1Cors
       x-google-backend:
         address: ${catalog_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -926,6 +1046,7 @@ paths:
       operationId: catalogGet
       x-google-backend:
         address: ${catalog_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -933,6 +1054,7 @@ paths:
       operationId: catalogPost
       x-google-backend:
         address: ${catalog_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -940,6 +1062,7 @@ paths:
       operationId: catalogPut
       x-google-backend:
         address: ${catalog_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -947,6 +1070,7 @@ paths:
       operationId: catalogCors
       x-google-backend:
         address: ${catalog_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -957,6 +1081,7 @@ paths:
       operationId: ordersApiV1GetBase
       x-google-backend:
         address: ${order_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -964,6 +1089,7 @@ paths:
       operationId: ordersApiV1PostBase
       x-google-backend:
         address: ${order_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -971,6 +1097,7 @@ paths:
       operationId: ordersApiV1CorsBase
       x-google-backend:
         address: ${order_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -980,6 +1107,7 @@ paths:
       operationId: orderApiV1Get
       x-google-backend:
         address: ${order_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -987,6 +1115,7 @@ paths:
       operationId: orderApiV1Post
       x-google-backend:
         address: ${order_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -994,6 +1123,7 @@ paths:
       operationId: orderApiV1Put
       x-google-backend:
         address: ${order_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1001,6 +1131,7 @@ paths:
       operationId: orderApiV1Patch
       x-google-backend:
         address: ${order_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1008,6 +1139,7 @@ paths:
       operationId: orderApiV1Delete
       x-google-backend:
         address: ${order_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1015,6 +1147,7 @@ paths:
       operationId: orderApiV1Cors
       x-google-backend:
         address: ${order_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1024,6 +1157,7 @@ paths:
       operationId: pedidosInternalApiV1Get
       x-google-backend:
         address: ${order_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1031,6 +1165,7 @@ paths:
       operationId: pedidosInternalApiV1Post
       x-google-backend:
         address: ${order_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1038,6 +1173,7 @@ paths:
       operationId: pedidosInternalApiV1Patch
       x-google-backend:
         address: ${order_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1045,6 +1181,7 @@ paths:
       operationId: pedidosInternalApiV1Cors
       x-google-backend:
         address: ${order_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1054,6 +1191,7 @@ paths:
       operationId: validationsApiV1PostBase
       x-google-backend:
         address: ${order_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1061,6 +1199,7 @@ paths:
       operationId: validationsApiV1CorsBase
       x-google-backend:
         address: ${order_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1070,6 +1209,7 @@ paths:
       operationId: validationsApiV1Get
       x-google-backend:
         address: ${order_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1077,6 +1217,7 @@ paths:
       operationId: validationsApiV1Post
       x-google-backend:
         address: ${order_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1084,6 +1225,7 @@ paths:
       operationId: validationsApiV1Cors
       x-google-backend:
         address: ${order_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1093,6 +1235,7 @@ paths:
       operationId: orderGet
       x-google-backend:
         address: ${order_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1100,6 +1243,7 @@ paths:
       operationId: orderPost
       x-google-backend:
         address: ${order_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1107,6 +1251,7 @@ paths:
       operationId: orderPatch
       x-google-backend:
         address: ${order_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1114,6 +1259,7 @@ paths:
       operationId: orderCors
       x-google-backend:
         address: ${order_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1124,6 +1270,7 @@ paths:
       operationId: zonesApiV1GetBase
       x-google-backend:
         address: ${zone_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1131,6 +1278,7 @@ paths:
       operationId: zonesApiV1PostBase
       x-google-backend:
         address: ${zone_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1138,6 +1286,7 @@ paths:
       operationId: zonesApiV1CorsBase
       x-google-backend:
         address: ${zone_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1147,6 +1296,7 @@ paths:
       operationId: zoneApiV1Get
       x-google-backend:
         address: ${zone_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1154,6 +1304,7 @@ paths:
       operationId: zoneApiV1Post
       x-google-backend:
         address: ${zone_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1161,6 +1312,7 @@ paths:
       operationId: zoneApiV1Cors
       x-google-backend:
         address: ${zone_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1170,6 +1322,7 @@ paths:
       operationId: zonesInternalApiV1Get
       x-google-backend:
         address: ${zone_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1177,6 +1330,7 @@ paths:
       operationId: zonesInternalApiV1Post
       x-google-backend:
         address: ${zone_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1184,6 +1338,7 @@ paths:
       operationId: zonesInternalApiV1Cors
       x-google-backend:
         address: ${zone_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1193,6 +1348,7 @@ paths:
       operationId: coverageApiV1PostBase
       x-google-backend:
         address: ${zone_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1200,6 +1356,7 @@ paths:
       operationId: coverageApiV1CorsBase
       x-google-backend:
         address: ${zone_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1209,6 +1366,7 @@ paths:
       operationId: coverageApiV1Get
       x-google-backend:
         address: ${zone_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1216,6 +1374,7 @@ paths:
       operationId: coverageApiV1Post
       x-google-backend:
         address: ${zone_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1223,6 +1382,7 @@ paths:
       operationId: coverageApiV1Put
       x-google-backend:
         address: ${zone_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1230,6 +1390,7 @@ paths:
       operationId: coverageApiV1Patch
       x-google-backend:
         address: ${zone_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1237,6 +1398,7 @@ paths:
       operationId: coverageApiV1Delete
       x-google-backend:
         address: ${zone_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1244,6 +1406,7 @@ paths:
       operationId: coverageApiV1Cors
       x-google-backend:
         address: ${zone_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1253,6 +1416,7 @@ paths:
       operationId: schedulesApiV1GetBase
       x-google-backend:
         address: ${zone_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1260,6 +1424,7 @@ paths:
       operationId: schedulesApiV1PostBase
       x-google-backend:
         address: ${zone_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1267,6 +1432,7 @@ paths:
       operationId: schedulesApiV1CorsBase
       x-google-backend:
         address: ${zone_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1276,6 +1442,7 @@ paths:
       operationId: schedulesApiV1Get
       x-google-backend:
         address: ${zone_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1283,6 +1450,7 @@ paths:
       operationId: schedulesApiV1Post
       x-google-backend:
         address: ${zone_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1290,6 +1458,7 @@ paths:
       operationId: schedulesApiV1Put
       x-google-backend:
         address: ${zone_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1297,6 +1466,7 @@ paths:
       operationId: schedulesApiV1Patch
       x-google-backend:
         address: ${zone_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1304,6 +1474,7 @@ paths:
       operationId: schedulesApiV1Delete
       x-google-backend:
         address: ${zone_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1311,6 +1482,7 @@ paths:
       operationId: schedulesApiV1Cors
       x-google-backend:
         address: ${zone_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1320,6 +1492,7 @@ paths:
       operationId: zoneGet
       x-google-backend:
         address: ${zone_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1327,6 +1500,7 @@ paths:
       operationId: zonePost
       x-google-backend:
         address: ${zone_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1334,6 +1508,7 @@ paths:
       operationId: zoneCors
       x-google-backend:
         address: ${zone_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1344,6 +1519,7 @@ paths:
       operationId: creditApiV1GetBase
       x-google-backend:
         address: ${credit_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1351,6 +1527,7 @@ paths:
       operationId: creditApiV1CorsBase
       x-google-backend:
         address: ${credit_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1360,6 +1537,7 @@ paths:
       operationId: creditApiV1Get
       x-google-backend:
         address: ${credit_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1367,6 +1545,7 @@ paths:
       operationId: creditApiV1Post
       x-google-backend:
         address: ${credit_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1374,6 +1553,7 @@ paths:
       operationId: creditApiV1Put
       x-google-backend:
         address: ${credit_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1381,6 +1561,7 @@ paths:
       operationId: creditApiV1Cors
       x-google-backend:
         address: ${credit_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1390,6 +1571,7 @@ paths:
       operationId: creditosApiV1GetBase
       x-google-backend:
         address: ${credit_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1397,6 +1579,7 @@ paths:
       operationId: creditosApiV1CorsBase
       x-google-backend:
         address: ${credit_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1406,6 +1589,7 @@ paths:
       operationId: creditosApiV1Get
       x-google-backend:
         address: ${credit_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1413,6 +1597,7 @@ paths:
       operationId: creditosApiV1Post
       x-google-backend:
         address: ${credit_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1420,6 +1605,7 @@ paths:
       operationId: creditosApiV1Put
       x-google-backend:
         address: ${credit_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1427,6 +1613,7 @@ paths:
       operationId: creditosApiV1Patch
       x-google-backend:
         address: ${credit_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1434,6 +1621,7 @@ paths:
       operationId: creditosApiV1Delete
       x-google-backend:
         address: ${credit_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1441,6 +1629,7 @@ paths:
       operationId: creditosApiV1Cors
       x-google-backend:
         address: ${credit_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1450,6 +1639,7 @@ paths:
       operationId: reportsApiV1GetBase
       x-google-backend:
         address: ${credit_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1457,6 +1647,7 @@ paths:
       operationId: reportsApiV1CorsBase
       x-google-backend:
         address: ${credit_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1466,6 +1657,7 @@ paths:
       operationId: reportsApiV1Get
       x-google-backend:
         address: ${credit_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1473,6 +1665,7 @@ paths:
       operationId: reportsApiV1Post
       x-google-backend:
         address: ${credit_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1480,6 +1673,7 @@ paths:
       operationId: reportsApiV1Cors
       x-google-backend:
         address: ${credit_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1489,6 +1683,7 @@ paths:
       operationId: creditGet
       x-google-backend:
         address: ${credit_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1496,6 +1691,7 @@ paths:
       operationId: creditPost
       x-google-backend:
         address: ${credit_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1503,6 +1699,7 @@ paths:
       operationId: creditPut
       x-google-backend:
         address: ${credit_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1510,6 +1707,7 @@ paths:
       operationId: creditCors
       x-google-backend:
         address: ${credit_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1520,6 +1718,7 @@ paths:
       operationId: routeApiV1GetBase
       x-google-backend:
         address: ${route_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1527,6 +1726,7 @@ paths:
       operationId: routeApiV1PostBase
       x-google-backend:
         address: ${route_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1534,6 +1734,7 @@ paths:
       operationId: routeApiV1CorsBase
       x-google-backend:
         address: ${route_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1543,6 +1744,7 @@ paths:
       operationId: routeApiV1Get
       x-google-backend:
         address: ${route_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1550,6 +1752,7 @@ paths:
       operationId: routeApiV1Post
       x-google-backend:
         address: ${route_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1557,6 +1760,7 @@ paths:
       operationId: routeApiV1Put
       x-google-backend:
         address: ${route_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1564,6 +1768,7 @@ paths:
       operationId: routeApiV1Delete
       x-google-backend:
         address: ${route_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1571,6 +1776,7 @@ paths:
       operationId: routeApiV1Cors
       x-google-backend:
         address: ${route_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1580,6 +1786,7 @@ paths:
       operationId: ruterosComercialesApiV1GetBase
       x-google-backend:
         address: ${route_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1587,6 +1794,7 @@ paths:
       operationId: ruterosComercialesApiV1PostBase
       x-google-backend:
         address: ${route_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1594,6 +1802,7 @@ paths:
       operationId: ruterosComercialesApiV1CorsBase
       x-google-backend:
         address: ${route_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1603,6 +1812,7 @@ paths:
       operationId: ruterosComercialesApiV1Get
       x-google-backend:
         address: ${route_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1610,6 +1820,7 @@ paths:
       operationId: ruterosComercialesApiV1Post
       x-google-backend:
         address: ${route_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1617,6 +1828,7 @@ paths:
       operationId: ruterosComercialesApiV1Put
       x-google-backend:
         address: ${route_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1624,6 +1836,7 @@ paths:
       operationId: ruterosComercialesApiV1Patch
       x-google-backend:
         address: ${route_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1631,6 +1844,7 @@ paths:
       operationId: ruterosComercialesApiV1Delete
       x-google-backend:
         address: ${route_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1638,6 +1852,7 @@ paths:
       operationId: ruterosComercialesApiV1Cors
       x-google-backend:
         address: ${route_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1647,6 +1862,7 @@ paths:
       operationId: paradasComercialesApiV1Get
       x-google-backend:
         address: ${route_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1654,6 +1870,7 @@ paths:
       operationId: paradasComercialesApiV1Post
       x-google-backend:
         address: ${route_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1661,6 +1878,7 @@ paths:
       operationId: paradasComercialesApiV1Put
       x-google-backend:
         address: ${route_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1668,6 +1886,7 @@ paths:
       operationId: paradasComercialesApiV1Patch
       x-google-backend:
         address: ${route_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1675,6 +1894,7 @@ paths:
       operationId: paradasComercialesApiV1Delete
       x-google-backend:
         address: ${route_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1682,6 +1902,7 @@ paths:
       operationId: paradasComercialesApiV1Cors
       x-google-backend:
         address: ${route_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1691,6 +1912,7 @@ paths:
       operationId: routeGet
       x-google-backend:
         address: ${route_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1698,6 +1920,7 @@ paths:
       operationId: routePost
       x-google-backend:
         address: ${route_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1705,6 +1928,7 @@ paths:
       operationId: routeCors
       x-google-backend:
         address: ${route_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1715,6 +1939,7 @@ paths:
       operationId: vehiculosApiV1GetBase
       x-google-backend:
         address: ${route_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1722,6 +1947,7 @@ paths:
       operationId: vehiculosApiV1PostBase
       x-google-backend:
         address: ${route_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1729,6 +1955,7 @@ paths:
       operationId: vehiculosApiV1PutBase
       x-google-backend:
         address: ${route_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1736,6 +1963,7 @@ paths:
       operationId: vehiculosApiV1PatchBase
       x-google-backend:
         address: ${route_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1743,6 +1971,7 @@ paths:
       operationId: vehiculosApiV1DeleteBase
       x-google-backend:
         address: ${route_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1750,6 +1979,7 @@ paths:
       operationId: vehiculosApiV1CorsBase
       x-google-backend:
         address: ${route_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1759,6 +1989,7 @@ paths:
       operationId: vehiculosApiV1Get
       x-google-backend:
         address: ${route_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1766,6 +1997,7 @@ paths:
       operationId: vehiculosApiV1Post
       x-google-backend:
         address: ${route_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1773,6 +2005,7 @@ paths:
       operationId: vehiculosApiV1Put
       x-google-backend:
         address: ${route_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1780,6 +2013,7 @@ paths:
       operationId: vehiculosApiV1Patch
       x-google-backend:
         address: ${route_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1787,6 +2021,7 @@ paths:
       operationId: vehiculosApiV1Delete
       x-google-backend:
         address: ${route_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1794,6 +2029,7 @@ paths:
       operationId: vehiculosApiV1Cors
       x-google-backend:
         address: ${route_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1803,6 +2039,7 @@ paths:
       operationId: vehiculosGet
       x-google-backend:
         address: ${route_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1810,6 +2047,7 @@ paths:
       operationId: vehiculosPost
       x-google-backend:
         address: ${route_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1817,6 +2055,7 @@ paths:
       operationId: vehiculosPut
       x-google-backend:
         address: ${route_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1824,6 +2063,7 @@ paths:
       operationId: vehiculosPatch
       x-google-backend:
         address: ${route_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1831,6 +2071,7 @@ paths:
       operationId: vehiculosDelete
       x-google-backend:
         address: ${route_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1838,6 +2079,7 @@ paths:
       operationId: vehiculosCors
       x-google-backend:
         address: ${route_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1848,6 +2090,7 @@ paths:
       operationId: deliveryApiV1GetBase
       x-google-backend:
         address: ${delivery_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1855,6 +2098,7 @@ paths:
       operationId: deliveryApiV1CorsBase
       x-google-backend:
         address: ${delivery_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1864,6 +2108,7 @@ paths:
       operationId: deliveryApiV1Get
       x-google-backend:
         address: ${delivery_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1871,6 +2116,7 @@ paths:
       operationId: deliveryApiV1Post
       x-google-backend:
         address: ${delivery_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1878,6 +2124,7 @@ paths:
       operationId: deliveryApiV1Put
       x-google-backend:
         address: ${delivery_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1885,6 +2132,7 @@ paths:
       operationId: deliveryApiV1Patch
       x-google-backend:
         address: ${delivery_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1892,6 +2140,7 @@ paths:
       operationId: deliveryApiV1Delete
       x-google-backend:
         address: ${delivery_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1899,6 +2148,7 @@ paths:
       operationId: deliveryApiV1Cors
       x-google-backend:
         address: ${delivery_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1908,6 +2158,7 @@ paths:
       operationId: entregasApiV1Get
       x-google-backend:
         address: ${delivery_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1915,6 +2166,7 @@ paths:
       operationId: entregasApiV1Post
       x-google-backend:
         address: ${delivery_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1922,6 +2174,7 @@ paths:
       operationId: entregasApiV1Put
       x-google-backend:
         address: ${delivery_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1929,6 +2182,7 @@ paths:
       operationId: entregasApiV1Patch
       x-google-backend:
         address: ${delivery_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1936,6 +2190,7 @@ paths:
       operationId: entregasApiV1Delete
       x-google-backend:
         address: ${delivery_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1943,6 +2198,7 @@ paths:
       operationId: entregasApiV1Cors
       x-google-backend:
         address: ${delivery_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1952,6 +2208,7 @@ paths:
       operationId: deliveryGet
       x-google-backend:
         address: ${delivery_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1959,6 +2216,7 @@ paths:
       operationId: deliveryPost
       x-google-backend:
         address: ${delivery_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1966,6 +2224,7 @@ paths:
       operationId: deliveryPut
       x-google-backend:
         address: ${delivery_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1973,6 +2232,7 @@ paths:
       operationId: deliveryCors
       x-google-backend:
         address: ${delivery_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1983,6 +2243,7 @@ paths:
       operationId: notificationsApiV1GetBase
       x-google-backend:
         address: ${notification_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1990,6 +2251,7 @@ paths:
       operationId: notificationsApiV1PostBase
       x-google-backend:
         address: ${notification_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -1997,6 +2259,7 @@ paths:
       operationId: notificationsApiV1CorsBase
       x-google-backend:
         address: ${notification_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -2006,6 +2269,7 @@ paths:
       operationId: notificationsApiV1Get
       x-google-backend:
         address: ${notification_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -2013,6 +2277,7 @@ paths:
       operationId: notificationsApiV1Post
       x-google-backend:
         address: ${notification_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -2020,6 +2285,7 @@ paths:
       operationId: notificationsApiV1Put
       x-google-backend:
         address: ${notification_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -2027,6 +2293,7 @@ paths:
       operationId: notificationsApiV1Patch
       x-google-backend:
         address: ${notification_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -2034,6 +2301,7 @@ paths:
       operationId: notificationsApiV1Delete
       x-google-backend:
         address: ${notification_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -2041,6 +2309,7 @@ paths:
       operationId: notificationsApiV1Cors
       x-google-backend:
         address: ${notification_url}
+        disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
@@ -2051,6 +2320,7 @@ paths:
       operationId: corsGlobal
       x-google-backend:
         address: ${auth_url}
+        disable_auth: true
         deadline: 30.0
       responses:
         '200':
