@@ -1,8 +1,57 @@
 # backend/infra/terraform/modules/cloud_run/main.tf
 
-# Data source para obtener información del proyecto
-data "google_project" "project" {
-  project_id = var.project_id
+# MAPEO DE NOMBRES DE BASE DE DATOS (inglés -> español)
+locals {
+  db_name_map = {
+    "auth-service"         = "cafrilosa_auth"
+    "user-service"         = "cafrilosa_usuarios"
+    "catalog-service"      = "cafrilosa_catalogo"
+    "order-service"        = "cafrilosa_pedidos"
+    "zone-service"         = "cafrilosa_zonas"
+    "credit-service"       = "cafrilosa_creditos"
+    "route-service"        = "cafrilosa_rutas"
+    "delivery-service"     = "cafrilosa_entregas"
+    "notification-service" = "cafrilosa_notificaciones"
+  }
+
+  # Map de variables de comunicacion entre servicios (env -> servicio destino)
+  # Nota: para evitar dependencias ciclicas, las variables se actualizan via null_resource
+  # excepto la requerida por auth-service.
+  service_url_envs = {
+    "auth-service" = {
+      "USUARIOS_SERVICE_URL" = "user-service"
+    }
+    "user-service" = {
+      "AUTH_SERVICE_URL" = "auth-service"
+    }
+    "catalog-service" = {
+      "AUTH_URL"     = "auth-service"
+      "USUARIOS_URL" = "user-service"
+    }
+    "order-service" = {
+      "CATALOG_SERVICE_URL" = "catalog-service"
+      "USER_SERVICE_URL"    = "user-service"
+      "ZONE_SERVICE_URL"    = "zone-service"
+    }
+    "credit-service" = {
+      "ORDER_SERVICE_URL" = "order-service"
+      "USER_SERVICE_URL"  = "user-service"
+    }
+    "route-service" = {
+      "ORDER_SERVICE_URL"   = "order-service"
+      "USER_SERVICE_URL"    = "user-service"
+      "ZONE_SERVICE_URL"    = "zone-service"
+      "DELIVERY_SERVICE_URL" = "delivery-service"
+    }
+    "delivery-service" = {
+      "ORDER_SERVICE_URL" = "order-service"
+      "ROUTE_SERVICE_URL" = "route-service"
+      "USER_SERVICE_URL"  = "user-service"
+    }
+    "notification-service" = {
+      "USER_SERVICE_URL" = "user-service"
+    }
+  }
 }
 
 # 1. SERVICE ACCOUNTS
@@ -50,7 +99,6 @@ resource "google_cloud_run_v2_service" "default" {
     }
 
     # --- CAMBIO CRÍTICO: Direct VPC Egress ---
-    # Esto reemplaza al conector y evita el Error 13
     vpc_access {
       network_interfaces {
         network    = var.vpc_name
@@ -58,7 +106,6 @@ resource "google_cloud_run_v2_service" "default" {
       }
       egress = "PRIVATE_RANGES_ONLY"
     }
-    # -----------------------------------------
 
     containers {
       image = "${var.artifact_registry_url}/${each.key}:latest"
@@ -74,17 +121,6 @@ resource "google_cloud_run_v2_service" "default" {
         }
       }
 
-      # Healthcheck permisivo para NestJS (da tiempo para conectar a BD)
-      startup_probe {
-        tcp_socket {
-          port = 3000
-        }
-        initial_delay_seconds = 30
-        period_seconds        = 10
-        failure_threshold     = 10
-        timeout_seconds       = 5
-      }
-
       # VARIABLES DE ENTORNO
       env {
         name  = "NODE_ENV"
@@ -98,21 +134,23 @@ resource "google_cloud_run_v2_service" "default" {
         name  = "DB_PORT"
         value = "5432"
       }
+
+      # USUARIOS_SERVICE_URL es requerido por auth-service al arrancar.
+      # Usamos un placeholder valido para evitar ciclos y luego lo actualizamos via null_resource.
+      dynamic "env" {
+        for_each = each.key == "auth-service" ? {
+          "USUARIOS_SERVICE_URL" = "http://placeholder.local"
+        } : {}
+        content {
+          name  = env.key
+          value = env.value
+        }
+      }
       
-      # Mapeo de bases de datos
+      # Nombre de BD usando el mapeo español
       env {
-        name  = "DB_NAME" 
-        value = lookup({
-          "auth-service"         = "cafrilosa_auth"
-          "user-service"         = "cafrilosa_usuarios"
-          "catalog-service"      = "cafrilosa_catalogo"
-          "order-service"        = "cafrilosa_pedidos"
-          "zone-service"         = "cafrilosa_zonas"
-          "credit-service"       = "cafrilosa_creditos"
-          "route-service"        = "cafrilosa_rutas"
-          "delivery-service"     = "cafrilosa_entregas"
-          "notification-service" = "cafrilosa_notificaciones"
-        }, each.key, "cafrilosa_${replace(each.key, "-service", "")}")
+        name  = "DB_NAME"
+        value = local.db_name_map[each.key]
       }
       
       env {
@@ -148,7 +186,6 @@ resource "google_cloud_run_v2_service" "default" {
       }
 
       # SERVICE_TOKEN para autenticación entre servicios (S2S)
-      # Esto asegura que use el Secreto guardado y no falle por string literal
       env {
         name = "SERVICE_TOKEN"
         value_source {
@@ -158,75 +195,9 @@ resource "google_cloud_run_v2_service" "default" {
           }
         }
       }
-
-      # --- CORRECCIÓN DE URLs PARA CLOUD RUN ---
-      # Usamos el hash real '6i2z4tjbba' y la región 'ue' (us-east1) detectados en tus logs.
-      # Esto conecta los servicios correctamente.
-
-      env {
-        name  = "USER_SERVICE_URL"
-        value = "https://user-service-6i2z4tjbba-ue.a.run.app"
-      }
-      env {
-        name  = "USUARIOS_SERVICE_URL"
-        value = "https://user-service-6i2z4tjbba-ue.a.run.app"
-      }
-      env {
-        name  = "USUARIOS_URL"
-        value = "https://user-service-6i2z4tjbba-ue.a.run.app"
-      }
-      env {
-        name  = "AUTH_SERVICE_URL"
-        value = "https://auth-service-6i2z4tjbba-ue.a.run.app"
-      }
-      env {
-        name  = "AUTH_URL"
-        value = "https://auth-service-6i2z4tjbba-ue.a.run.app"
-      }
-      env {
-        name  = "ORDER_SERVICE_URL"
-        value = "https://order-service-6i2z4tjbba-ue.a.run.app"
-      }
-      env {
-        name  = "CATALOG_SERVICE_URL"
-        value = "https://catalog-service-6i2z4tjbba-ue.a.run.app"
-      }
-      env {
-        name  = "ZONE_SERVICE_URL"
-        value = "https://zone-service-6i2z4tjbba-ue.a.run.app"
-      }
-      env {
-        name  = "ZONAS_URL"
-        value = "https://zone-service-6i2z4tjbba-ue.a.run.app"
-      }
-      env {
-        name  = "CREDIT_SERVICE_URL"
-        value = "https://credit-service-6i2z4tjbba-ue.a.run.app"
-      }
-      env {
-        name  = "DELIVERY_SERVICE_URL"
-        value = "https://delivery-service-6i2z4tjbba-ue.a.run.app"
-      }
-      env {
-        name  = "ROUTE_SERVICE_URL"
-        value = "https://route-service-6i2z4tjbba-ue.a.run.app"
-      }
-      env {
-        name  = "NOTIFICATION_SERVICE_URL"
-        value = "https://notification-service-6i2z4tjbba-ue.a.run.app"
-      }
-      
-      # URL del servicio de usuarios (solo para auth-service)
-      dynamic "env" {
-        for_each = each.key == "auth-service" ? [1] : []
-        content {
-          name  = "USUARIOS_SERVICE_URL"
-          value = google_cloud_run_v2_service.default["user-service"].uri
-        }
-      }
     }
   }
-
+  
   lifecycle {
     ignore_changes = [
       client,
@@ -234,6 +205,40 @@ resource "google_cloud_run_v2_service" "default" {
       template[0].containers[0].image
     ]
   }
+}
+
+# 3.1 ACTUALIZAR VARIABLES DE COMUNICACION ENTRE SERVICIOS (POST-CREACION)
+resource "null_resource" "service_url_env_update" {
+  for_each = {
+    for svc, envs in local.service_url_envs : svc => envs
+    if contains(var.services, svc)
+  }
+
+  triggers = merge(
+    {
+      service_id = google_cloud_run_v2_service.default[each.key].id
+    },
+    {
+      for env_name, target_svc in each.value :
+      env_name => target_svc
+    }
+  )
+
+  provisioner "local-exec" {
+    interpreter = ["PowerShell", "-NoProfile", "-Command"]
+    command = <<-EOT
+      $envs = @()
+      ${join("\n", [
+        for env_name, target_svc in each.value :
+        "$url = (gcloud run services describe ${target_svc} --region=${var.region} --project=${var.project_id} --format='value(status.url)'); $envs += '${env_name}=' + $url"
+      ])}
+      gcloud run services update ${each.key} --region=${var.region} --project=${var.project_id} --update-env-vars ($envs -join ",")
+    EOT
+  }
+
+  depends_on = [
+    google_cloud_run_v2_service.default
+  ]
 }
 
 # 4. SEGURIDAD INVOKER (Gateway)
@@ -246,7 +251,6 @@ resource "google_cloud_run_service_iam_member" "invoker" {
 }
 
 # 4.1 PERMITIR INVOCACIONES PÚBLICAS (necesario para S2S sin IAM token)
-# Esto permite que los servicios se comuniquen entre sí usando SERVICE_TOKEN
 resource "google_cloud_run_service_iam_member" "public_invoker" {
   for_each = toset(var.services)
   service  = google_cloud_run_v2_service.default[each.key].name
@@ -261,28 +265,6 @@ resource "google_storage_bucket_iam_member" "upload_permission" {
   bucket = var.bucket_name
   role   = "roles/storage.objectAdmin"
   member = "serviceAccount:${google_service_account.sa[each.key].email}"
-}
-
-# 6. CONFIGURAR USUARIOS_SERVICE_URL en auth-service (después de crear todos los servicios)
-resource "null_resource" "auth_service_env_update" {
-  # Se ejecuta cuando user-service o auth-service cambian
-  triggers = {
-    user_service_uri = google_cloud_run_v2_service.default["user-service"].uri
-    auth_service_id  = google_cloud_run_v2_service.default["auth-service"].id
-  }
-
-  provisioner "local-exec" {
-    command = <<-EOT
-      gcloud run services update auth-service \
-        --region=${var.region} \
-        --project=${var.project_id} \
-        --update-env-vars="USUARIOS_SERVICE_URL=${google_cloud_run_v2_service.default["user-service"].uri}"
-    EOT
-  }
-
-  depends_on = [
-    google_cloud_run_v2_service.default
-  ]
 }
 
 output "service_urls" {

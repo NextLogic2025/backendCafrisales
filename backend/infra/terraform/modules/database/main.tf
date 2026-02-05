@@ -1,9 +1,9 @@
 # backend/infra/terraform/modules/database/main.tf
+# (NOTA: Ya no hay bloques "variable" aquí, están en variables.tf)
 
-# --- DICCIONARIO DE NOMBRES DE BASES DE DATOS (Inglés -> Español) ---
-# Esto asegura que Terraform cree las bases con el nombre exacto que usan tus SQLs.
+# MAPEO DE NOMBRES DE BASE DE DATOS (servicio -> nombre español)
 locals {
-  db_names = {
+  db_name_map = {
     "auth-service"         = "cafrilosa_auth"
     "user-service"         = "cafrilosa_usuarios"
     "catalog-service"      = "cafrilosa_catalogo"
@@ -16,7 +16,7 @@ locals {
   }
 }
 
-# 1. La Instancia Física
+# 1. La Instancia Física (El servidor)
 resource "google_sql_database_instance" "master" {
   name             = "cafrilosa-db-master"
   region           = var.region
@@ -49,30 +49,24 @@ resource "google_sql_user" "root" {
   }
 }
 
-# 3. Bases de Datos Lógicas (CORREGIDO CON MAPA)
+# 3. Bases de Datos Lógicas (usando mapeo español)
 resource "google_sql_database" "databases" {
   for_each = toset(var.services)
 
-  # Usa el nombre del mapa si existe, si no, usa un fallback genérico
-  name     = lookup(local.db_names, each.key, "cafrilosa_${replace(each.key, "-service", "")}")
+  # Usar el mapeo de nombres en español
+  name     = local.db_name_map[each.key]
   instance = google_sql_database_instance.master.name
 }
 
 # 4. Usuarios por Servicio
-# NOTA: Los usuarios de servicio (ej. order_user) pueden seguir en inglés o español.
-# Normalmente el usuario de la DB no afecta tanto, pero si quieres alinearlo, avísame.
-# Por ahora lo dejamos estándar para no romper la conexión desde los microservicios
-# (a menos que tus microservicios también esperen usuarios en español).
 resource "google_sql_user" "users" {
   for_each = toset(var.services)
   name     = "${replace(each.key, "-service", "")}_user"
   instance = google_sql_database_instance.master.name
   password = var.service_passwords[each.key]
 
-  # Dependencia explícita: primero la BD, luego el usuario
   depends_on = [google_sql_database.databases]
 
-  # Evitar errores de recreación
   lifecycle {
     create_before_destroy = true
   }
