@@ -1308,6 +1308,22 @@ paths:
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
       responses: { '200': { description: OK } }
+    put:
+      operationId: zoneApiV1Put
+      x-google-backend:
+        address: ${zone_url}
+        disable_auth: true
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
+    patch:
+      operationId: zoneApiV1Patch
+      x-google-backend:
+        address: ${zone_url}
+        disable_auth: true
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 30.0
+      responses: { '200': { description: OK } }
     options:
       operationId: zoneApiV1Cors
       x-google-backend:

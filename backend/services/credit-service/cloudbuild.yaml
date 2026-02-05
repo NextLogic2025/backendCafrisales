@@ -5,9 +5,10 @@ steps:
     args:
       - '-c'
       - |
+        SHORT_SHA=${SHORT_SHA:-manual}
         docker build \
           -f backend/services/${_SERVICE_NAME}/Dockerfile \
-          -t ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REGISTRY}/${_SERVICE_NAME}:${SHORT_SHA} \
+          -t ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REGISTRY}/${_SERVICE_NAME}:$${SHORT_SHA} \
           -t ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REGISTRY}/${_SERVICE_NAME}:latest \
           backend/services/${_SERVICE_NAME}
 

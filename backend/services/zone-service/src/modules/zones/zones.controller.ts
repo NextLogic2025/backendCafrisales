@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, UseGuards, Patch, Put, Query, ParseUUIDPipe, ParseIntPipe, Header, HttpCode, HttpStatus, Delete, ClassSerializerInterceptor, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, Patch, Put, Delete, Query, ParseUUIDPipe, ParseIntPipe, Header, HttpCode, HttpStatus, ClassSerializerInterceptor, UseInterceptors } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ZonesService } from './zones.service';
 import { SchedulesService } from '../schedules/schedules.service';
@@ -98,13 +98,6 @@ export class ZonesController {
     @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR)
     deactivate(@Param('id', ParseUUIDPipe) id: string, @GetUser() user: AuthUser) {
         return this.zonesService.deactivate(id, user?.userId);
-    }
-
-    @Delete(':id')
-    @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR)
-    @HttpCode(HttpStatus.NO_CONTENT)
-    delete(@Param('id', ParseUUIDPipe) id: string, @GetUser() user: AuthUser) {
-        return this.zonesService.softDelete(id, user?.userId);
     }
 
     @Get(':id/stats')

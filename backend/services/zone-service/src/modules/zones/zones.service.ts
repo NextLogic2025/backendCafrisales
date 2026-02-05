@@ -193,19 +193,6 @@ export class ZonesService {
         return saved;
     }
 
-    async softDelete(id: string, userId: string): Promise<void> {
-        const zone = await this.findOne(id);
-        // Check for dependencies logic stub
-        // const hasUsers = await this.checkUsers(id); 
-        // if (hasUsers) throw new ConflictException('Zona tiene usuarios asignados');
-
-        await this.zonesRepository.softRemove(zone);
-        await this.outboxService.createEvent('ZonaEliminada', zone.id, {
-            zona_id: zone.id,
-            deletedBy: userId
-        });
-    }
-
     async getStats(id: string) {
         // Stub for stats
         return {
