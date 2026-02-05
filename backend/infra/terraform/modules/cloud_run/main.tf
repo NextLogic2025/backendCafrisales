@@ -76,6 +76,14 @@ resource "google_secret_manager_secret_iam_member" "jwt_secret_access" {
   member    = "serviceAccount:${google_service_account.sa[each.key].email}"
 }
 
+# Permitir que notification-service lea el password de order-service
+resource "google_secret_manager_secret_iam_member" "order_db_pass_access_for_notifications" {
+  count = contains(var.services, "notification-service") && contains(var.services, "order-service") ? 1 : 0
+  secret_id = var.db_password_secret_ids["order-service"]
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.sa["notification-service"].email}"
+}
+
 # 3. CLOUD RUN SERVICES (v2)
 resource "google_cloud_run_v2_service" "default" {
   for_each = toset(var.services)
@@ -87,7 +95,8 @@ resource "google_cloud_run_v2_service" "default" {
   # DEPENDENCIA CRÍTICA: Esperar a que los permisos IAM estén listos
   depends_on = [
     google_secret_manager_secret_iam_member.db_pass_access,
-    google_secret_manager_secret_iam_member.jwt_secret_access
+    google_secret_manager_secret_iam_member.jwt_secret_access,
+    google_secret_manager_secret_iam_member.order_db_pass_access_for_notifications
   ]
 
   template {
@@ -192,6 +201,35 @@ resource "google_cloud_run_v2_service" "default" {
           secret_key_ref {
             secret  = var.jwt_secret_id
             version = "latest"
+          }
+        }
+      }
+
+      # ORDER_DB_* solo para notification-service (consume outbox de order-service)
+      dynamic "env" {
+        for_each = each.key == "notification-service" ? {
+          "ORDER_DB_HOST" = var.cloudsql_private_ip
+          "ORDER_DB_PORT" = "5432"
+          "ORDER_DB_NAME" = "cafrilosa_pedidos"
+          "ORDER_DB_USER" = "order_user"
+        } : {}
+        content {
+          name  = env.key
+          value = env.value
+        }
+      }
+
+      dynamic "env" {
+        for_each = each.key == "notification-service" ? {
+          "ORDER_DB_PASSWORD" = "secret"
+        } : {}
+        content {
+          name = "ORDER_DB_PASSWORD"
+          value_source {
+            secret_key_ref {
+              secret  = var.db_password_secret_ids["order-service"]
+              version = "latest"
+            }
           }
         }
       }
