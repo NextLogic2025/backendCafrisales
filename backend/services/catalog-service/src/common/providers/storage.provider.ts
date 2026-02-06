@@ -75,7 +75,7 @@ export class StorageProvider {
             const file = bucket.file(filePath);
 
             await file.delete();
-            this.logger.log(`Successfully deleted file: ${filePath}`);
+            this.logger.log(`Successfully deleted ggggg file: ${filePath}`);
         } catch (error) {
             // Log error but don't throw - we don't want to fail the update if deletion fails
             this.logger.error(`Error deleting file from GCS: ${error.message}`, error.stack);
