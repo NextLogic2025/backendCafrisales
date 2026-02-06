@@ -52,16 +52,12 @@ export class OrdersController {
 
     @Get('stats')
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR, RolUsuario.VENDEDOR)
+    @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR, RolUsuario.VENDEDOR, RolUsuario.BODEGUERO)
     @ApiOperation({ summary: 'Obtener estadísticas de pedidos' })
-    findStats(
-        @CurrentUser() user: AuthUser,
-        @Query('from') from?: string,
-        @Query('to') to?: string,
-    ) {
+    findStats(@CurrentUser() user: AuthUser) {
         // If seller, filter by their ID
         const sellerId = user.role === RolUsuario.VENDEDOR ? user.userId : undefined;
-        return this.ordersService.getStats(sellerId, from, to);
+        return this.ordersService.getStats(sellerId);
     }
 
     @Get('my-orders')

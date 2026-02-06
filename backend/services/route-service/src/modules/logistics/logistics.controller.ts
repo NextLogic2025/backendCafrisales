@@ -67,6 +67,14 @@ export class LogisticsController {
         return this.logisticsService.findAllPaginated(pagination, filters, user.userId);
     }
 
+    @Get('stats')
+    @Roles(RolUsuario.ADMIN, RolUsuario.SUPERVISOR, RolUsuario.TRANSPORTISTA)
+    @ApiOperation({ summary: 'Obtener estadísticas de rutas' })
+    findStats(@CurrentUser() user: AuthUser) {
+        const driverId = user.role === RolUsuario.TRANSPORTISTA ? user.userId : undefined;
+        return this.logisticsService.getStats(driverId);
+    }
+
     @Get(':id')
     @ApiOperation({ summary: 'Obtener ruta por ID' })
     findOne(@Param('id', ParseUUIDPipe) id: string) {
