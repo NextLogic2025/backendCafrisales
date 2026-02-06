@@ -1,4 +1,4 @@
-import { IsUUID, IsString, IsEnum, IsOptional, IsArray, ValidateNested, IsInt, Min, IsNotEmpty, MaxLength } from 'class-validator';
+import { IsUUID, IsString, IsEnum, IsOptional, IsArray, ValidateNested, IsInt, Min, IsNotEmpty, MaxLength, ValidateIf } from 'class-validator';
 import { Type, Transform } from 'class-transformer';
 import { EstadoItemResultado } from '../../../common/constants/item-validation.enum';
 
@@ -21,11 +21,12 @@ class ValidacionItemResultadoDto {
     @IsOptional()
     cantidad_aprobada?: number;
 
+    @ValidateIf((obj) => obj.estado_resultado !== EstadoItemResultado.APROBADO)
     @IsString()
     @IsNotEmpty({ message: 'El motivo es requerido para cada item' })
     @MaxLength(500, { message: 'El motivo no puede exceder 500 caracteres' })
     @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
-    motivo: string;
+    motivo?: string;
 }
 
 /**

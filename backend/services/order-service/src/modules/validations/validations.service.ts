@@ -72,6 +72,7 @@ export class ValidationsService {
                 }
 
                 this.validateResultado(resultado, pedidoItem);
+                const motivo = (resultado.motivo ?? '').trim();
                 const skuSnapshot = resultado.sku_aprobado_id
                     ? await this.catalogExternalService.getSkuSnapshot(resultado.sku_aprobado_id)
                     : null;
@@ -88,7 +89,7 @@ export class ValidationsService {
                     sku_aprobado_nombre_snapshot: skuSnapshot?.nombre,
                     sku_aprobado_codigo_snapshot: skuSnapshot?.codigo,
                     cantidad_aprobada: this.resolveCantidadAprobada(resultado, pedidoItem),
-                    motivo: resultado.motivo,
+                    motivo,
                 });
 
                 itemsValidacion.push(validationItem);
@@ -204,6 +205,12 @@ export class ValidationsService {
 
     private validateResultado(resultado: ValidacionResultado, item: ItemPedido) {
         const cantidad = resultado.cantidad_aprobada;
+        const motivo = (resultado.motivo ?? '').trim();
+
+        if (resultado.estado_resultado !== EstadoItemResultado.APROBADO && !motivo) {
+            throw new BadRequestException('El motivo es requerido para los ítems no aprobados');
+        }
+
         switch (resultado.estado_resultado) {
             case EstadoItemResultado.APROBADO:
                 if (cantidad != null && (cantidad <= 0 || cantidad > item.cantidad_solicitada)) {
