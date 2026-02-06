@@ -11,6 +11,7 @@ import { OutboxService } from '../outbox/outbox.service';
 import { PaginationQueryDto } from '../../common/dto/pagination.dto';
 import { ProductFilterDto } from './dto/product-filter.dto';
 import { Like, Between, MoreThanOrEqual, LessThanOrEqual } from 'typeorm';
+import { StorageProvider } from '../../common/providers/storage.provider';
 
 @Injectable()
 export class ProductsService {
@@ -19,6 +20,7 @@ export class ProductsService {
     @InjectRepository(Category) private categoriesRepo: Repository<Category>,
     private dataSource: DataSource,
     private outbox: OutboxService,
+    private readonly storageProvider: StorageProvider,
   ) { }
 
   async findAllPaginated(
@@ -307,5 +309,24 @@ export class ProductsService {
       nombre: product.nombre,
     });
     return this.repo.findOne({ where: { id } });
+  }
+
+  async uploadImage(id: string, file: Express.Multer.File, actorId: string) {
+    const product = await this.findOne(id);
+
+    // Delete old image if exists
+    if (product.img_url) {
+      await this.storageProvider.deleteFile(product.img_url);
+    }
+
+    // Upload new image
+    const url = await this.storageProvider.uploadFile(file, 'products');
+
+    await this.repo.update(id, {
+      img_url: url,
+      actualizado_por: actorId,
+    } as Product);
+
+    return this.findOne(id);
   }
 }
