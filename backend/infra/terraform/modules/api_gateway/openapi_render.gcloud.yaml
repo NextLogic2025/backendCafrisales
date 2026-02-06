@@ -1,4 +1,4 @@
-swagger: '2.0'
+﻿swagger: '2.0'
 info:
   title: Cafrilosa API Gateway
   description: Gateway unificado para los 8 microservicios de Cafrilosa
@@ -12,7 +12,7 @@ security: []
 
 # ==================================================================
 # RUTEO INTELIGENTE (Sintaxis Correcta: /**)
-# Corrección: Direcciones SIN "/api" al final
+# CorrecciÃ³n: Direcciones SIN "/api" al final
 # ==================================================================
 paths:
   # 1. AUTH SERVICE
@@ -21,7 +21,7 @@ paths:
       summary: Auth Get
       operationId: authApiV1Get
       x-google-backend:
-        address: ${auth_url}
+        address: https://auth-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -32,7 +32,7 @@ paths:
       summary: Auth Post
       operationId: authApiV1Post
       x-google-backend:
-        address: ${auth_url}
+        address: https://auth-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -43,7 +43,7 @@ paths:
       summary: Auth Cors
       operationId: authApiV1Cors
       x-google-backend:
-        address: ${auth_url}
+        address: https://auth-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -55,7 +55,7 @@ paths:
     get:
       operationId: authGet
       x-google-backend:
-        address: ${auth_url}
+        address: https://auth-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -63,7 +63,7 @@ paths:
     post:
       operationId: authPost
       x-google-backend:
-        address: ${auth_url}
+        address: https://auth-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -71,7 +71,7 @@ paths:
     options:
       operationId: authCors
       x-google-backend:
-        address: ${auth_url}
+        address: https://auth-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -82,7 +82,7 @@ paths:
     get:
       operationId: usersApiV1GetBase
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -90,7 +90,7 @@ paths:
     post:
       operationId: usersApiV1PostBase
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -98,7 +98,7 @@ paths:
     put:
       operationId: usersApiV1PutBase
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -106,7 +106,7 @@ paths:
     patch:
       operationId: usersApiV1PatchBase
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -114,7 +114,7 @@ paths:
     delete:
       operationId: usersApiV1DeleteBase
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -122,7 +122,7 @@ paths:
     options:
       operationId: usersApiV1CorsBase
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -132,7 +132,7 @@ paths:
     get:
       operationId: userApiV1Get
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -140,7 +140,7 @@ paths:
     post:
       operationId: userApiV1Post
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -148,7 +148,7 @@ paths:
     put:
       operationId: userApiV1Put
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -156,7 +156,7 @@ paths:
     patch:
       operationId: userApiV1Patch
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -164,7 +164,7 @@ paths:
     delete:
       operationId: userApiV1Delete
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -172,7 +172,7 @@ paths:
     options:
       operationId: userApiV1Cors
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -182,7 +182,7 @@ paths:
     get:
       operationId: usuariosApiV1GetBase
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -190,7 +190,7 @@ paths:
     post:
       operationId: usuariosApiV1PostBase
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -198,7 +198,7 @@ paths:
     put:
       operationId: usuariosApiV1PutBase
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -206,7 +206,7 @@ paths:
     patch:
       operationId: usuariosApiV1PatchBase
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -214,7 +214,7 @@ paths:
     delete:
       operationId: usuariosApiV1DeleteBase
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -222,7 +222,7 @@ paths:
     options:
       operationId: usuariosApiV1CorsBase
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -232,7 +232,7 @@ paths:
     get:
       operationId: usuariosApiV1Get
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -240,7 +240,7 @@ paths:
     post:
       operationId: usuariosApiV1Post
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -248,7 +248,7 @@ paths:
     put:
       operationId: usuariosApiV1Put
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -256,7 +256,7 @@ paths:
     patch:
       operationId: usuariosApiV1Patch
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -264,7 +264,7 @@ paths:
     delete:
       operationId: usuariosApiV1Delete
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -272,7 +272,7 @@ paths:
     options:
       operationId: usuariosApiV1Cors
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -282,7 +282,7 @@ paths:
     get:
       operationId: clientesApiV1GetBase
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -290,7 +290,7 @@ paths:
     post:
       operationId: clientesApiV1PostBase
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -298,7 +298,7 @@ paths:
     put:
       operationId: clientesApiV1PutBase
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -306,7 +306,7 @@ paths:
     patch:
       operationId: clientesApiV1PatchBase
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -314,7 +314,7 @@ paths:
     delete:
       operationId: clientesApiV1DeleteBase
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -322,7 +322,7 @@ paths:
     options:
       operationId: clientesApiV1CorsBase
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -332,7 +332,7 @@ paths:
     get:
       operationId: clientesApiV1Get
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -340,7 +340,7 @@ paths:
     post:
       operationId: clientesApiV1Post
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -348,7 +348,7 @@ paths:
     put:
       operationId: clientesApiV1Put
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -356,7 +356,7 @@ paths:
     patch:
       operationId: clientesApiV1Patch
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -364,7 +364,7 @@ paths:
     delete:
       operationId: clientesApiV1Delete
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -372,7 +372,7 @@ paths:
     options:
       operationId: clientesApiV1Cors
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -382,7 +382,7 @@ paths:
     get:
       operationId: canalesApiV1GetBase
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -390,7 +390,7 @@ paths:
     post:
       operationId: canalesApiV1PostBase
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -398,7 +398,7 @@ paths:
     put:
       operationId: canalesApiV1PutBase
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -406,7 +406,7 @@ paths:
     patch:
       operationId: canalesApiV1PatchBase
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -414,7 +414,7 @@ paths:
     delete:
       operationId: canalesApiV1DeleteBase
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -422,7 +422,7 @@ paths:
     options:
       operationId: canalesApiV1CorsBase
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -432,7 +432,7 @@ paths:
     get:
       operationId: canalesApiV1Get
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -440,7 +440,7 @@ paths:
     post:
       operationId: canalesApiV1Post
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -448,7 +448,7 @@ paths:
     put:
       operationId: canalesApiV1Put
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -456,7 +456,7 @@ paths:
     patch:
       operationId: canalesApiV1Patch
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -464,7 +464,7 @@ paths:
     delete:
       operationId: canalesApiV1Delete
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -472,7 +472,7 @@ paths:
     options:
       operationId: canalesApiV1Cors
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -482,7 +482,7 @@ paths:
     get:
       operationId: staffApiV1GetBase
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -490,7 +490,7 @@ paths:
     post:
       operationId: staffApiV1PostBase
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -498,7 +498,7 @@ paths:
     put:
       operationId: staffApiV1PutBase
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -506,7 +506,7 @@ paths:
     patch:
       operationId: staffApiV1PatchBase
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -514,7 +514,7 @@ paths:
     delete:
       operationId: staffApiV1DeleteBase
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -522,7 +522,7 @@ paths:
     options:
       operationId: staffApiV1CorsBase
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -532,7 +532,7 @@ paths:
     get:
       operationId: staffApiV1Get
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -540,7 +540,7 @@ paths:
     post:
       operationId: staffApiV1Post
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -548,7 +548,7 @@ paths:
     put:
       operationId: staffApiV1Put
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -556,7 +556,7 @@ paths:
     patch:
       operationId: staffApiV1Patch
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -564,7 +564,7 @@ paths:
     delete:
       operationId: staffApiV1Delete
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -572,7 +572,7 @@ paths:
     options:
       operationId: staffApiV1Cors
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -582,7 +582,7 @@ paths:
     get:
       operationId: vendedoresApiV1GetBase
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -590,7 +590,7 @@ paths:
     options:
       operationId: vendedoresApiV1CorsBase
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -600,7 +600,7 @@ paths:
     get:
       operationId: vendedoresApiV1Get
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -608,7 +608,7 @@ paths:
     options:
       operationId: vendedoresApiV1Cors
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -618,7 +618,7 @@ paths:
     get:
       operationId: zonasUsuariosApiV1GetBase
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -626,7 +626,7 @@ paths:
     options:
       operationId: zonasUsuariosApiV1CorsBase
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -636,7 +636,7 @@ paths:
     get:
       operationId: zonasUsuariosApiV1Get
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -644,7 +644,7 @@ paths:
     options:
       operationId: zonasUsuariosApiV1Cors
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -654,7 +654,7 @@ paths:
     get:
       operationId: usuariosInternalApiV1Get
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -662,7 +662,7 @@ paths:
     post:
       operationId: usuariosInternalApiV1Post
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -670,7 +670,7 @@ paths:
     options:
       operationId: usuariosInternalApiV1Cors
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -680,7 +680,7 @@ paths:
     get:
       operationId: clientesInternalApiV1Get
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -688,7 +688,7 @@ paths:
     post:
       operationId: clientesInternalApiV1Post
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -696,7 +696,7 @@ paths:
     options:
       operationId: clientesInternalApiV1Cors
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -706,7 +706,7 @@ paths:
     get:
       operationId: userGet
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -714,7 +714,7 @@ paths:
     post:
       operationId: userPost
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -722,7 +722,7 @@ paths:
     put:
       operationId: userPut
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -730,7 +730,7 @@ paths:
     patch:
       operationId: userPatch
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -738,7 +738,7 @@ paths:
     delete:
       operationId: userDelete
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -746,7 +746,7 @@ paths:
     options:
       operationId: userCors
       x-google-backend:
-        address: ${user_url}
+        address: https://user-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -757,7 +757,7 @@ paths:
     get:
       operationId: catalogApiV1Get
       x-google-backend:
-        address: ${catalog_url}
+        address: https://catalog-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -765,7 +765,7 @@ paths:
     post:
       operationId: catalogApiV1Post
       x-google-backend:
-        address: ${catalog_url}
+        address: https://catalog-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -773,7 +773,7 @@ paths:
     put:
       operationId: catalogApiV1Put
       x-google-backend:
-        address: ${catalog_url}
+        address: https://catalog-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -781,7 +781,7 @@ paths:
     options:
       operationId: catalogApiV1Cors
       x-google-backend:
-        address: ${catalog_url}
+        address: https://catalog-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -791,7 +791,7 @@ paths:
     get:
       operationId: skusApiV1GetBase
       x-google-backend:
-        address: ${catalog_url}
+        address: https://catalog-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -799,7 +799,7 @@ paths:
     post:
       operationId: skusApiV1PostBase
       x-google-backend:
-        address: ${catalog_url}
+        address: https://catalog-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -807,7 +807,7 @@ paths:
     options:
       operationId: skusApiV1CorsBase
       x-google-backend:
-        address: ${catalog_url}
+        address: https://catalog-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -817,7 +817,7 @@ paths:
     get:
       operationId: skusApiV1Get
       x-google-backend:
-        address: ${catalog_url}
+        address: https://catalog-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -825,7 +825,7 @@ paths:
     post:
       operationId: skusApiV1Post
       x-google-backend:
-        address: ${catalog_url}
+        address: https://catalog-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -833,7 +833,7 @@ paths:
     put:
       operationId: skusApiV1Put
       x-google-backend:
-        address: ${catalog_url}
+        address: https://catalog-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -841,7 +841,7 @@ paths:
     patch:
       operationId: skusApiV1Patch
       x-google-backend:
-        address: ${catalog_url}
+        address: https://catalog-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -849,7 +849,7 @@ paths:
     delete:
       operationId: skusApiV1Delete
       x-google-backend:
-        address: ${catalog_url}
+        address: https://catalog-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -857,7 +857,7 @@ paths:
     options:
       operationId: skusApiV1Cors
       x-google-backend:
-        address: ${catalog_url}
+        address: https://catalog-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -867,7 +867,7 @@ paths:
     get:
       operationId: skusInternalApiV1Get
       x-google-backend:
-        address: ${catalog_url}
+        address: https://catalog-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -875,7 +875,7 @@ paths:
     post:
       operationId: skusInternalApiV1Post
       x-google-backend:
-        address: ${catalog_url}
+        address: https://catalog-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -883,7 +883,7 @@ paths:
     options:
       operationId: skusInternalApiV1Cors
       x-google-backend:
-        address: ${catalog_url}
+        address: https://catalog-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -893,7 +893,7 @@ paths:
     get:
       operationId: productsApiV1GetBase
       x-google-backend:
-        address: ${catalog_url}
+        address: https://catalog-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -901,7 +901,7 @@ paths:
     post:
       operationId: productsApiV1PostBase
       x-google-backend:
-        address: ${catalog_url}
+        address: https://catalog-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -909,7 +909,7 @@ paths:
     options:
       operationId: productsApiV1CorsBase
       x-google-backend:
-        address: ${catalog_url}
+        address: https://catalog-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -919,7 +919,7 @@ paths:
     get:
       operationId: productsApiV1Get
       x-google-backend:
-        address: ${catalog_url}
+        address: https://catalog-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -927,7 +927,7 @@ paths:
     post:
       operationId: productsApiV1Post
       x-google-backend:
-        address: ${catalog_url}
+        address: https://catalog-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -935,7 +935,7 @@ paths:
     put:
       operationId: productsApiV1Put
       x-google-backend:
-        address: ${catalog_url}
+        address: https://catalog-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -943,7 +943,7 @@ paths:
     patch:
       operationId: productsApiV1Patch
       x-google-backend:
-        address: ${catalog_url}
+        address: https://catalog-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -951,7 +951,7 @@ paths:
     delete:
       operationId: productsApiV1Delete
       x-google-backend:
-        address: ${catalog_url}
+        address: https://catalog-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -959,7 +959,7 @@ paths:
     options:
       operationId: productsApiV1Cors
       x-google-backend:
-        address: ${catalog_url}
+        address: https://catalog-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -969,7 +969,7 @@ paths:
     get:
       operationId: categoriasApiV1GetBase
       x-google-backend:
-        address: ${catalog_url}
+        address: https://catalog-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -977,7 +977,7 @@ paths:
     post:
       operationId: categoriasApiV1PostBase
       x-google-backend:
-        address: ${catalog_url}
+        address: https://catalog-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -985,7 +985,7 @@ paths:
     options:
       operationId: categoriasApiV1CorsBase
       x-google-backend:
-        address: ${catalog_url}
+        address: https://catalog-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -995,7 +995,7 @@ paths:
     get:
       operationId: categoriasApiV1Get
       x-google-backend:
-        address: ${catalog_url}
+        address: https://catalog-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1003,7 +1003,7 @@ paths:
     post:
       operationId: categoriasApiV1Post
       x-google-backend:
-        address: ${catalog_url}
+        address: https://catalog-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1011,7 +1011,7 @@ paths:
     put:
       operationId: categoriasApiV1Put
       x-google-backend:
-        address: ${catalog_url}
+        address: https://catalog-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1019,7 +1019,7 @@ paths:
     patch:
       operationId: categoriasApiV1Patch
       x-google-backend:
-        address: ${catalog_url}
+        address: https://catalog-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1027,7 +1027,7 @@ paths:
     delete:
       operationId: categoriasApiV1Delete
       x-google-backend:
-        address: ${catalog_url}
+        address: https://catalog-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1035,7 +1035,7 @@ paths:
     options:
       operationId: categoriasApiV1Cors
       x-google-backend:
-        address: ${catalog_url}
+        address: https://catalog-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1045,7 +1045,7 @@ paths:
     get:
       operationId: catalogGet
       x-google-backend:
-        address: ${catalog_url}
+        address: https://catalog-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1053,7 +1053,7 @@ paths:
     post:
       operationId: catalogPost
       x-google-backend:
-        address: ${catalog_url}
+        address: https://catalog-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1061,7 +1061,7 @@ paths:
     put:
       operationId: catalogPut
       x-google-backend:
-        address: ${catalog_url}
+        address: https://catalog-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1069,7 +1069,7 @@ paths:
     options:
       operationId: catalogCors
       x-google-backend:
-        address: ${catalog_url}
+        address: https://catalog-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1080,7 +1080,7 @@ paths:
     get:
       operationId: ordersApiV1GetBase
       x-google-backend:
-        address: ${order_url}
+        address: https://order-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1088,7 +1088,7 @@ paths:
     post:
       operationId: ordersApiV1PostBase
       x-google-backend:
-        address: ${order_url}
+        address: https://order-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1096,7 +1096,7 @@ paths:
     options:
       operationId: ordersApiV1CorsBase
       x-google-backend:
-        address: ${order_url}
+        address: https://order-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1106,7 +1106,7 @@ paths:
     get:
       operationId: orderApiV1Get
       x-google-backend:
-        address: ${order_url}
+        address: https://order-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1114,7 +1114,7 @@ paths:
     post:
       operationId: orderApiV1Post
       x-google-backend:
-        address: ${order_url}
+        address: https://order-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1122,7 +1122,7 @@ paths:
     put:
       operationId: orderApiV1Put
       x-google-backend:
-        address: ${order_url}
+        address: https://order-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1130,7 +1130,7 @@ paths:
     patch:
       operationId: orderApiV1Patch
       x-google-backend:
-        address: ${order_url}
+        address: https://order-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1138,7 +1138,7 @@ paths:
     delete:
       operationId: orderApiV1Delete
       x-google-backend:
-        address: ${order_url}
+        address: https://order-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1146,7 +1146,7 @@ paths:
     options:
       operationId: orderApiV1Cors
       x-google-backend:
-        address: ${order_url}
+        address: https://order-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1156,7 +1156,7 @@ paths:
     get:
       operationId: pedidosInternalApiV1Get
       x-google-backend:
-        address: ${order_url}
+        address: https://order-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1164,7 +1164,7 @@ paths:
     post:
       operationId: pedidosInternalApiV1Post
       x-google-backend:
-        address: ${order_url}
+        address: https://order-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1172,7 +1172,7 @@ paths:
     patch:
       operationId: pedidosInternalApiV1Patch
       x-google-backend:
-        address: ${order_url}
+        address: https://order-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1180,7 +1180,7 @@ paths:
     options:
       operationId: pedidosInternalApiV1Cors
       x-google-backend:
-        address: ${order_url}
+        address: https://order-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1190,7 +1190,7 @@ paths:
     post:
       operationId: validationsApiV1PostBase
       x-google-backend:
-        address: ${order_url}
+        address: https://order-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1198,7 +1198,7 @@ paths:
     options:
       operationId: validationsApiV1CorsBase
       x-google-backend:
-        address: ${order_url}
+        address: https://order-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1208,7 +1208,7 @@ paths:
     get:
       operationId: validationsApiV1Get
       x-google-backend:
-        address: ${order_url}
+        address: https://order-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1216,7 +1216,7 @@ paths:
     post:
       operationId: validationsApiV1Post
       x-google-backend:
-        address: ${order_url}
+        address: https://order-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1224,7 +1224,7 @@ paths:
     options:
       operationId: validationsApiV1Cors
       x-google-backend:
-        address: ${order_url}
+        address: https://order-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1234,7 +1234,7 @@ paths:
     get:
       operationId: orderGet
       x-google-backend:
-        address: ${order_url}
+        address: https://order-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1242,7 +1242,7 @@ paths:
     post:
       operationId: orderPost
       x-google-backend:
-        address: ${order_url}
+        address: https://order-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1250,7 +1250,7 @@ paths:
     patch:
       operationId: orderPatch
       x-google-backend:
-        address: ${order_url}
+        address: https://order-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1258,7 +1258,7 @@ paths:
     options:
       operationId: orderCors
       x-google-backend:
-        address: ${order_url}
+        address: https://order-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1269,7 +1269,7 @@ paths:
     get:
       operationId: zonesApiV1GetBase
       x-google-backend:
-        address: ${zone_url}
+        address: https://zone-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1277,7 +1277,7 @@ paths:
     post:
       operationId: zonesApiV1PostBase
       x-google-backend:
-        address: ${zone_url}
+        address: https://zone-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1285,7 +1285,7 @@ paths:
     options:
       operationId: zonesApiV1CorsBase
       x-google-backend:
-        address: ${zone_url}
+        address: https://zone-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1295,7 +1295,7 @@ paths:
     get:
       operationId: zoneApiV1Get
       x-google-backend:
-        address: ${zone_url}
+        address: https://zone-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1303,7 +1303,7 @@ paths:
     post:
       operationId: zoneApiV1Post
       x-google-backend:
-        address: ${zone_url}
+        address: https://zone-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1311,7 +1311,7 @@ paths:
     put:
       operationId: zoneApiV1Put
       x-google-backend:
-        address: ${zone_url}
+        address: https://zone-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1319,7 +1319,7 @@ paths:
     patch:
       operationId: zoneApiV1Patch
       x-google-backend:
-        address: ${zone_url}
+        address: https://zone-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1327,7 +1327,7 @@ paths:
     options:
       operationId: zoneApiV1Cors
       x-google-backend:
-        address: ${zone_url}
+        address: https://zone-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1337,7 +1337,7 @@ paths:
     get:
       operationId: zonesInternalApiV1Get
       x-google-backend:
-        address: ${zone_url}
+        address: https://zone-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1345,7 +1345,7 @@ paths:
     post:
       operationId: zonesInternalApiV1Post
       x-google-backend:
-        address: ${zone_url}
+        address: https://zone-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1353,7 +1353,7 @@ paths:
     options:
       operationId: zonesInternalApiV1Cors
       x-google-backend:
-        address: ${zone_url}
+        address: https://zone-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1363,7 +1363,7 @@ paths:
     post:
       operationId: coverageApiV1PostBase
       x-google-backend:
-        address: ${zone_url}
+        address: https://zone-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1371,7 +1371,7 @@ paths:
     options:
       operationId: coverageApiV1CorsBase
       x-google-backend:
-        address: ${zone_url}
+        address: https://zone-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1381,7 +1381,7 @@ paths:
     get:
       operationId: coverageApiV1Get
       x-google-backend:
-        address: ${zone_url}
+        address: https://zone-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1389,7 +1389,7 @@ paths:
     post:
       operationId: coverageApiV1Post
       x-google-backend:
-        address: ${zone_url}
+        address: https://zone-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1397,7 +1397,7 @@ paths:
     put:
       operationId: coverageApiV1Put
       x-google-backend:
-        address: ${zone_url}
+        address: https://zone-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1405,7 +1405,7 @@ paths:
     patch:
       operationId: coverageApiV1Patch
       x-google-backend:
-        address: ${zone_url}
+        address: https://zone-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1413,7 +1413,7 @@ paths:
     delete:
       operationId: coverageApiV1Delete
       x-google-backend:
-        address: ${zone_url}
+        address: https://zone-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1421,7 +1421,7 @@ paths:
     options:
       operationId: coverageApiV1Cors
       x-google-backend:
-        address: ${zone_url}
+        address: https://zone-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1431,7 +1431,7 @@ paths:
     get:
       operationId: schedulesApiV1GetBase
       x-google-backend:
-        address: ${zone_url}
+        address: https://zone-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1439,7 +1439,7 @@ paths:
     post:
       operationId: schedulesApiV1PostBase
       x-google-backend:
-        address: ${zone_url}
+        address: https://zone-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1447,7 +1447,7 @@ paths:
     options:
       operationId: schedulesApiV1CorsBase
       x-google-backend:
-        address: ${zone_url}
+        address: https://zone-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1457,7 +1457,7 @@ paths:
     get:
       operationId: schedulesApiV1Get
       x-google-backend:
-        address: ${zone_url}
+        address: https://zone-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1465,7 +1465,7 @@ paths:
     post:
       operationId: schedulesApiV1Post
       x-google-backend:
-        address: ${zone_url}
+        address: https://zone-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1473,7 +1473,7 @@ paths:
     put:
       operationId: schedulesApiV1Put
       x-google-backend:
-        address: ${zone_url}
+        address: https://zone-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1481,7 +1481,7 @@ paths:
     patch:
       operationId: schedulesApiV1Patch
       x-google-backend:
-        address: ${zone_url}
+        address: https://zone-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1489,7 +1489,7 @@ paths:
     delete:
       operationId: schedulesApiV1Delete
       x-google-backend:
-        address: ${zone_url}
+        address: https://zone-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1497,7 +1497,7 @@ paths:
     options:
       operationId: schedulesApiV1Cors
       x-google-backend:
-        address: ${zone_url}
+        address: https://zone-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1507,7 +1507,7 @@ paths:
     get:
       operationId: zoneGet
       x-google-backend:
-        address: ${zone_url}
+        address: https://zone-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1515,7 +1515,7 @@ paths:
     post:
       operationId: zonePost
       x-google-backend:
-        address: ${zone_url}
+        address: https://zone-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1523,7 +1523,7 @@ paths:
     options:
       operationId: zoneCors
       x-google-backend:
-        address: ${zone_url}
+        address: https://zone-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1534,7 +1534,7 @@ paths:
     get:
       operationId: creditApiV1GetBase
       x-google-backend:
-        address: ${credit_url}
+        address: https://credit-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1542,7 +1542,7 @@ paths:
     options:
       operationId: creditApiV1CorsBase
       x-google-backend:
-        address: ${credit_url}
+        address: https://credit-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1552,7 +1552,7 @@ paths:
     get:
       operationId: creditApiV1Get
       x-google-backend:
-        address: ${credit_url}
+        address: https://credit-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1560,7 +1560,7 @@ paths:
     post:
       operationId: creditApiV1Post
       x-google-backend:
-        address: ${credit_url}
+        address: https://credit-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1568,7 +1568,7 @@ paths:
     put:
       operationId: creditApiV1Put
       x-google-backend:
-        address: ${credit_url}
+        address: https://credit-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1576,7 +1576,7 @@ paths:
     options:
       operationId: creditApiV1Cors
       x-google-backend:
-        address: ${credit_url}
+        address: https://credit-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1586,7 +1586,7 @@ paths:
     get:
       operationId: creditosApiV1GetBase
       x-google-backend:
-        address: ${credit_url}
+        address: https://credit-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1594,7 +1594,7 @@ paths:
     options:
       operationId: creditosApiV1CorsBase
       x-google-backend:
-        address: ${credit_url}
+        address: https://credit-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1604,7 +1604,7 @@ paths:
     get:
       operationId: creditosApiV1Get
       x-google-backend:
-        address: ${credit_url}
+        address: https://credit-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1612,7 +1612,7 @@ paths:
     post:
       operationId: creditosApiV1Post
       x-google-backend:
-        address: ${credit_url}
+        address: https://credit-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1620,7 +1620,7 @@ paths:
     put:
       operationId: creditosApiV1Put
       x-google-backend:
-        address: ${credit_url}
+        address: https://credit-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1628,7 +1628,7 @@ paths:
     patch:
       operationId: creditosApiV1Patch
       x-google-backend:
-        address: ${credit_url}
+        address: https://credit-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1636,7 +1636,7 @@ paths:
     delete:
       operationId: creditosApiV1Delete
       x-google-backend:
-        address: ${credit_url}
+        address: https://credit-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1644,7 +1644,7 @@ paths:
     options:
       operationId: creditosApiV1Cors
       x-google-backend:
-        address: ${credit_url}
+        address: https://credit-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1654,7 +1654,7 @@ paths:
     get:
       operationId: reportsApiV1GetBase
       x-google-backend:
-        address: ${credit_url}
+        address: https://credit-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1662,7 +1662,7 @@ paths:
     options:
       operationId: reportsApiV1CorsBase
       x-google-backend:
-        address: ${credit_url}
+        address: https://credit-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1672,7 +1672,7 @@ paths:
     get:
       operationId: reportsApiV1Get
       x-google-backend:
-        address: ${credit_url}
+        address: https://credit-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1680,7 +1680,7 @@ paths:
     post:
       operationId: reportsApiV1Post
       x-google-backend:
-        address: ${credit_url}
+        address: https://credit-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1688,7 +1688,7 @@ paths:
     options:
       operationId: reportsApiV1Cors
       x-google-backend:
-        address: ${credit_url}
+        address: https://credit-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1698,7 +1698,7 @@ paths:
     get:
       operationId: creditGet
       x-google-backend:
-        address: ${credit_url}
+        address: https://credit-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1706,7 +1706,7 @@ paths:
     post:
       operationId: creditPost
       x-google-backend:
-        address: ${credit_url}
+        address: https://credit-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1714,7 +1714,7 @@ paths:
     put:
       operationId: creditPut
       x-google-backend:
-        address: ${credit_url}
+        address: https://credit-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1722,7 +1722,7 @@ paths:
     options:
       operationId: creditCors
       x-google-backend:
-        address: ${credit_url}
+        address: https://credit-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1733,7 +1733,7 @@ paths:
     get:
       operationId: routeApiV1GetBase
       x-google-backend:
-        address: ${route_url}
+        address: https://route-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1741,7 +1741,7 @@ paths:
     post:
       operationId: routeApiV1PostBase
       x-google-backend:
-        address: ${route_url}
+        address: https://route-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1749,7 +1749,7 @@ paths:
     options:
       operationId: routeApiV1CorsBase
       x-google-backend:
-        address: ${route_url}
+        address: https://route-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1759,7 +1759,7 @@ paths:
     get:
       operationId: routeApiV1Get
       x-google-backend:
-        address: ${route_url}
+        address: https://route-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1767,7 +1767,7 @@ paths:
     post:
       operationId: routeApiV1Post
       x-google-backend:
-        address: ${route_url}
+        address: https://route-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1775,7 +1775,7 @@ paths:
     put:
       operationId: routeApiV1Put
       x-google-backend:
-        address: ${route_url}
+        address: https://route-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1783,7 +1783,7 @@ paths:
     delete:
       operationId: routeApiV1Delete
       x-google-backend:
-        address: ${route_url}
+        address: https://route-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1791,7 +1791,7 @@ paths:
     options:
       operationId: routeApiV1Cors
       x-google-backend:
-        address: ${route_url}
+        address: https://route-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1801,7 +1801,7 @@ paths:
     get:
       operationId: ruterosComercialesApiV1GetBase
       x-google-backend:
-        address: ${route_url}
+        address: https://route-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1809,7 +1809,7 @@ paths:
     post:
       operationId: ruterosComercialesApiV1PostBase
       x-google-backend:
-        address: ${route_url}
+        address: https://route-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1817,7 +1817,7 @@ paths:
     options:
       operationId: ruterosComercialesApiV1CorsBase
       x-google-backend:
-        address: ${route_url}
+        address: https://route-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1827,7 +1827,7 @@ paths:
     get:
       operationId: ruterosComercialesApiV1Get
       x-google-backend:
-        address: ${route_url}
+        address: https://route-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1835,7 +1835,7 @@ paths:
     post:
       operationId: ruterosComercialesApiV1Post
       x-google-backend:
-        address: ${route_url}
+        address: https://route-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1843,7 +1843,7 @@ paths:
     put:
       operationId: ruterosComercialesApiV1Put
       x-google-backend:
-        address: ${route_url}
+        address: https://route-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1851,7 +1851,7 @@ paths:
     patch:
       operationId: ruterosComercialesApiV1Patch
       x-google-backend:
-        address: ${route_url}
+        address: https://route-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1859,7 +1859,7 @@ paths:
     delete:
       operationId: ruterosComercialesApiV1Delete
       x-google-backend:
-        address: ${route_url}
+        address: https://route-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1867,7 +1867,7 @@ paths:
     options:
       operationId: ruterosComercialesApiV1Cors
       x-google-backend:
-        address: ${route_url}
+        address: https://route-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1877,7 +1877,7 @@ paths:
     get:
       operationId: paradasComercialesApiV1Get
       x-google-backend:
-        address: ${route_url}
+        address: https://route-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1885,7 +1885,7 @@ paths:
     post:
       operationId: paradasComercialesApiV1Post
       x-google-backend:
-        address: ${route_url}
+        address: https://route-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1893,7 +1893,7 @@ paths:
     put:
       operationId: paradasComercialesApiV1Put
       x-google-backend:
-        address: ${route_url}
+        address: https://route-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1901,7 +1901,7 @@ paths:
     patch:
       operationId: paradasComercialesApiV1Patch
       x-google-backend:
-        address: ${route_url}
+        address: https://route-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1909,7 +1909,7 @@ paths:
     delete:
       operationId: paradasComercialesApiV1Delete
       x-google-backend:
-        address: ${route_url}
+        address: https://route-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1917,7 +1917,7 @@ paths:
     options:
       operationId: paradasComercialesApiV1Cors
       x-google-backend:
-        address: ${route_url}
+        address: https://route-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1927,7 +1927,7 @@ paths:
     get:
       operationId: routeGet
       x-google-backend:
-        address: ${route_url}
+        address: https://route-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1935,7 +1935,7 @@ paths:
     post:
       operationId: routePost
       x-google-backend:
-        address: ${route_url}
+        address: https://route-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1943,7 +1943,7 @@ paths:
     options:
       operationId: routeCors
       x-google-backend:
-        address: ${route_url}
+        address: https://route-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1954,7 +1954,7 @@ paths:
     get:
       operationId: vehiculosApiV1GetBase
       x-google-backend:
-        address: ${route_url}
+        address: https://route-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1962,7 +1962,7 @@ paths:
     post:
       operationId: vehiculosApiV1PostBase
       x-google-backend:
-        address: ${route_url}
+        address: https://route-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1970,7 +1970,7 @@ paths:
     put:
       operationId: vehiculosApiV1PutBase
       x-google-backend:
-        address: ${route_url}
+        address: https://route-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1978,7 +1978,7 @@ paths:
     patch:
       operationId: vehiculosApiV1PatchBase
       x-google-backend:
-        address: ${route_url}
+        address: https://route-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1986,7 +1986,7 @@ paths:
     delete:
       operationId: vehiculosApiV1DeleteBase
       x-google-backend:
-        address: ${route_url}
+        address: https://route-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -1994,7 +1994,7 @@ paths:
     options:
       operationId: vehiculosApiV1CorsBase
       x-google-backend:
-        address: ${route_url}
+        address: https://route-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -2004,7 +2004,7 @@ paths:
     get:
       operationId: vehiculosApiV1Get
       x-google-backend:
-        address: ${route_url}
+        address: https://route-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -2012,7 +2012,7 @@ paths:
     post:
       operationId: vehiculosApiV1Post
       x-google-backend:
-        address: ${route_url}
+        address: https://route-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -2020,7 +2020,7 @@ paths:
     put:
       operationId: vehiculosApiV1Put
       x-google-backend:
-        address: ${route_url}
+        address: https://route-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -2028,7 +2028,7 @@ paths:
     patch:
       operationId: vehiculosApiV1Patch
       x-google-backend:
-        address: ${route_url}
+        address: https://route-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -2036,7 +2036,7 @@ paths:
     delete:
       operationId: vehiculosApiV1Delete
       x-google-backend:
-        address: ${route_url}
+        address: https://route-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -2044,7 +2044,7 @@ paths:
     options:
       operationId: vehiculosApiV1Cors
       x-google-backend:
-        address: ${route_url}
+        address: https://route-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -2054,7 +2054,7 @@ paths:
     get:
       operationId: vehiculosGet
       x-google-backend:
-        address: ${route_url}
+        address: https://route-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -2062,7 +2062,7 @@ paths:
     post:
       operationId: vehiculosPost
       x-google-backend:
-        address: ${route_url}
+        address: https://route-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -2070,7 +2070,7 @@ paths:
     put:
       operationId: vehiculosPut
       x-google-backend:
-        address: ${route_url}
+        address: https://route-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -2078,7 +2078,7 @@ paths:
     patch:
       operationId: vehiculosPatch
       x-google-backend:
-        address: ${route_url}
+        address: https://route-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -2086,7 +2086,7 @@ paths:
     delete:
       operationId: vehiculosDelete
       x-google-backend:
-        address: ${route_url}
+        address: https://route-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -2094,7 +2094,7 @@ paths:
     options:
       operationId: vehiculosCors
       x-google-backend:
-        address: ${route_url}
+        address: https://route-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -2105,7 +2105,7 @@ paths:
     get:
       operationId: deliveryApiV1GetBase
       x-google-backend:
-        address: ${delivery_url}
+        address: https://delivery-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -2113,7 +2113,7 @@ paths:
     options:
       operationId: deliveryApiV1CorsBase
       x-google-backend:
-        address: ${delivery_url}
+        address: https://delivery-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -2123,7 +2123,7 @@ paths:
     get:
       operationId: deliveryApiV1Get
       x-google-backend:
-        address: ${delivery_url}
+        address: https://delivery-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -2131,7 +2131,7 @@ paths:
     post:
       operationId: deliveryApiV1Post
       x-google-backend:
-        address: ${delivery_url}
+        address: https://delivery-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -2139,7 +2139,7 @@ paths:
     put:
       operationId: deliveryApiV1Put
       x-google-backend:
-        address: ${delivery_url}
+        address: https://delivery-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -2147,7 +2147,7 @@ paths:
     patch:
       operationId: deliveryApiV1Patch
       x-google-backend:
-        address: ${delivery_url}
+        address: https://delivery-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -2155,7 +2155,7 @@ paths:
     delete:
       operationId: deliveryApiV1Delete
       x-google-backend:
-        address: ${delivery_url}
+        address: https://delivery-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -2163,7 +2163,7 @@ paths:
     options:
       operationId: deliveryApiV1Cors
       x-google-backend:
-        address: ${delivery_url}
+        address: https://delivery-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -2173,7 +2173,7 @@ paths:
     get:
       operationId: entregasApiV1Get
       x-google-backend:
-        address: ${delivery_url}
+        address: https://delivery-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -2181,7 +2181,7 @@ paths:
     post:
       operationId: entregasApiV1Post
       x-google-backend:
-        address: ${delivery_url}
+        address: https://delivery-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -2189,7 +2189,7 @@ paths:
     put:
       operationId: entregasApiV1Put
       x-google-backend:
-        address: ${delivery_url}
+        address: https://delivery-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -2197,7 +2197,7 @@ paths:
     patch:
       operationId: entregasApiV1Patch
       x-google-backend:
-        address: ${delivery_url}
+        address: https://delivery-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -2205,7 +2205,7 @@ paths:
     delete:
       operationId: entregasApiV1Delete
       x-google-backend:
-        address: ${delivery_url}
+        address: https://delivery-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -2213,7 +2213,7 @@ paths:
     options:
       operationId: entregasApiV1Cors
       x-google-backend:
-        address: ${delivery_url}
+        address: https://delivery-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -2223,7 +2223,7 @@ paths:
     get:
       operationId: deliveryGet
       x-google-backend:
-        address: ${delivery_url}
+        address: https://delivery-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -2231,7 +2231,7 @@ paths:
     post:
       operationId: deliveryPost
       x-google-backend:
-        address: ${delivery_url}
+        address: https://delivery-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -2239,7 +2239,7 @@ paths:
     put:
       operationId: deliveryPut
       x-google-backend:
-        address: ${delivery_url}
+        address: https://delivery-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -2247,7 +2247,7 @@ paths:
     options:
       operationId: deliveryCors
       x-google-backend:
-        address: ${delivery_url}
+        address: https://delivery-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -2258,7 +2258,7 @@ paths:
     get:
       operationId: notificationsApiV1GetBase
       x-google-backend:
-        address: ${notification_url}
+        address: https://notification-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -2266,7 +2266,7 @@ paths:
     post:
       operationId: notificationsApiV1PostBase
       x-google-backend:
-        address: ${notification_url}
+        address: https://notification-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -2274,7 +2274,7 @@ paths:
     options:
       operationId: notificationsApiV1CorsBase
       x-google-backend:
-        address: ${notification_url}
+        address: https://notification-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -2284,7 +2284,7 @@ paths:
     get:
       operationId: notificationsApiV1Get
       x-google-backend:
-        address: ${notification_url}
+        address: https://notification-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -2292,7 +2292,7 @@ paths:
     post:
       operationId: notificationsApiV1Post
       x-google-backend:
-        address: ${notification_url}
+        address: https://notification-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -2300,7 +2300,7 @@ paths:
     put:
       operationId: notificationsApiV1Put
       x-google-backend:
-        address: ${notification_url}
+        address: https://notification-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -2308,7 +2308,7 @@ paths:
     patch:
       operationId: notificationsApiV1Patch
       x-google-backend:
-        address: ${notification_url}
+        address: https://notification-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -2316,7 +2316,7 @@ paths:
     delete:
       operationId: notificationsApiV1Delete
       x-google-backend:
-        address: ${notification_url}
+        address: https://notification-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -2324,7 +2324,7 @@ paths:
     options:
       operationId: notificationsApiV1Cors
       x-google-backend:
-        address: ${notification_url}
+        address: https://notification-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         path_translation: APPEND_PATH_TO_ADDRESS
         deadline: 30.0
@@ -2335,7 +2335,7 @@ paths:
     options:
       operationId: corsGlobal
       x-google-backend:
-        address: ${auth_url}
+        address: https://auth-service-6i2z4tjbba-ue.a.run.app
         disable_auth: true
         deadline: 30.0
       responses:
@@ -2351,3 +2351,4 @@ paths:
             Access-Control-Allow-Headers:
               type: string
               default: 'Authorization, X-Authorization, Content-Type, X-Api-Key, X-Service-Token, Cache-Control'
+
