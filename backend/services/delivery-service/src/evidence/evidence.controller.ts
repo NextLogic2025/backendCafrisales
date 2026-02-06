@@ -14,8 +14,6 @@ import {
     HttpStatus,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
 import { ApiTags, ApiOperation, ApiConsumes, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 import { EvidenceService } from './evidence.service';
 import { UploadEvidenceDto } from './dto/upload-evidence.dto';
@@ -54,16 +52,6 @@ export class EvidenceController {
     @HttpCode(HttpStatus.CREATED)
     @UseInterceptors(
         FileInterceptor('file', {
-            storage: diskStorage({
-                destination: process.env.UPLOAD_PATH || './uploads/evidence',
-                filename: (req, file, cb) => {
-                    const randomName = Array(32)
-                        .fill(null)
-                        .map(() => Math.round(Math.random() * 16).toString(16))
-                        .join('');
-                    cb(null, `${randomName}${extname(file.originalname)}`);
-                },
-            }),
             limits: {
                 fileSize: 10 * 1024 * 1024, // 10MB max
             },

@@ -3,23 +3,17 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { EvidenciaEntrega } from './entities/evidencia-entrega.entity';
 import { UploadEvidenceDto } from './dto/upload-evidence.dto';
-import * as fs from 'fs';
-import * as path from 'path';
+import { StorageProvider } from '../common/providers/storage.provider';
 
 @Injectable()
 export class EvidenceService {
     private readonly logger = new Logger(EvidenceService.name);
-    private readonly uploadPath = process.env.UPLOAD_PATH || './uploads/evidence';
 
     constructor(
         @InjectRepository(EvidenciaEntrega)
         private readonly evidenciaRepository: Repository<EvidenciaEntrega>,
-    ) {
-        // Ensure upload directory exists
-        if (!fs.existsSync(this.uploadPath)) {
-            fs.mkdirSync(this.uploadPath, { recursive: true });
-        }
-    }
+        private readonly storageProvider: StorageProvider,
+    ) { }
 
     async uploadEvidence(
         entregaId: string,
@@ -30,11 +24,14 @@ export class EvidenceService {
     ): Promise<EvidenciaEntrega> {
         this.logger.log(`Uploading evidence for delivery ${entregaId}`);
 
+        // Upload file to GCS
+        const url = await this.storageProvider.uploadFile(file, 'evidence');
+
         const evidencia = this.evidenciaRepository.create({
             entrega_id: entregaId,
             tipo: uploadDto.tipo,
             descripcion: uploadDto.descripcion,
-            url: `/uploads/evidence/${file.filename}`,
+            url: url,
             mime_type: file.mimetype,
             tamano_bytes: file.size,
             meta: {
@@ -94,11 +91,9 @@ export class EvidenceService {
     async remove(id: string): Promise<void> {
         const evidencia = await this.findOne(id);
 
-        // Delete file from filesystem
-        const filePath = path.join(process.cwd(), evidencia.url || '');
-        if (fs.existsSync(filePath)) {
-            fs.unlinkSync(filePath);
-            this.logger.log(`Deleted file ${filePath}`);
+        // Delete file from GCS
+        if (evidencia.url) {
+            await this.storageProvider.deleteFile(evidencia.url);
         }
 
         await this.evidenciaRepository.remove(evidencia);
