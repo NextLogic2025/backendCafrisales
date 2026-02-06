@@ -3,10 +3,14 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Category } from './entities/category.entity';
 import { slugify, ensureUniqueSlug } from '../../common/utils/slug.utils';
+import { StorageProvider } from '../../common/providers/storage.provider';
 
 @Injectable()
 export class CategoriesService {
-  constructor(@InjectRepository(Category) private repo: Repository<Category>) { }
+  constructor(
+    @InjectRepository(Category) private repo: Repository<Category>,
+    private readonly storageProvider: StorageProvider,
+  ) { }
 
   async create(dto: Partial<Category>, actorId?: string) {
     // Auto-generate slug if not provided
@@ -70,5 +74,17 @@ export class CategoriesService {
 
     await this.repo.update(id, { activo: false, actualizado_por: actorId } as any);
     return this.repo.findOne({ where: { id } });
+  }
+
+  async uploadImage(id: string, file: Express.Multer.File, actorId: string) {
+    const category = await this.findOne(id);
+    const url = await this.storageProvider.uploadFile(file, 'categories');
+
+    await this.repo.update(id, {
+      img_url: url,
+      actualizado_por: actorId,
+    } as any);
+
+    return this.findOne(id);
   }
 }

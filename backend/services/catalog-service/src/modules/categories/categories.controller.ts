@@ -1,4 +1,5 @@
-import { Controller, Post, Body, Get, UseGuards, Param, Patch, Delete, ParseUUIDPipe } from '@nestjs/common';
+import { Controller, Post, Body, Get, UseGuards, Param, Patch, Delete, ParseUUIDPipe, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -15,13 +16,25 @@ export class CategoriesController {
   constructor(
     private readonly svc: CategoriesService,
     private readonly productsService: ProductsService,
-  ) {}
+  ) { }
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RolUsuario.ADMIN, RolUsuario.STAFF, RolUsuario.SUPERVISOR)
   create(@Body() dto: CreateCategoryDto, @GetUser() user: AuthUser) {
     return this.svc.create(dto as any, user.userId);
+  }
+
+  @Post(':id/imagen')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RolUsuario.ADMIN, RolUsuario.STAFF, RolUsuario.SUPERVISOR)
+  @UseInterceptors(FileInterceptor('file'))
+  uploadImage(
+    @Param('id', ParseUUIDPipe) id: string,
+    @UploadedFile() file: Express.Multer.File,
+    @GetUser() user: AuthUser,
+  ) {
+    return this.svc.uploadImage(id, file, user.userId);
   }
 
   @Get()
