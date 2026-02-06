@@ -23,6 +23,7 @@ locals {
     }
     "user-service" = {
       "AUTH_SERVICE_URL" = "auth-service"
+      "ZONE_SERVICE_URL" = "zone-service"
     }
     "catalog-service" = {
       "AUTH_URL"     = "auth-service"
@@ -240,7 +241,10 @@ resource "google_cloud_run_v2_service" "default" {
     ignore_changes = [
       client,
       client_version,
-      template[0].containers[0].image
+      template[0].containers[0].image,
+      # Evita que Terraform borre envs actualizadas via gcloud (null_resource).
+      # Las URLs S2S se inyectan post-creación para evitar ciclos.
+      template[0].containers[0].env
     ]
   }
 }
