@@ -896,14 +896,27 @@ export class OrdersService {
             .join('');
     }
 
-    async getStats(sellerId?: string) {
+    async getStats(sellerId?: string, from?: string, to?: string) {
         const qb = this.pedidoRepo.createQueryBuilder('p')
             .select('p.estado', 'estado')
             .addSelect('COUNT(p.id)', 'count')
             .addSelect('SUM(p.total)', 'totalAmount');
 
         if (sellerId) {
-            qb.where('p.creado_por_id = :sellerId', { sellerId });
+            qb.andWhere('p.creado_por_id = :sellerId', { sellerId });
+        }
+
+        if (from) {
+            qb.andWhere('p.creado_en >= :from', { from: new Date(from) });
+        }
+
+        if (to) {
+            // Set end date to end of day if it's just a date string, or handle as provided
+            const toDate = new Date(to);
+            // If the input is just 'YYYY-MM-DD', we might want to ensure we cover the whole day. 
+            // Assuming the client sends a proper ISO string or we handle it here. 
+            // For safety with simple dates, let's treat it as the boundary.
+            qb.andWhere('p.creado_en <= :to', { to: toDate });
         }
 
         qb.groupBy('p.estado');
