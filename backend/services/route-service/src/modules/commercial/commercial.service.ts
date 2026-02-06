@@ -58,8 +58,9 @@ export class CommercialService {
                 const stopRepo = manager.getRepository(ParadaRuteroComercial);
                 const historyRepo = manager.getRepository(HistorialEstadoRutero);
 
+                const fechaRutero = dto.fecha_rutero ? new Date(dto.fecha_rutero) : new Date();
                 const route = routeRepo.create({
-                    fecha_rutero: new Date(dto.fecha_rutero),
+                    fecha_rutero: fechaRutero,
                     zona_id: dto.zona_id,
                     vendedor_id: dto.vendedor_id,
                     creado_por_supervisor_id: supervisorId,

@@ -33,7 +33,9 @@ export class CreateCommercialStopDto {
 
 export class CreateCommercialRouteDto {
     @IsDateString({}, { message: 'fecha_rutero debe ser una fecha ISO válida' })
-    fecha_rutero: string;
+    @IsOptional()
+    @Transform(({ value }) => (value === '' ? undefined : value))
+    fecha_rutero?: string;
 
     @IsUUID('4', { message: 'zona_id debe ser un UUID válido' })
     zona_id: string;
