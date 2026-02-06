@@ -5,7 +5,9 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { RolUsuario } from '../../common/constants/rol-usuario.enum';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('validations')
 @Controller('validations')
 export class ValidationsController {
     constructor(private readonly validationsService: ValidationsService) { }

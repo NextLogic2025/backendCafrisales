@@ -2,7 +2,9 @@ import { Controller, Post, Body, UseGuards, Logger, Req, ConflictException, Get,
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { RolesGuard } from '../../common/guards/roles.guard';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('users.internal')
 @Controller({ path: 'internal/usuarios', version: '1' })
 @UseGuards(RolesGuard)
 export class UsersInternalController {

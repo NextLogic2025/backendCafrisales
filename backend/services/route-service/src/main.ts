@@ -1,6 +1,7 @@
 // 1. IMPORTAR VersioningType
 import { Logger, ValidationPipe, VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
@@ -40,6 +41,16 @@ async function bootstrap() {
             transform: true,
         }),
     );
+
+    const swaggerConfig = new DocumentBuilder()
+        .setTitle('Route Service API')
+        .setDescription('Documentacion OpenAPI del servicio de rutas')
+        .setVersion('1.0')
+        .addBearerAuth()
+        .build();
+
+    const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
+    SwaggerModule.setup('api/docs', app, swaggerDocument);
 
     // Graceful shutdown
     app.enableShutdownHooks();

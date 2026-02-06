@@ -1,7 +1,9 @@
 import { Controller, Get, Param, UseGuards, ParseUUIDPipe } from '@nestjs/common';
 import { HistoryService } from './history.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('creditos')
 @Controller('creditos')
 export class HistoryController {
     constructor(private readonly historyService: HistoryService) {}

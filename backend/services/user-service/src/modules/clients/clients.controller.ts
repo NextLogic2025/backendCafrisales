@@ -15,7 +15,9 @@ import { GetUser, AuthUser } from '../../common/decorators/get-user.decorator';
 import { Vendedor } from '../staff/entities/vendedor.entity';
 import { AssignVendedorDto } from './dto/assign-vendedor.dto';
 import { OutboxService } from '../outbox/outbox.service';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('clientes')
 @Controller('clientes')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class ClientsController {

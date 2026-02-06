@@ -18,14 +18,14 @@ locals {
 
 # 1. La Instancia Física (El servidor)
 resource "google_sql_database_instance" "master" {
-  name             = "cafrilosa-db-master"
-  region           = var.region
-  database_version = var.database_version
+  name                = "cafrilosa-db-master"
+  region              = var.region
+  database_version    = var.database_version
   deletion_protection = var.deletion_protection
 
   settings {
     tier = var.machine_type
-    
+
     ip_configuration {
       ipv4_enabled    = false
       private_network = var.vpc_id
@@ -83,5 +83,5 @@ output "cloudsql_private_ip" {
 }
 
 output "service_password_secrets" {
-  value = {} 
+  value = {}
 }

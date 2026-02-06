@@ -8,7 +8,9 @@ import { Perfil } from './entities/perfil.entity';
 import { Repository } from 'typeorm';
 import { GetUser, AuthUser } from '../../common/decorators/get-user.decorator';
 import { ZoneExternalService } from '../../services/zone-external.service';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('usuarios')
 @Controller('usuarios')
 export class ProfilesController {
   constructor(

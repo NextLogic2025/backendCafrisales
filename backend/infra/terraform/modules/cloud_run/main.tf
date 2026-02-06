@@ -38,9 +38,9 @@ locals {
       "USER_SERVICE_URL"  = "user-service"
     }
     "route-service" = {
-      "ORDER_SERVICE_URL"   = "order-service"
-      "USER_SERVICE_URL"    = "user-service"
-      "ZONE_SERVICE_URL"    = "zone-service"
+      "ORDER_SERVICE_URL"    = "order-service"
+      "USER_SERVICE_URL"     = "user-service"
+      "ZONE_SERVICE_URL"     = "zone-service"
       "DELIVERY_SERVICE_URL" = "delivery-service"
     }
     "delivery-service" = {
@@ -56,21 +56,21 @@ locals {
 
 # 1. SERVICE ACCOUNTS
 resource "google_service_account" "sa" {
-  for_each = toset(var.services)
+  for_each     = toset(var.services)
   account_id   = "${each.key}-sa"
   display_name = "Service Account para ${each.key}"
 }
 
 # 2. PERMISOS DE SECRETOS
 resource "google_secret_manager_secret_iam_member" "db_pass_access" {
-  for_each = toset(var.services)
+  for_each  = toset(var.services)
   secret_id = var.db_password_secret_ids[each.key]
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.sa[each.key].email}"
 }
 
 resource "google_secret_manager_secret_iam_member" "jwt_secret_access" {
-  for_each = toset(var.services)
+  for_each  = toset(var.services)
   secret_id = var.jwt_secret_id
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.sa[each.key].email}"
@@ -78,7 +78,7 @@ resource "google_secret_manager_secret_iam_member" "jwt_secret_access" {
 
 # Permitir que notification-service lea el password de order-service
 resource "google_secret_manager_secret_iam_member" "order_db_pass_access_for_notifications" {
-  count = contains(var.services, "notification-service") && contains(var.services, "order-service") ? 1 : 0
+  count     = contains(var.services, "notification-service") && contains(var.services, "order-service") ? 1 : 0
   secret_id = var.db_password_secret_ids["order-service"]
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.sa["notification-service"].email}"
@@ -155,13 +155,13 @@ resource "google_cloud_run_v2_service" "default" {
           value = env.value
         }
       }
-      
+
       # Nombre de BD usando el mapeo español
       env {
         name  = "DB_NAME"
         value = local.db_name_map[each.key]
       }
-      
+
       env {
         name  = "DB_USER"
         value = "${replace(each.key, "-service", "")}_user"
@@ -235,7 +235,7 @@ resource "google_cloud_run_v2_service" "default" {
       }
     }
   }
-  
+
   lifecycle {
     ignore_changes = [
       client,
@@ -267,16 +267,16 @@ resource "null_resource" "service_url_env_update" {
     command = <<-EOT
       $envs = @()
       ${join("\n", [
-        for env_name, target_svc in each.value :
-        "$url = (gcloud run services describe ${target_svc} --region=${var.region} --project=${var.project_id} --format='value(status.url)'); $envs += '${env_name}=' + $url"
-      ])}
+    for env_name, target_svc in each.value :
+    "$url = (gcloud run services describe ${target_svc} --region=${var.region} --project=${var.project_id} --format='value(status.url)'); $envs += '${env_name}=' + $url"
+])}
       gcloud run services update ${each.key} --region=${var.region} --project=${var.project_id} --update-env-vars ($envs -join ",")
     EOT
-  }
+}
 
-  depends_on = [
-    google_cloud_run_v2_service.default
-  ]
+depends_on = [
+  google_cloud_run_v2_service.default
+]
 }
 
 # 4. SEGURIDAD INVOKER (Gateway)
@@ -300,9 +300,9 @@ resource "google_cloud_run_service_iam_member" "public_invoker" {
 # 5. PERMISOS STORAGE
 resource "google_storage_bucket_iam_member" "upload_permission" {
   for_each = toset(var.services)
-  bucket = var.bucket_name
-  role   = "roles/storage.objectAdmin"
-  member = "serviceAccount:${google_service_account.sa[each.key].email}"
+  bucket   = var.bucket_name
+  role     = "roles/storage.objectAdmin"
+  member   = "serviceAccount:${google_service_account.sa[each.key].email}"
 }
 
 output "service_urls" {

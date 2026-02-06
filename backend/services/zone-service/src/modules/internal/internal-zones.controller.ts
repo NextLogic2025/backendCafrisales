@@ -1,11 +1,13 @@
 import { Controller, Get, Param, UseGuards, ParseUUIDPipe } from '@nestjs/common';
 import { ServiceTokenGuard } from '../../common/guards/service-token.guard';
 import { ZonesService } from '../zones/zones.service';
+import { ApiTags } from '@nestjs/swagger';
 
 /**
  * Controlador interno para comunicación S2S (servicio a servicio).
  * No requiere JWT de usuario, solo ServiceTokenGuard.
  */
+@ApiTags('internal-zones')
 @Controller({ path: 'internal/zones', version: '1' })
 @UseGuards(ServiceTokenGuard)
 export class InternalZonesController {

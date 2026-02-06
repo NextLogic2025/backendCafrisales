@@ -22,7 +22,7 @@ resource "google_compute_subnetwork" "app_subnet" {
 
   log_config {
     aggregation_interval = "INTERVAL_5_SEC"
-    flow_sampling        = 0.5   
+    flow_sampling        = 0.5
     metadata             = "INCLUDE_ALL_METADATA"
   }
 }
@@ -31,32 +31,32 @@ resource "google_compute_subnetwork" "app_subnet" {
 # SUBNET 2: CONECTOR (La Solución Híbrida)
 # ============================================================
 resource "google_compute_subnetwork" "connector_subnet" {
-  name          = "${var.app_name}-connector-subnet"
-  
+  name = "${var.app_name}-connector-subnet"
+
   # Rango Limpio
-  ip_cidr_range = "192.168.40.0/28" 
-  
-  region        = var.region
-  network       = google_compute_network.vpc.id
-  description   = "Subred dedicada para Serverless VPC Access (Rango Limpio)"
+  ip_cidr_range = "192.168.40.0/28"
+
+  region      = var.region
+  network     = google_compute_network.vpc.id
+  description = "Subred dedicada para Serverless VPC Access (Rango Limpio)"
 }
 
 # ============================================================
 # VPC ACCESS CONNECTOR
 # ============================================================
 resource "google_vpc_access_connector" "cloud_run_connector" {
- name          = "cafrisales-vpc-conn" # Le puse un nombre simple
- region        = var.region
-  
- subnet {
-   name = google_compute_subnetwork.connector_subnet.name
- }
+  name   = "cafrisales-vpc-conn" # Le puse un nombre simple
+  region = var.region
 
- min_instances = 2
- max_instances = 3 # Bajamos a 3 para ahorrar costos en dev
- machine_type  = "e2-micro"
+  subnet {
+    name = google_compute_subnetwork.connector_subnet.name
+  }
 
- depends_on = [google_compute_subnetwork.connector_subnet]
+  min_instances = 2
+  max_instances = 3 # Bajamos a 3 para ahorrar costos en dev
+  machine_type  = "e2-micro"
+
+  depends_on = [google_compute_subnetwork.connector_subnet]
 }
 
 # ============================================================
@@ -77,7 +77,7 @@ resource "google_compute_router_nat" "nat" {
   region                             = var.region
   nat_ip_allocate_option             = "AUTO_ONLY"
   source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
-  
+
   log_config {
     enable = true
     filter = "ERRORS_ONLY"

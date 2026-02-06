@@ -24,6 +24,6 @@ output "subnet_id" {
 }
 
 output "cloudsql_private_ip_address" {
-   # Si lo necesitas para debug, la IP reservada
-   value = google_compute_global_address.private_ip_alloc.address
+  # Si lo necesitas para debug, la IP reservada
+  value = google_compute_global_address.private_ip_alloc.address
 }

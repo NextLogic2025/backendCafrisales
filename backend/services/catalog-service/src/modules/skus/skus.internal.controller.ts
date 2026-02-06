@@ -1,7 +1,9 @@
 import { Controller, Get, Param, Req, UseGuards, ForbiddenException } from '@nestjs/common';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { SkusService } from './skus.service';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('skus.internal')
 @Controller({ path: 'internal/skus', version: '1' })
 @UseGuards(RolesGuard)
 export class SkusInternalController {

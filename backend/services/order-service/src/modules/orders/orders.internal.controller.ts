@@ -2,11 +2,13 @@ import { Body, Controller, Get, Param, Patch, Post, UseGuards, ParseUUIDPipe } f
 import { OrdersService } from './orders.service';
 import { ServiceTokenGuard } from '../../common/guards/service-token.guard';
 import { EstadoPedido } from '../../common/constants/order-status.enum';
+import { ApiTags } from '@nestjs/swagger';
 
 /**
  * Controlador interno para comunicación S2S (servicio a servicio).
  * No requiere JWT de usuario, solo ServiceTokenGuard.
  */
+@ApiTags('orders.internal')
 @Controller({ path: 'internal/pedidos', version: '1' })
 @UseGuards(ServiceTokenGuard)
 export class OrdersInternalController {
