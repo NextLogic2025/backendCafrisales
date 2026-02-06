@@ -6,7 +6,9 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { RolUsuario } from '../../common/enums/rol-usuario.enum';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('canales')
 @Controller('canales')
 export class ChannelsController {
   constructor(private readonly service: ChannelsService) {}

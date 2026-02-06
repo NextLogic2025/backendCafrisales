@@ -3,6 +3,7 @@ import 'reflect-metadata';
 // 1. AGREGAMOS 'VersioningType'
 import { ValidationPipe, Logger, VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import helmet from 'helmet';
 
 import { AppModule } from './app.module';
@@ -39,6 +40,16 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
+
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle('User Service API')
+    .setDescription('Documentacion OpenAPI del servicio de usuarios')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+
+  const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup('api/docs', app, swaggerDocument);
 
   app.enableShutdownHooks();
 

@@ -15,7 +15,9 @@ import { CondicionesComercialesCliente } from './entities/condiciones.entity';
 import { Usuario } from '../users/entities/usuario.entity';
 import { Perfil } from '../profiles/entities/perfil.entity';
 import { CanalComercial } from '../channels/entities/canal-comercial.entity';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('clients.internal')
 @Controller({ path: 'internal/clientes', version: '1' })
 @UseGuards(RolesGuard)
 export class ClientsInternalController {

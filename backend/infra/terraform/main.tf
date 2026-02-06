@@ -67,7 +67,7 @@ module "networking" {
 # 2. ARTIFACT REGISTRY
 module "artifact_registry" {
   source = "./modules/artifact_registry"
-  
+
   project_id = var.project_id
   region     = var.region
   app_name   = var.app_name
@@ -95,11 +95,11 @@ module "secrets" {
 module "database" {
   source = "./modules/database"
 
-  project_id        = var.project_id
-  region            = var.region
-  vpc_id            = module.networking.vpc_id
-  services          = var.services
-  
+  project_id = var.project_id
+  region     = var.region
+  vpc_id     = module.networking.vpc_id
+  services   = var.services
+
   database_version      = var.database_version
   machine_type          = var.db_tier
   deletion_protection   = var.deletion_protection
@@ -108,7 +108,7 @@ module "database" {
 
   service_passwords = module.secrets.service_passwords
   root_password     = module.secrets.root_password
-  
+
   depends_on = [module.networking]
 }
 
@@ -132,14 +132,14 @@ module "cloud_run" {
   # -----------------------------------------
 
   # DB Info
-  cloudsql_private_ip   = module.database.cloudsql_private_ip
-  cloudsql_connection   = module.database.cloudsql_connection_name
+  cloudsql_private_ip = module.database.cloudsql_private_ip
+  cloudsql_connection = module.database.cloudsql_connection_name
 
   # Secretos
   db_password_secret_ids = module.secrets.service_secret_ids
 
-  gateway_sa_email      = google_service_account.gateway_sa.email
-  jwt_secret_id         = google_secret_manager_secret.jwt_secret.id
+  gateway_sa_email = google_service_account.gateway_sa.email
+  jwt_secret_id    = google_secret_manager_secret.jwt_secret.id
 
   depends_on = [module.database, module.artifact_registry]
 }
@@ -148,14 +148,14 @@ module "cloud_run" {
 module "api_gateway" {
   source = "./modules/api_gateway"
 
-  project_id   = var.project_id
-  region       = var.region
-  services     = var.services
-  backend_urls = module.cloud_run.service_urls
+  project_id       = var.project_id
+  region           = var.region
+  services         = var.services
+  backend_urls     = module.cloud_run.service_urls
   notification_url = var.notification_url
-  
+
   gateway_sa_email = google_service_account.gateway_sa.email
-  
+
   depends_on = [module.cloud_run]
 }
 
@@ -175,12 +175,12 @@ module "cloud_build" {
 module "firebase" {
   source = "./modules/firebase"
 
-  project_id   = var.project_id
-  region       = var.region
-  app_name     = var.app_name
+  project_id         = var.project_id
+  region             = var.region
+  app_name           = var.app_name
   github_owner       = var.github_owner
   frontend_repo_name = var.frontend_repo_name
   api_gateway_url    = module.api_gateway.api_gateway_url
-  
+
   depends_on = [module.api_gateway]
 }

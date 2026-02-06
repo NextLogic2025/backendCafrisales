@@ -7,7 +7,9 @@ import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { GetUser, AuthUser } from '../../common/decorators/get-user.decorator';
 import { ProductsService } from '../products/products.service';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('categorias')
 @Controller('categorias')
 export class CategoriesController {
   constructor(

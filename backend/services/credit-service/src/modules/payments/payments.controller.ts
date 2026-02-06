@@ -7,7 +7,9 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser, AuthUser } from '../../common/decorators/current-user.decorator';
 import { RolUsuario } from '../../common/constants/rol-usuario.enum';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('creditos')
 @Controller('creditos')
 export class PaymentsController {
     constructor(private readonly paymentsService: PaymentsService) {}

@@ -50,7 +50,7 @@ resource "google_cloudbuild_trigger" "service_triggers" {
   name        = "${each.key}-trigger"
   description = "CI/CD Trigger para el servicio ${each.key}"
   location    = "global"
-  
+
   # Usamos la cuenta de servicio segura creada arriba
   service_account = google_service_account.cloud_build_sa.id
 
@@ -58,7 +58,7 @@ resource "google_cloudbuild_trigger" "service_triggers" {
   github {
     owner = var.github_repo_owner
     name  = var.github_repo_name
-    
+
     # Se dispara al hacer push a la rama main
     push {
       branch = "^main$"
@@ -81,7 +81,7 @@ resource "google_cloudbuild_trigger" "service_triggers" {
     _REGION            = var.region
     _ARTIFACT_REGISTRY = var.artifact_registry
   }
-  
+
   depends_on = [
     google_project_iam_member.artifact_registry_writer
   ]

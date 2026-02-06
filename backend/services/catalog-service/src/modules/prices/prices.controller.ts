@@ -7,7 +7,9 @@ import { GetUser, AuthUser } from '../../common/decorators/get-user.decorator';
 import { PricesService } from './prices.service';
 import { CreateSkuPriceDto } from './dto/create-sku-price.dto';
 import { UpdateSkuPriceDto } from './dto/update-price.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('skus')
 @Controller('skus')
 export class PricesController {
   constructor(private readonly svc: PricesService) {}

@@ -6,7 +6,9 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser, AuthUser } from '../../common/decorators/current-user.decorator';
 import { RolUsuario } from '../../common/constants/rol-usuario.enum';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('ruteros-comerciales')
 @Controller('ruteros-comerciales')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class CommercialController {

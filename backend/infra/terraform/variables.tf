@@ -21,7 +21,7 @@ variable "github_owner" {
 variable "services" {
   description = "Lista de carpetas de microservicios en backend/services/"
   type        = list(string)
-  default     = [
+  default = [
     "auth-service",
     "user-service",
     "catalog-service",

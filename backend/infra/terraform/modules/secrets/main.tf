@@ -8,14 +8,14 @@ resource "random_password" "db_root_password" {
 
   # Usar keepers para controlar regeneración
   keepers = {
-    version = "v1"  # Cambiar a "v2", "v3", etc. para forzar nueva contraseña
+    version = "v1" # Cambiar a "v2", "v3", etc. para forzar nueva contraseña
   }
 }
 
 resource "google_secret_manager_secret" "db_root_pass" {
   secret_id = "db-root-password"
   project   = var.project_id
-  
+
   replication {
     user_managed {
       replicas {
@@ -40,7 +40,7 @@ resource "random_password" "service_db_passwords" {
   # Cambiar 'password_version' a "v3", "v4", etc. para forzar rotación de TODAS las contraseñas
   keepers = {
     service_name     = each.key
-    password_version = "v2"  # SINCRONIZACIÓN: Forzar nuevas contraseñas
+    password_version = "v2" # SINCRONIZACIÓN: Forzar nuevas contraseñas
   }
 }
 
@@ -49,7 +49,7 @@ resource "google_secret_manager_secret" "service_db_secrets" {
   for_each  = toset(var.services)
   secret_id = "${each.key}-db-password"
   project   = var.project_id
-  
+
   replication {
     user_managed {
       replicas {

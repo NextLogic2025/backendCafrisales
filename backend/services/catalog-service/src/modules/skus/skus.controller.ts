@@ -6,7 +6,9 @@ import { RolUsuario } from '../../common/enums/rol-usuario.enum';
 import { GetUser, AuthUser } from '../../common/decorators/get-user.decorator';
 import { SkusService } from './skus.service';
 import { CreateSkuDto } from './dto/create-sku.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('skus')
 @Controller('skus')
 export class SkusController {
   constructor(private readonly svc: SkusService) {}

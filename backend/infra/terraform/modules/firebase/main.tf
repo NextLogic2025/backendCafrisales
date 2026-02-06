@@ -14,16 +14,16 @@ resource "google_project_service" "firebase_services" {
 
 # 2. PROYECTO FIREBASE (DEJAR ESTO)
 resource "google_firebase_project" "default" {
-  provider = google-beta
-  project  = var.project_id
+  provider   = google-beta
+  project    = var.project_id
   depends_on = [google_project_service.firebase_services]
 }
 
 resource "google_firebase_web_app" "default" {
-  provider       = google-beta
-  project        = var.project_id
-  display_name   = "${var.app_name}-web"
-  depends_on     = [google_firebase_project.default]
+  provider     = google-beta
+  project      = var.project_id
+  display_name = "${var.app_name}-web"
+  depends_on   = [google_firebase_project.default]
 }
 
 # 3. TRIGGER (!!! COMENTADO O BORRADO !!!)

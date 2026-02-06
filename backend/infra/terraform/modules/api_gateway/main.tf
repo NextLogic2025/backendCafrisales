@@ -4,15 +4,15 @@
 # Esto evita errores de lectura de archivos que aún no existen
 locals {
   openapi_content = templatefile("${path.module}/openapi.tpl", {
-    auth_url          = var.backend_urls["auth-service"]
-    user_url          = var.backend_urls["user-service"]
-    catalog_url       = var.backend_urls["catalog-service"]
-    order_url         = var.backend_urls["order-service"]
-    zone_url          = var.backend_urls["zone-service"]
-    credit_url        = var.backend_urls["credit-service"]
-    route_url         = var.backend_urls["route-service"]
-    delivery_url      = var.backend_urls["delivery-service"]
-    notification_url  = var.notification_url
+    auth_url         = var.backend_urls["auth-service"]
+    user_url         = var.backend_urls["user-service"]
+    catalog_url      = var.backend_urls["catalog-service"]
+    order_url        = var.backend_urls["order-service"]
+    zone_url         = var.backend_urls["zone-service"]
+    credit_url       = var.backend_urls["credit-service"]
+    route_url        = var.backend_urls["route-service"]
+    delivery_url     = var.backend_urls["delivery-service"]
+    notification_url = var.notification_url
   })
 }
 
@@ -32,22 +32,22 @@ resource "google_api_gateway_api" "api" {
 
 # 4. Configuración del API
 resource "google_api_gateway_api_config" "config" {
-  provider      = google-beta
-  api           = google_api_gateway_api.api.api_id
-  
+  provider = google-beta
+  api      = google_api_gateway_api.api.api_id
+
   # Usamos el hash del contenido para forzar actualización si cambia la plantilla
   api_config_id = "cfg-${md5(local.openapi_content)}"
   display_name  = "Configuración Cafrisales ${substr(md5(local.openapi_content), 0, 7)}"
 
   gateway_config {
     backend_config {
-      google_service_account = var.gateway_sa_email 
+      google_service_account = var.gateway_sa_email
     }
   }
 
   openapi_documents {
     document {
-      path     = "openapi.yaml"
+      path = "openapi.yaml"
       # CORRECCIÓN: Codificamos directamente la variable local, sin leer del disco
       contents = base64encode(local.openapi_content)
     }
