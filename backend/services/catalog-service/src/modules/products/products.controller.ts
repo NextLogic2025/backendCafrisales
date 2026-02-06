@@ -14,7 +14,10 @@ import {
   Header,
   Res,
   Patch,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import {
   ApiTags,
@@ -118,6 +121,20 @@ export class ProductsController {
     @GetUser() user: AuthUser,
   ) {
     return this.svc.update(id, dto as any, user.userId);
+  }
+
+  @Post(':id/imagen')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RolUsuario.ADMIN, RolUsuario.STAFF, RolUsuario.SUPERVISOR)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Subir imagen del producto' })
+  @UseInterceptors(FileInterceptor('file'))
+  uploadImage(
+    @Param('id', ParseUUIDPipe) id: string,
+    @UploadedFile() file: Express.Multer.File,
+    @GetUser() user: AuthUser,
+  ) {
+    return this.svc.uploadImage(id, file, user.userId);
   }
 
   @Delete(':id')

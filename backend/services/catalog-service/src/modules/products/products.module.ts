@@ -6,11 +6,12 @@ import { Product } from './entities/product.entity';
 import { Category } from '../categories/entities/category.entity';
 import { OutboxModule } from '../outbox/outbox.module';
 import { SkusModule } from '../skus/skus.module';
+import { StorageProvider } from '../../common/providers/storage.provider';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Product, Category]), OutboxModule, SkusModule],
-  providers: [ProductsService],
+  providers: [ProductsService, StorageProvider],
   controllers: [ProductsController],
   exports: [ProductsService],
 })
-export class ProductsModule {}
+export class ProductsModule { }
