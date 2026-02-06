@@ -78,6 +78,13 @@ export class CategoriesService {
 
   async uploadImage(id: string, file: Express.Multer.File, actorId: string) {
     const category = await this.findOne(id);
+
+    // Delete old image if exists
+    if (category.img_url) {
+      await this.storageProvider.deleteFile(category.img_url);
+    }
+
+    // Upload new image
     const url = await this.storageProvider.uploadFile(file, 'categories');
 
     await this.repo.update(id, {

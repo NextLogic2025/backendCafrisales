@@ -53,4 +53,32 @@ export class StorageProvider {
             stream.end(file.buffer);
         });
     }
+
+    async deleteFile(fileUrl: string): Promise<void> {
+        if (!fileUrl) {
+            return;
+        }
+
+        try {
+            // Extract file path from URL
+            // URL format: https://storage.googleapis.com/BUCKET_NAME/FILE_PATH
+            const urlPattern = new RegExp(`https://storage\\.googleapis\\.com/${this.bucketName}/(.+)`);
+            const match = fileUrl.match(urlPattern);
+
+            if (!match || !match[1]) {
+                this.logger.warn(`Invalid GCS URL format: ${fileUrl}`);
+                return;
+            }
+
+            const filePath = match[1];
+            const bucket = this.storage.bucket(this.bucketName);
+            const file = bucket.file(filePath);
+
+            await file.delete();
+            this.logger.log(`Successfully deleted file: ${filePath}`);
+        } catch (error) {
+            // Log error but don't throw - we don't want to fail the update if deletion fails
+            this.logger.error(`Error deleting file from GCS: ${error.message}`, error.stack);
+        }
+    }
 }
